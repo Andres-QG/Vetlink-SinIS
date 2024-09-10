@@ -34,7 +34,7 @@ function Header() {
         <>
             <header className="bg-primary text-text py-4 z-10 w-full">
                 <div className="w-full mx-auto flex flex-wrap justify-between items-center px-4">
-                    <h1 className="text-3xl font-bold cursor-pointer hover:text-secondary transition-all duration-300 left-0" onClick={handleClick}>PetLink</h1>
+                    <h1 className="text-3xl font-bold cursor-pointer hover:text-secondary transition-all duration-300 left-0" onClick={handleClick}>VetLink</h1>
                     <nav className="items-center mt-4 md:mt-0 pl-10">
                         <ul className="hidden flex-wrap lg:flex md:space-x-10">
                             <li>
