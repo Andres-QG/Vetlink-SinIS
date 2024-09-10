@@ -27,8 +27,8 @@ function Header() {
             <header className="bg-primary text-text py-4 z-10 w-full">
                 <div className="w-full mx-auto flex flex-wrap justify-between items-center px-4">
                     <h1 className="text-3xl font-bold cursor-pointer hover:text-secondary transition-all duration-300 left-0" onClick={handleClick}>PetLink</h1>
-                    <nav className="flex-1 flex flex-wrap justify-between items-center mt-4 md:mt-0">
-                        <ul className="hidden flex-wrap space-x-5 lg:flex md:space-x-10 justify-center md:justify-start lg:ml-auto">
+                    <nav className="items-center mt-4 md:mt-0 pl-10">
+                        <ul className="hidden flex-wrap lg:flex md:space-x-10">
                             <li>
                                 <a href="#" className="relative group font-bold hover:text-secondary transition-colors duration-300 pb-1">
                                     Sobre nosotros
@@ -48,11 +48,11 @@ function Header() {
                                 </a>
                             </li>
                         </ul>
-                        <div className="hidden lg:flex space-x-3 mt-4 md:mt-0 lg:ml-auto font-bold">
-                            <Button className="border-2 rounded-md px-3 py-1 hover:text-secondary hover:border-secondary transition-all duration-300">Iniciar sesión</Button>
-                            <Button className="border-2 rounded-md px-3 py-1 hover:text-secondary hover:border-secondary transition-all duration-300">Registrarme</Button>
-                        </div>
                     </nav>
+                    <div className="hidden lg:flex space-x-3 mt-4 md:mt-0 font-bold">
+                        <Button className="border-2 rounded-md px-3 py-1 hover:text-secondary hover:border-secondary transition-all duration-300">Iniciar sesión</Button>
+                        <Button className="border-2 rounded-md px-3 py-1 hover:text-secondary hover:border-secondary transition-all duration-300">Registrarme</Button>
+                    </div>
                     <div className="burger-menu flex flex-col space-y-1 lg:hidden cursor-pointer  " onClick={updateMenu}>
                         <div className={`w-6 h-0.5 bg-text transition-all duration-300 ${burger_class === 'burger-bar unclicked' ? 'rotate-45 translate-y-1.5' : ''}`}></div>
                         <div className={`w-6 h-0.5 bg-text transition-all duration-300 ${burger_class === 'burger-bar unclicked' ? 'opacity-0' : ''}`}></div>
