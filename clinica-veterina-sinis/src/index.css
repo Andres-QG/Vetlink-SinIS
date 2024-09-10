@@ -28,7 +28,7 @@ body {
 }
 
 .menu_visible {
-  transition: opacity 0.2s ease-in-out, transform 0.5s ease-in-out;
+  transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
   opacity: 1; /* Assuming you want it visible */
   transform: translateY(0); /* Make sure the element is fully visible */
 }

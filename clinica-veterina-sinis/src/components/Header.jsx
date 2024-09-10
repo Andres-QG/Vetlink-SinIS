@@ -22,6 +22,14 @@ function Header() {
         navigate('/');
     };
 
+    const menuItems = [
+        { text: 'Sobre nosotros', href: '#' },
+        { text: 'Servicios', href: '#' },
+        { text: 'Contacto', href: '#' },
+        { text: 'Iniciar Sesión', href: '#' },
+        { text: 'Registrarme', href: '#' },
+    ];
+
     return (
         <>
             <header className="bg-primary text-text py-4 z-10 w-full">
@@ -62,39 +70,25 @@ function Header() {
             </header>
             <hr className="border-t border-tertiary" />
             <div
-                className={`absolute top-[4.3rem] w-full z-0 bg-primary text-text transition-transform duration-500 ease-in-out ${menu_class} lg:hidden`}
+                className={`absolute top-[4.3rem] w-full z-0 bg-primary text-text lg:hidden transition-opacity duration-500 ${isMenuClicked? 'opacity-0 pointer-events-none' : 'opacity-1 '}`}
             >
                 <ul className="flex flex-col h-full justify-center">
-                    <li className="p-4 text-center">
-                        <a href="#" className="font-bold hover:text-gray-300 transition-colors duration-300">
-                            Sobre nosotros
-                        </a>
-                    </li>
-                    <hr className="border-t border-tertiary" />
-                    <li className="p-4 text-center">
-                        <a href="#" className="font-bold hover:text-gray-300 transition-colors duration-300">
-                            Servicios
-                        </a>
-                    </li>
-                    <hr className="border-t border-tertiary" />
-                    <li className="p-4 text-center">
-                        <a href="#" className="font-bold hover:text-gray-300 transition-colors duration-300">
-                            Contacto
-                        </a>
-                    </li>
-                    <hr className="border-t border-tertiary" />
-                    <li className="p-4 text-center">
-                        <a href="#" className="font-bold hover:text-gray-300 transition-colors duration-300">
-                            Iniciar Sesión
-                        </a>
-                    </li>
-                    <hr className="border-t border-tertiary" />
-                    <li className="p-4 text-center">
-                        <a href="#" className="font-bold hover:text-gray-300 transition-colors duration-300">
-                            Registrarme
-                        </a>
-                    </li>
-                    <hr className="border-t border-tertiary" />
+                    {menuItems.map((item, index) => (
+                        <>
+                            <li
+                                key={index}
+                                className={`p-4 text-center ${menu_class} -translate-x-6`}
+                                style={{
+                                    transitionDelay: `${index * 0.05}s`, // Delay each item by 0.2s more than the previous one
+                                }}
+                            >
+                                <a href={item.href} className="font-bold hover:text-secondary transition duration-500">
+                                    {item.text}
+                                </a>
+                            </li>
+                            <hr className="border-t border-tertiary" />
+                        </>
+                    ))}
                 </ul>
             </div>
 
