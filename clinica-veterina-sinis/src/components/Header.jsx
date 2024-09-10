@@ -32,7 +32,7 @@ function Header() {
 
     return (
         <>
-            <header className="bg-primary text-text py-4 z-10 w-full">
+        <header className="bg-primary text-text py-4 z-10 w-full">
                 <div className="w-full mx-auto flex flex-wrap justify-between items-center px-4">
                     <h1 className="text-3xl font-bold cursor-pointer hover:text-secondary transition-all duration-300 left-0" onClick={handleClick}>VetLink</h1>
                     <nav className="items-center mt-4 md:mt-0 pl-10">
@@ -44,7 +44,7 @@ function Header() {
                                 </a>
                             </li>
                             <li>
-                                <a href="#" className="relative group font-bold hover:text-secondary transition-colors duration-300 pb-1">
+                                <a href="services" className="relative group font-bold hover:text-secondary transition-colors duration-300 pb-1">
                                     Servicios
                                     <span className="absolute block w-0 h-0.5 bg-secondary bottom-0 left-0 group-hover:w-full transition-all duration-300"></span>
                                 </a>
@@ -91,8 +91,53 @@ function Header() {
                     ))}
                 </ul>
             </div>
-
-        </>
+        <hr className="border-t border-tertiary" />
+        <div
+          className={`absolute top-[4.3rem] w-full z-0 bg-primary text-text transition-transform duration-500 ease-in-out ${menu_class} lg:hidden`}>
+          <ul className="flex flex-col h-full justify-center">
+            <li className="p-4 text-center">
+              <a
+                href="#"
+                className="font-bold hover:text-gray-300 transition-colors duration-300">
+                Sobre nosotros
+              </a>
+            </li>
+            <hr className="border-t border-tertiary" />
+            <li className="p-4 text-center">
+              <a
+                href="#"
+                className="font-bold hover:text-gray-300 transition-colors duration-300">
+                Servicios
+              </a>
+            </li>
+            <hr className="border-t border-tertiary" />
+            <li className="p-4 text-center">
+              <a
+                href="#"
+                className="font-bold hover:text-gray-300 transition-colors duration-300">
+                Contacto
+              </a>
+            </li>
+            <hr className="border-t border-tertiary" />
+            <li className="p-4 text-center">
+              <a
+                href="#"
+                className="font-bold hover:text-gray-300 transition-colors duration-300">
+                Iniciar Sesión
+              </a>
+            </li>
+            <hr className="border-t border-tertiary" />
+            <li className="p-4 text-center">
+              <a
+                href="#"
+                className="font-bold hover:text-gray-300 transition-colors duration-300">
+                Registrarme
+              </a>
+            </li>
+            <hr className="border-t border-tertiary" />
+          </ul>
+        </div>
+      </>
     );
 }
 
