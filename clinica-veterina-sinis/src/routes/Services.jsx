@@ -65,6 +65,27 @@ function Services() {
                 text="Brindamos servicios de limpieza dental profesional para mantener la salud bucal de su mascota, previniendo enfermedades periodontales y mejorando su bienestar general."
                 imageSrc="./src/assets/img/Services_Limpieza_Dental.jpg"
               />
+              <Services_Gallety
+                className=""
+                title="Internamiento"
+                subtitle=""
+                text="Contamos con instalaciones adecuadas para el internamiento de mascotas que requieren atención constante, garantizando un ambiente seguro y cómodo durante su recuperación."
+                imageSrc="./src/assets/img/Services_Internamiento.jpg"
+              />
+              <Services_Gallety
+                className=""
+                title="Ortopedia"
+                subtitle=""
+                text="Ofrecemos atención especializada en ortopedia para tratar lesiones y enfermedades del sistema musculoesquelético, asegurando una recuperación efectiva y el bienestar de su mascota."
+                imageSrc="./src/assets/img/Services_Ortopedia.jpg"
+              />
+              <Services_Gallety
+                className=""
+                title="Grooming"
+                subtitle=""
+                text="Nuestro servicio de grooming incluye baños, cortes de pelo y cuidados estéticos, ayudando a mantener la higiene y apariencia de su mascota, además de contribuir a su salud general."
+                imageSrc="./src/assets/img/Services_Grooming.jpg"
+              />
             </div>
           </div>
         </section>
