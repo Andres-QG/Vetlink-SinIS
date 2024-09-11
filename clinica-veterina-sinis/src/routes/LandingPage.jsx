@@ -10,8 +10,10 @@ import image3 from "../assets/veterinarian.png"
 import image4 from "../assets/vet.png"
 
 function LandingPage() {
+    const navigate = useNavigate();
 
     const handleClick = (route) => {
+        console.log("route");
         navigate(`/${route}`);
     };
 
@@ -74,12 +76,12 @@ function LandingPage() {
 
                 <div className="flex flex-col items-center justify-center space-y-10 p-24 px-8 bg-tertiary2">
                     <div className="flex-1 flex flex-row items-center text-center mb-6 space-x-10">
-                        <p className="mr-4">Cuidaremos de tu mascota como si fuera nuestra</p>
-                        <img src={`${image3}`} alt="Mascotas son importantes" className="w-16 h-16" />
+                        <p className="mr-4 text-4xl font-semibold text-secondary">Cuidaremos de tu mascota<br />como si fuera nuestra</p>
+                        <img src={`${image3}`} alt="Mascotas son importantes" className="w-64 h-auto" />
                     </div>
                     <div className="flex-1 flex flex-row items-center text-center space-x-10">
-                        <img src={`${image4}`} alt="La salud importa" className="w-16 h-16" />
-                        <p className="mr-4">Nos preocupa la salud de tu mascota</p>
+                        <img src={`${image4}`} alt="La salud importa" className="w-64 h-auto" />
+                        <p className="mr-4 text-4xl font-semibold text-secondary">Nos preocupa la salud<br /> de tu mascota</p>
                     </div>
                 </div>
 
