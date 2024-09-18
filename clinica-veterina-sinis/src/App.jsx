@@ -13,7 +13,6 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          $`{count}`;
           <Route path="/login" element={<Login />} />
           <Route path="/services" element={<Services />} />
         </Routes>
