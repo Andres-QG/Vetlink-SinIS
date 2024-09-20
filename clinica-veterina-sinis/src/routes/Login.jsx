@@ -19,7 +19,7 @@ function Login() {
         <div className="min-h-screen flex flex-col">
             <Header />
             <main className="flex-grow">
-                <div className="h-screen flex items-center justify-center">
+                <div className="h-screen flex items-center justify-center bg-[url('./src/assets/shapes/wave.svg')] bg-bottom bg-no-repeat w-full">
                     <div className="hidden sm:flex flex-col h-[650px] w-[400px] rounded-xl bg-bgsecondary shadow-2xl items-center pt-8 text-secondary">
                         <h1 className="font-bold text-4xl">Bienvenido</h1>
                         <img src="./vetlink-logo.png" alt="logo" className="h-20 w-20 my-10" />
@@ -49,21 +49,19 @@ function Login() {
                             />
                         </button>
 
-                        <a  href="verificacion"
-                            className="pt-5 font-bold text-primary hover:underline"
-                        >¿Olvidaste tu contraseña?
+                        <a href="verificacion" className="pt-5 font-bold text-primary hover:underline">
+                            ¿Olvidaste tu contraseña?
                         </a>
-                        <Button className="mt-5 text-3xl w-64 h-14 text-bgsecondary bg-primary hover:scale-[1.03]">
+                        <Button className="mt-5 text-3xl w-64 h-12 border-none text-bgsecondary bg-primary hover:scale-[1.03]">
                             Iniciar Sesión
                         </Button>
                         <p className="pt-5 text-elemsec font-bold opacity-70">¿No tienes un usuario?</p>
-                        <a  href="registro"
-                            className=" font-bold text-primary hover:underline"
-                        >Regístrate
+                        <a href="registro" className="font-bold text-primary hover:underline">
+                            Regístrate
                         </a>
-
                     </div>
                 </div>
+
             </main>
             <Footer />
         </div>
