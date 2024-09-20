@@ -15,7 +15,7 @@ function Header() {
 
     const updateMenu = () => {
         setBurgerClass(isMenuClicked ? "burger-bar unclicked" : "burger-bar clicked");
-        setMenuClass(isMenuClicked ? "menu_visible" : "menu_hidden");
+        setMenuClass(isMenuClicked ? "menu_hidden" : "menu_visible");
         setIsMenuClicked(!isMenuClicked);
         console.log(menu_class)
     }
@@ -37,7 +37,13 @@ function Header() {
         <>
             <header className="bg-bgsecondary text-primary py-4 z-10 w-full">
                 <div className="w-full mx-auto flex flex-wrap justify-between items-center px-4">
-                    <h1 className="text-3xl font-bold cursor-pointer hover:text-primary transition-all duration-300 left-0" onClick={() => {handleClick("")}}>VetLink</h1>
+                    <div className="flex hover:scale-105 transition-all duration-300 left-0 text-secondary"
+                        onClick={() => { handleClick("") }}>
+                        <img src="./src/assets/icons/logo.png" alt="logo" className="h-10 w-10" />
+                        <h1 className="text-3xl font-bold cursor-pointer transition-colors duration-300 ease-in-out hover:text-primary">
+                            VetLink
+                        </h1>
+                    </div>
                     <nav className="items-center mt-4 md:mt-0 pl-10">
                         <ul className="hidden flex-wrap lg:flex md:space-x-10">
                             <li>
@@ -61,19 +67,18 @@ function Header() {
                         </ul>
                     </nav>
                     <div className="hidden lg:flex space-x-3 mt-4 md:mt-0 font-bold">
-                        <Button className="border-primary transition-all duration-300" onClick={() => {handleClick('login')}}>Iniciar sesión</Button>
-                        <Button className="border-primary bg-primary text-bgsecondary hover:text-bgprimary hover:border-primary transition-all duration-300">Registrarme</Button>
+                        <Button className="border-primary transition-all duration-300 hover:scale-105" onClick={() => {handleClick('login')}}>Iniciar sesión</Button>
+                        <Button className="border-primary bg-primary text-bgsecondary hover:text-bgprimary hover:border-primary hover:scale-105 transition-all duration-300">Registrarme</Button>
                     </div>
                     <div className="burger-menu flex flex-col space-y-1 lg:hidden cursor-pointer  " onClick={updateMenu}>
-                        <div className={`w-6 h-0.5 bg-secondary transition-all duration-300 ${burger_class === 'burger-bar unclicked' ? 'rotate-45 translate-y-1.5' : ''}`}></div>
-                        <div className={`w-6 h-0.5 bg-secondary transition-all duration-300 ${burger_class === 'burger-bar unclicked' ? 'opacity-0' : ''}`}></div>
-                        <div className={`w-6 h-0.5 bg-secondary transition-all duration-300 ${burger_class === 'burger-bar unclicked' ? '-rotate-45 -translate-y-1.5' : ''}`}></div>
+                        <div className={`w-6 h-0.5 bg-secondary transition-all duration-300 ${burger_class === 'burger-bar unclicked' ? '' : 'rotate-45 translate-y-1.5'}`}></div>
+                        <div className={`w-6 h-0.5 bg-secondary transition-all duration-300 ${burger_class === 'burger-bar unclicked' ?'' : 'opacity-0'}`}></div>
+                        <div className={`w-6 h-0.5 bg-secondary transition-all duration-300 ${burger_class === 'burger-bar unclicked' ?'' : '-rotate-45 -translate-y-1.5'}`}></div>
                     </div>
                 </div>
             </header>
-            <hr className="border-none" />
             <div
-                className={`absolute top-[4.3rem] w-full z-0 bg-bgprimary text-secondary lg:hidden transition-opacity duration-500 ${isMenuClicked ? 'opacity-0 pointer-events-none' : 'opacity-1'}`}
+                className={`absolute top-[4.3rem] w-full z-10 bg-bgsecondary text-secondary lg:hidden transition-opacity duration-500 ${isMenuClicked ? 'opacity-1' : 'opacity-0 pointer-events-none'}`}
             >
                 <ul className="flex flex-col h-full justify-center">
                     {menuItems.map((item, index) => (
