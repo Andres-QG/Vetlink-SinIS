@@ -2,10 +2,9 @@ function Footer() {
 
     return (
         <>
-            <hr className="border-t border-tertiary" />
-            <footer className="bg-primary text-white py-4">
+            <footer className="bg-bgsecondary text-white py-4">
                 <div className="w-full mx-auto flex justify-between items-center px-4 mt-2">
-                    <div className="text-sm text-text">
+                    <div className="text-sm text-secondary">
                         &copy; {new Date().getFullYear()} PetLink. Todos los derechos reservados.
                     </div>
                     <div>

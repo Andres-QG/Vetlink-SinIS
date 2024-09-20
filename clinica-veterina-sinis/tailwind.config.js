@@ -8,14 +8,16 @@ export default {
   theme: {
     extend: {
       colors: {
+        bgprimary: "var(--color-bg-primary)",
+        bgsecondary: "var(--color-bg-secondary)",
         primary: "var(--color-primary)",
         secondary: "var(--color-secondary)",
-        secondary2: "var(--color-secondary2)",
-        tertiary: "var(--color-tertiary)",
-        tertiary2: "var(--color-tertiary2)",
-        bgPrimary: "var(--color-bgPrimary)",
-        text: "var(--color-text-base)",
-        text2: "var(--color-text-details)",
+        action: "var(--color-action)",
+        elemsec: "var(--color-elems-secondary)",
+        brand: "var(--color-brand)",
+        danger: "var(--color-danger)",
+        warning: "var(--color-warning)",
+        success: "var(--color-success)",
       }
     }
   }

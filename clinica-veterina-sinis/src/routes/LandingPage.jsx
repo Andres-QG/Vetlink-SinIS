@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom';
 
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import Button from "../components/Button";
 
 import image from "../assets/veterinary.png"
 import image2 from "../assets/hotline.png"
@@ -27,9 +26,6 @@ function LandingPage() {
                     </div>
                     <div className="flex-1">
                         <div className="w-[400px] flex flex-col items-start">
-                            <h1 className="text-xl text-text border-0 border-primary bg-primary rounded-full p-3 font-bold text-center">
-                                Bienvenidos 
-                            </h1>
 
                             <div className="mt-6 space-y-4 ">
                                 <p className="text-left text-9xl text-secondary font-bold">
