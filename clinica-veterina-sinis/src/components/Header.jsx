@@ -17,16 +17,14 @@ function Header() {
         setBurgerClass(isMenuClicked ? "burger-bar unclicked" : "burger-bar clicked");
         setMenuClass(isMenuClicked ? "menu_hidden" : "menu_visible");
         setIsMenuClicked(!isMenuClicked);
-        console.log(menu_class)
     }
 
     const handleClick = (route) => {
-        console.log("route");
         navigate(`/${route}`);
     };
 
     const menuItems = [
-        { text: 'Sobre nosotros', href: '#' },
+        { text: 'Sobre nosotros', href: '/' },
         { text: 'Servicios', href: 'services' },
         { text: 'Contacto', href: '#' },
         { text: 'Iniciar Sesión', href: 'login' },
@@ -37,10 +35,10 @@ function Header() {
         <>
             <header className="bg-bgsecondary text-primary py-4 z-10 w-full">
                 <div className="w-full mx-auto flex flex-wrap justify-between items-center px-4">
-                    <div className="flex hover:scale-105 transition-all duration-300 left-0 text-secondary"
+                    <div className="flex hover:scale-105 transition-all duration-300 ease-in-out left-0 text-secondary"
                         onClick={() => { handleClick("") }}>
                         <img src="./src/assets/icons/logo.png" alt="logo" className="h-10 w-10" />
-                        <h1 className="text-3xl font-bold cursor-pointer transition-colors duration-300 ease-in-out hover:text-primary">
+                        <h1 className="text-3xl font-bold cursor-pointer">
                             VetLink
                         </h1>
                     </div>
@@ -59,9 +57,9 @@ function Header() {
                                 </a>
                             </li>
                             <li>
-                                <a href="#" className="relative group font-bold hover:text-secondary transition-colors duration-300 pb-1">
+                                <a href="#" className="relative group font-bold hover:text-primary transition-colors duration-300 pb-1">
                                     Contacto
-                                    <span className="absolute block w-0 h-0.5 bg-secondary bottom-0 left-0 group-hover:w-full transition-all duration-300"></span>
+                                    <span className="absolute block w-0 h-0.5 bg-primary bottom-0 left-0 group-hover:w-full transition-all duration-300"></span>
                                 </a>
                             </li>
                         </ul>
