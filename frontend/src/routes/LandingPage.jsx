@@ -1,89 +1,57 @@
-import { useNavigate } from 'react-router-dom';
-
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
-import image from "../assets/veterinary.png"
-import image2 from "../assets/hotline.png"
-import image3 from "../assets/veterinarian.png"
-import image4 from "../assets/vet.png"
+import vetlinkTextIconLogo from "../assets/icons/vetlink-full-logo.png";
+import heroImage from "../assets/img/hero_dog.jpg";
 
 function LandingPage() {
-    const navigate = useNavigate();
-
-    const handleClick = (route) => {
-        console.log("route");
-        navigate(`/${route}`);
-    };
-
-    return (
-        <div className="min-h-screen flex flex-col">
-            <Header />
-            <main className="flex-grow">
-                <div className="flex justify-evenly p-24 px-8 bg-bg-primary">
-                    <div className="flex-1 flex items-center justify-center">
-                        <img src={`${image}`} alt="happy dog" style={{ width: 'auto', height: 'auto' }} />
-                    </div>
-                    <div className="flex-1">
-                        <div className="w-[400px] flex flex-col items-start">
-
-                            <div className="mt-6 space-y-4 ">
-                                <p className="text-left text-9xl text-secondary font-bold">
-                                    Somos Vetlink 
-                                </p>
-                                <p className="text-left text-3xl text-secondary pt-12 font-semibold">
-                                    Una veterinaria que se preocupa por tu mascota tanto como vos.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="flex justify-evenly p-24 px-8 bg-tertiary">
-                    <div className="flex flex-col items-center w-96 p-4 ">
-                        <h1 className="text-3xl font-bold mb-4 text-secondary">
-                            Servicios
-                        </h1>
-                        <img src={`${image2}`} alt="" className="w-28 h-auto m-4" />
-                        <p className="text-center mb-4 text-xl font-semibold text-secondary pt-8">
-                            Ofrecemos variedad de servicios para tus mascotas
-                        </p>
-                        <button className="px-4 py-2 rounded-lg bg-primary text-secondary font-bold
-                                           mt-8 hover:bg-secondary hover:text-text transition-all duration-300 transform hover:scale-105"
-                                onClick={() => {handleClick('services')}}>
-                            Leer más
-                        </button>
-                    </div>
-                    <div className="flex flex-col items-center w-96 p-4 bg-tertiary">
-                        <h1 className="text-3xl font-bold mb-4 text-secondary">
-                            Más sobre nosotros
-                        </h1>
-                        <img src={`${image3}`} alt="" className="w-28 h-auto m-4" />
-                        <p className="text-center mb-4 text-xl font-semibold text-secondary pt-8">
-                            Todo lo que necesites sobre nuestro equipo
-                        </p>
-                        <button className="px-4 py-2 rounded-lg bg-primary text-secondary font-bold
-                                           mt-8 hover:bg-secondary hover:text-text transition-all duration-300 transform hover:scale-105"
-                            onClick={""}>
-                            Leer más
-                        </button>
-                    </div>
-                </div>
-
-                <div className="flex flex-col items-center justify-center space-y-10 p-24 px-8 bg-tertiary2">
-                    <div className="flex-1 flex flex-row items-center text-center mb-6 space-x-10">
-                        <p className="mr-4 text-4xl font-semibold text-secondary">Cuidaremos de tu mascota<br />como si fuera nuestra</p>
-                        <img src={`${image3}`} alt="Mascotas son importantes" className="w-64 h-auto" />
-                    </div>
-                    <div className="flex-1 flex flex-row items-center text-center space-x-10">
-                        <img src={`${image4}`} alt="La salud importa" className="w-64 h-auto" />
-                        <p className="mr-4 text-4xl font-semibold text-secondary">Nos preocupa la salud<br /> de tu mascota</p>
-                    </div>
-                </div>
-
-            </main>
-            <Footer />
-        </div>
-    )
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <main className="flex-grow">
+        {/* Hero section */}
+        <section
+          className="relative w-full text-white bg-cover bg-no-repeat flex items-center font-montserrat"
+          style={{
+            backgroundImage: `url(${heroImage})`,
+            backgroundPosition: "center calc(30%)",
+            marginTop: 0,
+            paddingTop: 0,
+          }}
+        >
+          <div className="container mx-auto flex flex-col lg:flex-row items-center lg:items-start py-16 relative z-10">
+            {/* Hero contents */}
+            <div className="lg:w-1/2 px-4 text-center lg:text-left">
+              {/* Logo and text*/}
+              <div className="mb-8 lg:mb-16">
+                <img
+                  src={vetlinkTextIconLogo}
+                  alt="Vetlink Logo"
+                  className="mx-auto lg:mx-0 lg:w-[700px] lg:h-[180px] xl:w-[800px] xl:h-[200px] md:w-[400px] md:h-[120px] sm:w-[300px] sm:h-[100px]"
+                />
+              </div>
+              <h1 className="text-4xl lg:text-6xl xl:text-7xl font-semibold mb-4">
+                Cuida a tu mascota sin complicaciones
+              </h1>
+              <p className="text-lg lg:text-xl xl:text-2xl mb-8">
+                Regístrate y mantén todo bajo control desde nuestra plataforma.
+              </p>
+              {/* Action button */}
+              <a
+                href="#"
+                className="bg-teal-500 text-white py-2 lg:py-3 xl:py-4 px-4 lg:px-8 xl:px-10 rounded-lg text-lg lg:text-xl xl:text-2xl font-semibold hover:bg-teal-600"
+              >
+                Regístrate ahora
+              </a>
+            </div>
+          </div>
+        </section>
+        {/*Main features section*/}
+        <section></section>
+      </main>
+      <Footer />
+    </div>
+  );
 }
-export default LandingPage
+
+export default LandingPage;

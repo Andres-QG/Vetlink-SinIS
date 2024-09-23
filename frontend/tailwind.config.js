@@ -1,12 +1,12 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./src/**/*.{js,jsx}"],
-  theme: {
-    extend: {},
-  },
   plugins: [],
   theme: {
     extend: {
+      fontFamily: {
+        montserrat: ["Montserrat", "sans-serif"],
+      },
       colors: {
         bgprimary: "var(--color-bg-primary)",
         bgsecondary: "var(--color-bg-secondary)",
@@ -18,8 +18,7 @@ export default {
         danger: "var(--color-danger)",
         warning: "var(--color-warning)",
         success: "var(--color-success)",
-      }
-    }
-  }
-}
-
+      },
+    },
+  },
+};
