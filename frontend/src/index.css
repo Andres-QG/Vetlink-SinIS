@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-bg-primary: #EFEDED;
+    --color-bg-secondary: #F5F5F5;
+    --color-primary: #00308F;
+    --color-secondary: #001F3D;
+    --color-action: #00308F;
+    --color-elems-secondary: #8890A7;
+    --color-brand: #0BA6A9;
+    --color-danger: #FF0000;
+    --color-warning: #FFE500;
+    --color-success: #24FF00;
+  }
+}
+
+.theme-dark {
+    --color-primary: #001f3d;
+    --color-secondary: #00308f;
+    --color-tertiary: #0ba6a9;
+    --color-text-base: #fdfdfd;
+    --color-text-details: #8890a7;
+    --color-bg-primary: #001f3d;
+}
+
+.menu_visible {
+  transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+  opacity: 1; /* Assuming you want it visible */
+  transform: translateY(0); /* Make sure the element is fully visible */
+}
+
+.menu_hidden {
+  transition: opacity 0.2s ease-in-out, transform 0.5s ease-in-out;
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none; /* Optional: prevents interaction when hidden */
+}
