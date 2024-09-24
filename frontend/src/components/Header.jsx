@@ -121,7 +121,7 @@ function Header() {
         </div>
       </header>
       <div
-        className={`absolute top-[4.3rem] w-full z-10 bg-bgsecondary text-secondary lg:hidden transition-opacity duration-500 ${
+        className={`absolute top-[4.3rem] w-full z-20 bg-bgsecondary text-secondary lg:hidden transition-opacity duration-500 ${
           isMenuClicked ? "opacity-1" : "opacity-0 pointer-events-none"
         }`}
       >
