@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "corsheaders", 
+    "rest_framework",
     "Api",
 ]
 
@@ -48,6 +50,11 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
 ]
 
 ROOT_URLCONF = "ConfiguracionProyecto.urls"
@@ -78,7 +85,7 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.oracle",
         "NAME": "(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=adb.sa-saopaulo-1.oraclecloud.com)(PORT=1522))(CONNECT_DATA=(SERVICE_NAME=g5936dc7ef2f8c4_vetlink_high.adb.oraclecloud.com))(SECURITY=(SSL_SERVER_DN_MATCH=YES)))",
-        "USER": "LPEREIRA",
+        "USER": "VETLINK",
         "PASSWORD": "Pruebas$2024",
     },
 }

@@ -5,12 +5,13 @@ import Button from "../components/Button";
 import eyeOnIcon from "../assets/icons/eye-on.png";
 import eyeOffIcon from "../assets/icons/eye-off.png";
 
+import axios from 'axios';
 import { useState } from "react";
 
 function Login() {
 
     const [showPassword, setShowPassword] = useState(false);
-    const [email, setEmail] = useState('');
+    const [user, setUser] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
@@ -19,21 +20,27 @@ function Login() {
         setShowPassword((prev) => !prev);
     };
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const passRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^\d[a-zA-Z])[\S]{8,}$/;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!emailRegex.test(email)) {
-            setError(errorTexts[2])
-            return
-        };
         if (!passRegex.test(password)) {
             setError(errorTexts[3])
             return
         };
         setError('')
+
+        try {
+            const response = await axios.post('http://localhost:8000/api/check-user/', {
+                user,
+                password,
+            });
+            console.log(response)
+        } catch (error) {
+            console.log(error)
+            setError(errorTexts[4]);
+        }
 
     }
     
@@ -42,6 +49,7 @@ function Login() {
         'Contraseña incorrecta.',
         'Digite un correo válido.',
         'Digite una contraseña válida.',
+        'Login no funciono.',
     ];
 
 
@@ -54,13 +62,13 @@ function Login() {
                         <h1 className="font-bold text-4xl">Bienvenido</h1>
                         <img src="./vetlink-logo.png" alt="logo" className="h-20 w-20 my-10" />
                         {/* Campo correo*/}
-                        <label htmlFor="correo" className="w-[300px] text-lg text-secondary text-left font-bold">Correo</label>
+                        <label htmlFor="user" className="w-[300px] text-lg text-secondary text-left font-bold">Usuario</label>
                         <input
-                            id="correo"
+                            id="usuario"
                             type="text"
-                            value={email}
-                            placeholder="Escribe tu correo"
-                            onChange={(e) => setEmail(e.target.value)}
+                            value={user}
+                            placeholder="Escribe tu usuario"
+                            onChange={(e) => setUser(e.target.value)}
                             className="h-6 w-[300px] mb-5 bg-transparent border-b-2 border-secondary focus:border-primary focus:outline-none placeholder-gray-500 text-lg"
                         />
                         {/* Campo contraseña*/}
