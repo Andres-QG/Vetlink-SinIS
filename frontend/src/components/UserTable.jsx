@@ -48,13 +48,13 @@ const UserTable = ({ users, nextPage, prevPage, onPageChange, totalPages }) => {
                 <td className="px-6 py-4">
                   <div className="flex justify-start gap-4">
                     <button onClick={() => alert(`Mascotas de ${user.nombre}`)}>
-                      <span className="material-icons">pets</span>
+                      <span className="text-purple-300 material-symbols-outlined">pets</span>
                     </button>
                     <button onClick={() => alert(`Editando ${user.nombre}`)}>
-                      <span className="material-icons">edit</span>
+                      <span className="text-green-300 material-symbols-outlined">edit</span>
                     </button>
                     <button onClick={() => alert(`Eliminando ${user.nombre}`)}>
-                      <span className="material-icons">delete</span>
+                      <span className="text-red-300 material-symbols-outlined">delete</span>
                     </button>
                   </div>
                 </td>
@@ -84,7 +84,7 @@ const UserTable = ({ users, nextPage, prevPage, onPageChange, totalPages }) => {
                 <li className="justify-center page-item" key={index}>
                   <button
                     onClick={() => handlePageChange(index + 1)}
-                    className={`px-4 py-2 border rounded-lg focus:outline-none ${currentPage === index + 1 ? 'bg-purple-100 text-purple-700' : 'bg-white text-gray-700 hover:bg-gray-200'}`}
+                    className={`px-4 py-2 border rounded-lg focus:outline-none ${currentPage === index + 1 ? 'bg-primary text-white' : 'bg-white text-gray-700 hover:bg-gray-200'}`}
                   >
                     {index + 1}
                   </button>
