@@ -1,8 +1,8 @@
 function Footer() {
   return (
     <>
-      <footer className="bg-bgsecondary text-white py-4 font-montserrat">
-        <div className="w-full mx-auto flex justify-between items-center px-4 mt-2">
+      <footer className="py-4 text-white bg-bgsecondary font-montserrat">
+        <div className="flex items-center justify-between w-full px-4 mx-auto mt-2">
           <div className="text-sm text-secondary">
             &copy; {new Date().getFullYear()} VetLink. Todos los derechos
             reservados.
