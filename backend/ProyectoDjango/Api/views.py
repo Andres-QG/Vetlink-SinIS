@@ -1,3 +1,5 @@
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import check_password
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -12,7 +14,6 @@ class CustomPagination(PageNumberPagination):
 
 @api_view(['POST'])
 def check_user_exists(request):
-    # Extract username and password from the request body
     user = request.data.get('user')
     password = request.data.get('password')
 
@@ -20,8 +21,14 @@ def check_user_exists(request):
         return Response({"error": "Username and cedula are required."}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        userResponse = Usuarios.objects.get(usuario=user, clave=password) 
-        return Response({'exists': True, 'message': f'User {user} found.'}, status=status.HTTP_200_OK)
+        userResponse = Usuarios.objects.get(usuario=user) 
+
+        if check_password(password, userResponse.clave):
+            request.session['username'] = userResponse.usuario
+            return Response({'exists': True, 'message': f'User {user} authenticated.'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'exists': False, 'message': 'Password incorrect.'}, status=status.HTTP_400_BAD_REQUEST)
+
     except:
         return Response({'exists': False, 'message': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
 
