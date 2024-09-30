@@ -7,8 +7,10 @@ import eyeOffIcon from "../assets/icons/eye-off.png";
 
 import axios from 'axios';
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
+    const navigate = useNavigate();
 
     const [showPassword, setShowPassword] = useState(false);
     const [user, setUser] = useState('');
@@ -31,12 +33,19 @@ function Login() {
         };
         setError('')
 
+        const redirectItems = new Map([
+            [1, 'owner'],
+            [2, 'admin'],
+            [3, 'vet'],
+            [4, 'clnt'],
+        ]);
+
         try {
             const response = await axios.post('http://localhost:8000/api/check-user/', {
                 user,
                 password,
             });
-            console.log(response)
+            navigate(`/${redirectItems.get(response.data.rol)}`);
         } catch (error) {
             console.log(error)
             setError(errorTexts[4]);

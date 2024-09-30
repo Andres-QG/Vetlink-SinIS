@@ -5,6 +5,8 @@ import Login from './routes/Login'
 import LandingPage from './routes/LandingPage'
 import Services from "./routes/Services";
 import ConsultClients from "./routes/ConsultClients";
+import Owner from "./routes/Owner";
+import ProtectedRoute from './ProtectedRoute';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -17,6 +19,14 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/services" element={<Services />} />
           <Route path="/consultclients" element={<ConsultClients />} />
+          <Route
+            path="/owner"
+            element={
+              <ProtectedRoute requiredRole="owner">
+                <Owner />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </Router>
     </>
