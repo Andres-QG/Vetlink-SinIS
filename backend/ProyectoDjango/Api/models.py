@@ -268,6 +268,8 @@ class Mascotas(models.Model):
     fecha_nacimiento = models.DateField(blank=True, null=True, db_comment='Este campo almacena la fecha de nacimiento de la mascota. Es relevante para determinar la edad y estado de salud de la mascota, asφ como para el seguimiento de su cuidado.')
     especie = models.CharField(max_length=30, db_comment='Este campo almacena la especie de la mascota (por ejemplo, "Perro", "Gato"). Ayuda a clasificar las mascotas y gestionar su atenci≤n de acuerdo a su especie.')
     raza = models.CharField(max_length=30, blank=True, null=True, db_comment='Este campo almacena la raza de la mascota (por ejemplo, "Labrador", "Siames"). Proporciona informaci≤n adicional que puede ser importante para el cuidado y tratamiento especφfico de la mascota.')
+    sexo = models.CharField(max_length=1, choices=[('M', 'Macho'), ('H', 'Hembra') ], db_comment='Este campo almacena el sexo de la mascota, permitiendo registrar si es Macho (M) o Hembra (H).')
+
 
     class Meta:
         managed = False

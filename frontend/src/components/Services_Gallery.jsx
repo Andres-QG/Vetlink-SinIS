@@ -7,17 +7,17 @@ function Services_Gallery({ title, subtitle, text, imageSrc, className }) {
             alt="gallery"
             className="absolute inset-0 w-full h-full object-cover object-center"
             src={imageSrc}
-            style={{ objectFit: "cover" }} // Asegurar que la imagen cubra todo el contenedor
+            style={{ objectFit: "cover" }}
           />
         </div>
-        <div className="px-8 py-4 bg-white border-t-4 border-gray-200 flex-grow">
-          <h2 className="tracking-widest text-2xl title-font font-medium text-indigo-500 mb-1">
+        <div className="px-8 py-4 bg-bgsecondary border-t-4 border-gray-200 flex-grow">
+          <h2 className="tracking-widest text-2xl title-font font-semibold text-secondary mb-1 font-montserrat">
             {title}
           </h2>
-          <h1 className="title-font text-lg font-medium text-gray-900 mb-3">
+          <h1 className="title-font text-lg font-medium text-elemsec mb-3 font-montserrat">
             {subtitle}
           </h1>
-          <p className="leading-relaxed">{text}</p>
+          <p className="leading-relaxed font-montserrat">{text}</p>
         </div>
       </div>
     </div>
