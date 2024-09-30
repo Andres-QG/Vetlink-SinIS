@@ -6,7 +6,7 @@ import LandingPage from './routes/LandingPage'
 import Services from "./routes/Services";
 import ConsultClients from "./routes/ConsultClients";
 import Owner from "./routes/Owner";
-import ProtectedRoute from './ProtectedRoute';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   const [count, setCount] = useState(0);
