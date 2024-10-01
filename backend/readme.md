@@ -10,13 +10,15 @@
 
 - Si le tira un error, se debe activar la ejecucion de scripts, meter este comando desde poweshell abierto como administrador Set-ExecutionPolicy RemoteSigned, luego poner darle a sí
 
-- activar el entorno virtual con .\env\Scripts\activate
+- activar el entorno virtual con .\env\Scripts\Activate.ps1
 
 A partir de aquí estarás adentro del entorno virtual y lo que instales solo estará ahí OJO
 
 - Instalar setuptool con pip install setuptools==75.1.0
 
-- Instalar django 5.1.1 con pip install django==5.1.1
+- Instalar djangorestframework con pip install djangorestframework==3.15.2
+
+- Instalar django-cors-headers con pip install django-cors-headers==4.4.0
 
 - Instalar cx_Oracle con pip install cx_Oracle==8.3.0
 
