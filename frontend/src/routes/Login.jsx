@@ -44,6 +44,8 @@ function Login() {
             const response = await axios.post('http://localhost:8000/api/check-user/', {
                 user,
                 password,
+            }, {
+                withCredentials: true
             });
             navigate(`/${redirectItems.get(response.data.rol)}`);
         } catch (error) {

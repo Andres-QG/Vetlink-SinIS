@@ -55,9 +55,10 @@ MIDDLEWARE = [
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_NAME = 'sesh_cookie'
+SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = True
 
 CORS_ALLOW_CREDENTIALS = True
-SESSION_COOKIE_SAMESITE = 'None'
 CORS_ORIGIN_ALLOW_ALL = True
 
 ROOT_URLCONF = "ConfiguracionProyecto.urls"

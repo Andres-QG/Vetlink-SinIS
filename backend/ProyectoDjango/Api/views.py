@@ -44,7 +44,6 @@ def get_user_role(request):
     else:
         return Response({'status':'error', 'message':'User not logged in'})
 
-
 @api_view(['GET'])
 def consult_client(request):
     try:
