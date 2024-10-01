@@ -24,27 +24,27 @@ const UserTable = ({ users, nextPage, prevPage, onPageChange, totalPages }) => {
   };
 
   return (
-    <div>
-      <div className="m-5 overflow-hidden border border-gray-200 rounded-lg shadow-md">
-        <table className="w-full text-sm text-left text-gray-500 bg-white border-collapse">
+    <div className="overflow-x-auto">
+      <div className="m-5 border border-gray-200 rounded-lg shadow-md">
+        <table className="w-full min-w-full text-sm text-left text-gray-500 bg-white border-collapse">
           <thead className="bg-gray-50">
             <tr>
-              <th scope="col" className="px-6 py-4 font-medium text-gray-900">Usuario</th>
-              <th scope="col" className="px-6 py-4 font-medium text-gray-900">Cédula</th>
-              <th scope="col" className="px-6 py-4 font-medium text-gray-900">Nombre</th>
-              <th scope="col" className="px-6 py-4 font-medium text-gray-900">Teléfono</th>
-              <th scope="col" className="px-6 py-4 font-medium text-gray-900">Correo</th>
-              <th scope="col" className="px-6 py-4 font-medium text-gray-900">Acciones</th>
+              <th scope="col" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">Usuario</th>
+              <th scope="col" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">Cédula</th>
+              <th scope="col" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">Nombre</th>
+              <th scope="col" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">Teléfono</th>
+              <th scope="col" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">Correo</th>
+              <th scope="col" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">Acciones</th>
             </tr>
           </thead>
           <tbody className="border-t border-gray-100 divide-y divide-gray-100">
             {users.map((user, index) => (
               <tr key={index} className="hover:bg-gray-50">
-                <td className="px-6 py-4">{user.usuario}</td>
-                <td className="px-6 py-4">{user.cedula}</td>
-                <td className="px-6 py-4">{user.nombre}</td>
-                <td className="px-6 py-4">{user.telefono}</td>
-                <td className="px-6 py-4">{user.correo}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{user.usuario}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{user.cedula}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{user.nombre}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{user.telefono}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{user.correo}</td>
                 <td className="px-6 py-4">
                   <div className="flex justify-start gap-4">
                     <button onClick={() => alert(`Mascotas de ${user.nombre}`)}>
@@ -66,42 +66,59 @@ const UserTable = ({ users, nextPage, prevPage, onPageChange, totalPages }) => {
         {/* Separador */}
         <hr className="border-gray-300 " />
 
-        {/* Paginación */}
-        <div className="flex items-center justify-center h-16">
-          <nav aria-label="Page navigation example">
-            <ul className="flex items-center space-x-2">
-              <li className={`page-item ${!prevPage ? 'opacity-50 cursor-not-allowed' : ''}`}>
+        {/* Paginación Responsive */}
+        <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6">
+          <div className="flex justify-between flex-1 sm:hidden">
+            <button
+              onClick={() => handlePageChange("prev")}
+              disabled={!prevPage}
+              className={`relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md ${!prevPage ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-200'}`}
+            >
+              <span className="material-symbols-outlined">arrow_back</span>
+            </button>
+            <button
+              onClick={() => handlePageChange("next")}
+              disabled={!nextPage}
+              className={`relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md ${!nextPage ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-200'}`}
+            >
+              <span className="material-symbols-outlined">arrow_forward</span>
+            </button>
+          </div>
+
+          <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm text-gray-700">
+                Página <span className="font-medium">{currentPage}</span> de <span className="font-medium">{totalPages}</span>
+              </p>
+            </div>
+            <div>
+              <nav className="inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
                 <button
                   onClick={() => handlePageChange("prev")}
-                  className={`px-4 py-2 bg-white border rounded-lg shadow-sm focus:outline-none ${!prevPage ? 'text-gray-500' : 'text-gray-700 hover:bg-gray-200'}`}
                   disabled={!prevPage}
+                  className={`relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-l-md ${!prevPage ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'}`}
                 >
-                  ← Anterior
+                  <span className="material-symbols-outlined">arrow_back</span>
                 </button>
-              </li>
-
-              {Array.from({ length: totalPages }, (_, index) => (
-                <li className="justify-center page-item" key={index}>
+                {Array.from({ length: totalPages }, (_, index) => (
                   <button
-                    onClick={() => handlePageChange(index + 1)} // Solo pasamos el número de página
-                    className={`px-4 py-2 border rounded-lg focus:outline-none ${currentPage === index + 1 ? 'bg-primary text-white' : 'bg-white text-gray-700 hover:bg-gray-200'}`}
+                    key={index}
+                    onClick={() => handlePageChange(index + 1)}
+                    className={`relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border ${currentPage === index + 1 ? 'bg-primary text-white' : 'hover:bg-gray-50'}`}
                   >
                     {index + 1}
                   </button>
-                </li>
-              ))}
-
-              <li className={`page-item ${!nextPage ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                ))}
                 <button
                   onClick={() => handlePageChange("next")}
-                  className={`px-4 py-2 bg-white border rounded-lg shadow-sm focus:outline-none ${!nextPage ? 'text-gray-500' : 'text-gray-700 hover:bg-gray-200'}`}
                   disabled={!nextPage}
+                  className={`relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-r-md ${!nextPage ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'}`}
                 >
-                  Siguiente →
+                  <span className="material-symbols-outlined">arrow_forward</span>
                 </button>
-              </li>
-            </ul>
-          </nav>
+              </nav>
+            </div>
+          </div>
         </div>
       </div>
     </div>
