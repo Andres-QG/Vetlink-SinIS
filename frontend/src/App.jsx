@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Login from "./routes/Login";
@@ -6,10 +5,9 @@ import LandingPage from "./routes/LandingPage";
 import Services from "./routes/Services";
 import ConsultClients from "./routes/ConsultClients";
 import ConsultPets from "./routes/ConsultPets";
+import CreatePet from "./routes/CreatePet";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
     <>
       <Router>
@@ -19,6 +17,7 @@ function App() {
           <Route path="/services" element={<Services />} />
           <Route path="/consultclients" element={<ConsultClients />} />
           <Route path="/consultclients/pets" element={<ConsultPets />} />
+          <Route path="/consultclients/pets/add" element={<CreatePet />} />
         </Routes>
       </Router>
     </>
