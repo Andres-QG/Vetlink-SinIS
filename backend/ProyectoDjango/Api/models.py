@@ -268,6 +268,7 @@ class Mascotas(models.Model):
     fecha_nacimiento = models.DateField(blank=True, null=True, db_comment='Este campo almacena la fecha de nacimiento de la mascota. Es relevante para determinar la edad y estado de salud de la mascota, asφ como para el seguimiento de su cuidado.')
     especie = models.CharField(max_length=30, db_comment='Este campo almacena la especie de la mascota (por ejemplo, "Perro", "Gato"). Ayuda a clasificar las mascotas y gestionar su atenci≤n de acuerdo a su especie.')
     raza = models.CharField(max_length=30, blank=True, null=True, db_comment='Este campo almacena la raza de la mascota (por ejemplo, "Labrador", "Siames"). Proporciona informaci≤n adicional que puede ser importante para el cuidado y tratamiento especφfico de la mascota.')
+    sexo = models.CharField(max_length=1, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -401,7 +402,7 @@ class Usuarios(models.Model):
     nombre = models.CharField(max_length=50, db_comment='Este campo almacena el nombre completo del usuario. Es ·til para identificar al usuario dentro del sistema.')
     telefono = models.CharField(max_length=20, blank=True, null=True, db_comment='Este campo almacena el n·mero de telΘfono del usuario, permitiendo el contacto directo si es necesario.')
     correo = models.CharField(unique=True, max_length=30, db_comment='Este campo almacena la direcci≤n de correo electr≤nico del usuario. Debe ser ·nico, ya que se puede usar para recuperar contrase±as o enviar notificaciones.')
-    clave = models.CharField(max_length=30, db_comment='Este campo almacena la contrase±a del usuario, que se utiliza para la autenticaci≤n al iniciar sesi≤n en el sistema.')
+    clave = models.CharField(max_length=128, db_comment='Este campo almacena la contrase±a del usuario, que se utiliza para la autenticaci≤n al iniciar sesi≤n en el sistema.')
     especialidad = models.ForeignKey(Especialidades, models.DO_NOTHING, blank=True, null=True, db_comment='Este campo es una llave forßnea que hace referencia a la especialidad del usuario, si aplica. Permite vincular al usuario con una especialidad especφfica en la clφnica.')
     clinica = models.ForeignKey(Clinicas, models.DO_NOTHING, blank=True, null=True, db_comment='Este campo es una llave forßnea que hace referencia a la clφnica en la que trabaja el usuario. Ayuda a identificar la relaci≤n del usuario con una clφnica especφfica.')
     rol = models.ForeignKey(Roles, models.DO_NOTHING, blank=True, null=True, db_comment='Este campo es una llave forßnea que hace referencia al rol del usuario en el sistema (por ejemplo, veterinario, administrador, etc.). Permite gestionar los permisos y accesos del usuario seg·n su rol.')

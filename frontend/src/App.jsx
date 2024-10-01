@@ -7,6 +7,7 @@ import Services from "./routes/Services";
 import ConsultClients from "./routes/ConsultClients";
 import Owner from "./routes/Owner";
 import ProtectedRoute from './components/ProtectedRoute';
+import Error from './routes/Error';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -19,6 +20,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/services" element={<Services />} />
           <Route path="/consultclients" element={<ConsultClients />} />
+          <Route path="/error" element={<Error />} />
+          <Route path="*" element={<Error />} />
           <Route
             path="/owner"
             element={

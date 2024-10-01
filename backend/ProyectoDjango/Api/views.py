@@ -24,13 +24,26 @@ def check_user_exists(request):
         userResponse = Usuarios.objects.get(usuario=user) 
 
         if check_password(password, userResponse.clave):
-            request.session['username'] = userResponse.usuario
+            request.session['user'] = userResponse.usuario
+            request.session['role'] = userResponse.rol_id
+            print("Current session:", request.session.items())
             return Response({'exists': True, 'message': f'User {user} authenticated.', 'rol': userResponse.rol_id}, status=status.HTTP_200_OK)
         else:
             return Response({'exists': False, 'message': 'Password incorrect.'}, status=status.HTTP_400_BAD_REQUEST)
 
     except:
         return Response({'exists': False, 'message': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+def get_user_role(request):
+    role = request.session.get('role')
+    
+    print("Current session:", request.session.items())
+    if role:
+        return Response({'status':'success', 'message': 'Role acquired', 'role': role})
+    else:
+        return Response({'status':'error', 'message':'User not logged in'})
+
 
 @api_view(['GET'])
 def consult_client(request):
@@ -55,3 +68,4 @@ def consult_client(request):
         return paginator.get_paginated_response(serializer_data)  # Devuelve respuesta paginada
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
