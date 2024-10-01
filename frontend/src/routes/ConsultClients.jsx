@@ -3,6 +3,7 @@ import UserTable from "../components/UserTable";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import SearchBar from "../components/SearchBar";
+import LoadingSpinner from "../components/LoadingSpinner"; // Importa el componente
 
 const ConsultClients = () => {
   const [users, setUsers] = useState([]);
@@ -13,8 +14,12 @@ const ConsultClients = () => {
   const [filterColumn, setFilterColumn] = useState('usuario');
   const [order, setOrder] = useState('asc');
   const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false); // Estado para mostrar la rueda de carga
 
-  const fetchUsers = async (url) => {
+  const fetchUsers = async (page = 1) => {
+    setIsLoading(true); // Inicia el estado de carga
+    const url = `http://localhost:8000/api/consult-client/?page=${page}&search=${searchTerm}&column=${filterColumn}&order=${order}`;
+    
     try {
       const response = await fetch(url);
       if (!response.ok) throw new Error("Network response was not ok");
@@ -23,25 +28,26 @@ const ConsultClients = () => {
       setNextPage(data.next);
       setPrevPage(data.previous);
       setTotalPages(Math.ceil(data.count / 10));
+      setCurrentPage(page);
     } catch (error) {
       console.error("Error fetching users:", error);
+    } finally {
+      setIsLoading(false); // Finaliza el estado de carga
     }
   };
 
   useEffect(() => {
-    const url = `http://localhost:8000/api/consult-client/?page=${currentPage}&search=${searchTerm}&column=${filterColumn}&order=${order}`;
-    fetchUsers(url);
-  }, [currentPage, searchTerm, filterColumn, order]);
+    fetchUsers();
+  }, [searchTerm, filterColumn, order]);
 
   const handlePageChange = (page) => {
-    setCurrentPage(page); // Establecer la nueva página
+    fetchUsers(page); // Cambia a la página seleccionada
   };
 
   const handleSearch = (term, column, sortOrder) => {
     setSearchTerm(term);
     setFilterColumn(column);
     setOrder(sortOrder);
-    setCurrentPage(1); // Reiniciar a la primera página en nueva búsqueda
   };
 
   return (
@@ -59,14 +65,19 @@ const ConsultClients = () => {
             <SearchBar onSearch={handleSearch} />
           </div>
         </div>
-        <UserTable
-          users={users}
-          nextPage={nextPage}
-          prevPage={prevPage}
-          onPageChange={handlePageChange}
-          totalPages={totalPages}
-          currentPage={currentPage}
-        />
+        {/* Muestra la rueda de carga si los datos están cargando */}
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : (
+          <UserTable
+            users={users}
+            nextPage={nextPage}
+            prevPage={prevPage}
+            onPageChange={handlePageChange}
+            totalPages={totalPages}
+            currentPage={currentPage}
+          />
+        )}
       </div>
       <Footer />
     </div>
