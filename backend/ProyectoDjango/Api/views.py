@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from .models import Usuarios
+from .serializers import UsuariosSerializer
 
 class CustomPagination(PageNumberPagination):
     page_size = 10  # Número de registros por página
@@ -55,3 +56,56 @@ def consult_client(request):
         return paginator.get_paginated_response(serializer_data)  # Devuelve respuesta paginada
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+def consult_vet(request):
+    try:
+        users = Usuarios.objects.filter(rol=3)
+        serializer = UsuariosSerializer(users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["POST"])
+def create_user(request):
+    try:
+        serializer = UsuariosSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+"""
+curl -X POST http://127.0.0.1:8000/create-user/ \
+-H "Content-Type: application/json" \
+-d '{
+    "usuario": "nuevo_usuario",
+    "rol": 3,
+    "clave": "123456",
+    "cedula": "123456789",
+    "nombre": "prueba",
+    "telefono": "0987654321",
+    "correo": "prueba.subida@correo.com"
+    "clinica" : 1,
+    "especialidad" : 1
+    
+    
+}'
+
+class Usuarios(models.Model):
+    usuario = models.CharField(primary_key=True, max_length=40, db_comment='Este campo es la llave primaria y almacena el nombre de usuario ·nico para cada usuario en el sistema. Debe ser ·nico y se utiliza para iniciar sesi≤n.')
+    cedula = models.CharField(max_length=30, db_comment='Este almacena el n·mero de cΘdula del usuario.')
+    nombre = models.CharField(max_length=50, db_comment='Este campo almacena el nombre completo del usuario. Es ·til para identificar al usuario dentro del sistema.')
+    telefono = models.CharField(max_length=20, blank=True, null=True, db_comment='Este campo almacena el n·mero de telΘfono del usuario, permitiendo el contacto directo si es necesario.')
+    correo = models.CharField(unique=True, max_length=30, db_comment='Este campo almacena la direcci≤n de correo electr≤nico del usuario. Debe ser ·nico, ya que se puede usar para recuperar contrase±as o enviar notificaciones.')
+    clave = models.CharField(max_length=30, db_comment='Este campo almacena la contrase±a del usuario, que se utiliza para la autenticaci≤n al iniciar sesi≤n en el sistema.')
+    especialidad = models.ForeignKey(Especialidades, models.DO_NOTHING, blank=True, null=True, db_comment='Este campo es una llave forßnea que hace referencia a la especialidad del usuario, si aplica. Permite vincular al usuario con una especialidad especφfica en la clφnica.')
+    clinica = models.ForeignKey(Clinicas, models.DO_NOTHING, blank=True, null=True, db_comment='Este campo es una llave forßnea que hace referencia a la clφnica en la que trabaja el usuario. Ayuda a identificar la relaci≤n del usuario con una clφnica especφfica.')
+    rol = models.ForeignKey(Roles, models.DO_NOTHING, blank=True, null=True, db_comment='Este campo es una llave forßnea que hace referencia al rol del usuario en el sistema (por ejemplo, veterinario, administrador, etc.). Permite gestionar los permisos y accesos del usuario seg·n su rol.')
+
+"""
