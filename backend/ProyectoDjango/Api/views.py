@@ -5,6 +5,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
+from django.db.models import Q
 from .models import Usuarios
 
 class CustomPagination(PageNumberPagination):
@@ -34,10 +35,20 @@ def check_user_exists(request):
 
 @api_view(['GET'])
 def consult_client(request):
+    search = request.GET.get('search', '')  # Captura el término de búsqueda
     try:
         usuarios_clientes = Usuarios.objects.filter(rol=4)
 
-        # Crear instancia de paginador
+        # Filtra por término de búsqueda si se proporciona
+        if search:
+            usuarios_clientes = usuarios_clientes.filter(
+                Q(usuario__icontains=search) |
+                Q(nombre__icontains=search) |
+                Q(cedula__icontains=search) |
+                Q(telefono__icontains=search) |
+                Q(correo__icontains=search)
+            )
+
         paginator = CustomPagination()
         result_page = paginator.paginate_queryset(usuarios_clientes, request)
 
@@ -52,6 +63,7 @@ def consult_client(request):
             for usuario in result_page
         ]
 
-        return paginator.get_paginated_response(serializer_data)  # Devuelve respuesta paginada
+        return paginator.get_paginated_response(serializer_data)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+

@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react";
 import UserTable from "../components/UserTable";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import SearchBar from "../components/SearchBar"; // Importa el componente SearchBar
+import SearchBar from "../components/SearchBar";
 
 const ConsultClients = () => {
   const [users, setUsers] = useState([]);
   const [nextPage, setNextPage] = useState(null);
   const [prevPage, setPrevPage] = useState(null);
   const [totalPages, setTotalPages] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const fetchUsers = async (url) => {
     try {
@@ -27,11 +28,21 @@ const ConsultClients = () => {
   };
 
   useEffect(() => {
-    fetchUsers("http://localhost:8000/api/consult-client/?page=1");
-  }, []);
+    // Inicializa la búsqueda
+    fetchUsers(`http://localhost:8000/api/consult-client/?page=1&search=${searchTerm}`);
+  }, [searchTerm]); // Cambios en el término de búsqueda
 
   const handlePageChange = (url) => {
-    fetchUsers(url);
+    // Cambia de página y mantiene el término de búsqueda
+    if (searchTerm) {
+      fetchUsers(`${url}&search=${searchTerm}`);
+    } else {
+      fetchUsers(url);
+    }
+  };
+
+  const handleSearch = (term) => {
+    setSearchTerm(term); // Actualiza el término de búsqueda
   };
 
   return (
@@ -46,7 +57,7 @@ const ConsultClients = () => {
             </button>
           </div>
           <div className="flex items-center">
-            <SearchBar />
+            <SearchBar onSearch={handleSearch} /> {/* Pasa la función de búsqueda como prop */}
           </div>
         </div>
         <UserTable

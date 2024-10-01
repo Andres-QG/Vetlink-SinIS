@@ -1,42 +1,41 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-const SearchBar = () => {
-  // Función para manejar el clic en el botón de filtros
+const SearchBar = ({ onSearch }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+
   const handleFilterClick = () => {
-    // Aquí puedes agregar la lógica para mostrar un menú de filtros o abrir un modal
     console.log('Botón de filtros clickeado');
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault(); // Prevenir el comportamiento por defecto del formulario
+    onSearch(searchTerm); // Llama a la función de búsqueda
+  };
+
   return (
-    // Formulario contenedor
-    <form className="flex items-center max-w-sm mx-auto">
-      {/* Etiqueta para accesibilidad */}
+    <form className="flex items-center max-w-sm mx-auto" onSubmit={handleSubmit}>
       <label htmlFor="simple-search" className="sr-only">Search</label>
 
-      {/* Contenedor para el input de búsqueda */}
       <div className="relative w-full">
-        {/* Botón de filtros con ícono de "delete" */}
         <button
           type="button"
           className="absolute inset-y-0 flex items-center start-0 ps-3"
-          onClick={handleFilterClick} // Maneja el clic
+          onClick={handleFilterClick}
         >
           <span className="text-gray-500 material-symbols-outlined">tune</span>
         </button>
 
-        {/* Input de búsqueda */}
         <input
           type="text"
           id="simple-search"
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5"
           placeholder="Buscar"
           required
-          // Modifica el tamaño aquí para alargar el input
-          style={{ width: '100%' }} // Puedes cambiar '100%' por un valor específico como '300px'
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)} // Maneja cambios en el input
         />
       </div>
 
-      {/* Botón de envío */}
       <button
         type="submit"
         className="p-2.5 ms-2 text-sm font-medium text-white bg-blue-700 rounded-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300"
