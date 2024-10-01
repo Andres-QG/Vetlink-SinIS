@@ -35,23 +35,26 @@ def check_user_exists(request):
 
 @api_view(['GET'])
 def consult_client(request):
-    search = request.GET.get('search', '')  # Captura el término de búsqueda
+    search = request.GET.get('search', '')
+    column = request.GET.get('column', 'usuario')  # Ajustar para que 'usuario' sea la columna por defecto
+    order = request.GET.get('order', 'asc')
+
     try:
+        # Filtrar usuarios por rol 4
         usuarios_clientes = Usuarios.objects.filter(rol=4)
 
-        # Filtra por término de búsqueda si se proporciona
         if search:
-            usuarios_clientes = usuarios_clientes.filter(
-                Q(usuario__icontains=search) |
-                Q(nombre__icontains=search) |
-                Q(cedula__icontains=search) |
-                Q(telefono__icontains=search) |
-                Q(correo__icontains=search)
-            )
+            # Asegurarse de que el filtrado se realice en la columna especificada
+            kwargs = {f'{column}__icontains': search}
+            usuarios_clientes = usuarios_clientes.filter(**kwargs)
+
+        if order == 'desc':
+            usuarios_clientes = usuarios_clientes.order_by(f'-{column}')
+        else:
+            usuarios_clientes = usuarios_clientes.order_by(column)
 
         paginator = CustomPagination()
         result_page = paginator.paginate_queryset(usuarios_clientes, request)
-
         serializer_data = [
             {
                 "usuario": usuario.usuario,
@@ -66,4 +69,5 @@ def consult_client(request):
         return paginator.get_paginated_response(serializer_data)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 

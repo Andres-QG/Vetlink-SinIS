@@ -12,13 +12,13 @@ const UserTable = ({ users, nextPage, prevPage, onPageChange, totalPages }) => {
 
   const handlePageChange = (page) => {
     if (page === "prev" && prevPage) {
-      onPageChange(prevPage);
+      onPageChange(currentPage - 1); // Envía el número de página a onPageChange
       setCurrentPage(currentPage - 1);
     } else if (page === "next" && nextPage) {
-      onPageChange(nextPage);
+      onPageChange(currentPage + 1); // Envía el número de página a onPageChange
       setCurrentPage(currentPage + 1);
     } else {
-      onPageChange(`http://localhost:8000/api/consult-client/?page=${page}`);
+      onPageChange(page); // Aquí simplemente pasamos el número de página
       setCurrentPage(page);
     }
   };
@@ -83,7 +83,7 @@ const UserTable = ({ users, nextPage, prevPage, onPageChange, totalPages }) => {
               {Array.from({ length: totalPages }, (_, index) => (
                 <li className="justify-center page-item" key={index}>
                   <button
-                    onClick={() => handlePageChange(index + 1)}
+                    onClick={() => handlePageChange(index + 1)} // Solo pasamos el número de página
                     className={`px-4 py-2 border rounded-lg focus:outline-none ${currentPage === index + 1 ? 'bg-primary text-white' : 'bg-white text-gray-700 hover:bg-gray-200'}`}
                   >
                     {index + 1}
