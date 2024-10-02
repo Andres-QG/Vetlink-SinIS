@@ -5,6 +5,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
+from django.db.models import Q
 from .models import Usuarios
 from .serializers import UsuariosSerializer
 
@@ -35,13 +36,26 @@ def check_user_exists(request):
 
 @api_view(['GET'])
 def consult_client(request):
+    search = request.GET.get('search', '')
+    column = request.GET.get('column', 'usuario')  # Ajustar para que 'usuario' sea la columna por defecto
+    order = request.GET.get('order', 'asc')
+
     try:
+        # Filtrar usuarios por rol 4
         usuarios_clientes = Usuarios.objects.filter(rol=4)
 
-        # Crear instancia de paginador
+        if search:
+            # Asegurarse de que el filtrado se realice en la columna especificada
+            kwargs = {f'{column}__icontains': search}
+            usuarios_clientes = usuarios_clientes.filter(**kwargs)
+
+        if order == 'desc':
+            usuarios_clientes = usuarios_clientes.order_by(f'-{column}')
+        else:
+            usuarios_clientes = usuarios_clientes.order_by(column)
+
         paginator = CustomPagination()
         result_page = paginator.paginate_queryset(usuarios_clientes, request)
-
         serializer_data = [
             {
                 "usuario": usuario.usuario,
@@ -53,7 +67,7 @@ def consult_client(request):
             for usuario in result_page
         ]
 
-        return paginator.get_paginated_response(serializer_data)  # Devuelve respuesta paginada
+        return paginator.get_paginated_response(serializer_data)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
