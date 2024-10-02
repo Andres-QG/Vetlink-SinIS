@@ -4,11 +4,11 @@
 
 ### 1 Instalar todo
 
-- Antes se debe instalar la biblioteca virtualenv con pip install virtualenv
+- Antes se debe instalar la biblioteca virtualenv con python -m venv env
 
 - Crear un entorno virtual con virtualenv -p python3 env
 
-- Si le tira un error, se debe activar la ejecucion de scripts, meter este comando desde poweshell abierto como administrador Set-ExecutionPolicy RemoteSigned, luego poner darle a sí
+- Si le tira un error, se debe activar la ejecucion de scripts temporalmente, meter este comando desde terminal Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process, luego poner darle a sí
 
 - activar el entorno virtual con .\env\Scripts\Activate.ps1
 
