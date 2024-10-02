@@ -6,8 +6,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
-from .models import Usuarios
-from .serializers import UsuariosSerializer
+from django.db import transaction
+from .models import Usuarios, Mascotas
+from .serializers import MascotaSerializer
 
 class CustomPagination(PageNumberPagination):
     page_size = 10  # Número de registros por página
@@ -33,6 +34,34 @@ def check_user_exists(request):
 
     except:
         return Response({'exists': False, 'message': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['POST'])
+def create_pet(request):
+    try:
+        usuario = request.data.get('usuario_cliente')
+        
+        # Verify client existence
+        try:
+            usuario_cliente = Usuarios.objects.get(usuario=usuario)  # Usar la columna usuario
+        except Usuarios.DoesNotExist:
+            return Response({'error': 'Usuario no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Create a new pet that's associated with a client
+        data = request.data
+        data['usuario_cliente'] = usuario_cliente.usuario  
+        
+        serializer = MascotaSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()  
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 
 @api_view(['GET'])
 def consult_client(request):
