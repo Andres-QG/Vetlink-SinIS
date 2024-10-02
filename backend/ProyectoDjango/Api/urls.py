@@ -6,4 +6,5 @@ urlpatterns = [
     path("consult-client/", consult_client, name="consult_client"),
     path("consult_vet/", consult_vet, name="consult_vet"),
     path("create-user/", create_user, name="create_user"),
+    path('create-pet/', create_pet, name='create_pet'),
 ]
