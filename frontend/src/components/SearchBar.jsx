@@ -1,45 +1,120 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-const SearchBar = () => {
-  // Función para manejar el clic en el botón de filtros
+const SearchBar = ({ onSearch }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [filterColumn, setFilterColumn] = useState('usuario'); // Establece 'usuario' como columna predeterminada
+  const [order, setOrder] = useState('asc'); // Orden predeterminado
+
+  const toggleModal = () => {
+    setIsModalOpen(!isModalOpen);
+  };
+
   const handleFilterClick = () => {
-    // Aquí puedes agregar la lógica para mostrar un menú de filtros o abrir un modal
-    console.log('Botón de filtros clickeado');
+    toggleModal();
+  };
+
+  // Esta función se llama cuando se presiona 'Aplicar' en el modal
+  const handleApplyFilters = (e) => {
+    e.preventDefault();
+    setIsModalOpen(false); // Cierra el modal
+    onSearch(searchTerm, filterColumn, order); // Aplica los filtros y realiza la búsqueda
+  };
+
+  // Esta función se llama cuando se presiona el botón de búsqueda principal
+  const handleSearch = (e) => {
+    e.preventDefault();
+    onSearch(searchTerm, filterColumn, order); // Realiza la búsqueda según los filtros aplicados
+  };
+
+  const renderModal = () => {
+    if (!isModalOpen) return null;
+    return (
+      <div className="fixed inset-0 z-10 overflow-y-auto">
+        <div className="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+          <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+          </div>
+          <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+          <div className="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div className="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
+              <div className="sm:flex sm:items-start">
+                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                  <h3 className="text-lg font-medium leading-6 text-gray-900" id="modal-title">
+                    Configuración de Filtro
+                  </h3>
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-500">
+                      Elige la columna y el orden para filtrar los resultados.
+                    </p>
+                  </div>
+                  <div className="mt-4">
+                    <label htmlFor="filter-column" className="block text-sm font-medium text-gray-700">Columna:</label>
+                    <select
+                      id="filter-column"
+                      value={filterColumn}
+                      onChange={e => setFilterColumn(e.target.value)}
+                      className="block w-full px-3 py-2 mt-1 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    >
+                      <option value="usuario">Usuario</option>
+                      <option value="nombre">Nombre</option>
+                      <option value="cedula">Cédula</option>
+                      <option value="telefono">Teléfono</option>
+                      <option value="correo">Correo</option>
+                    </select>
+                  </div>
+                  <div className="mt-4">
+                    <label htmlFor="order" className="block text-sm font-medium text-gray-700">Orden:</label>
+                    <select
+                      id="order"
+                      value={order}
+                      onChange={e => setOrder(e.target.value)}
+                      className="block w-full px-3 py-2 mt-1 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    >
+                      <option value="asc">Ascendente</option>
+                      <option value="desc">Descendente</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div className="px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" onClick={handleApplyFilters} className="w-full px-4 py-2 text-base font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                  Aplicar
+                </button>
+                <button type="button" onClick={toggleModal} className="w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
-    // Formulario contenedor
-    <form className="flex items-center max-w-sm mx-auto">
-      {/* Etiqueta para accesibilidad */}
+    <form className="flex items-center w-full max-w-3xl mx-auto" onSubmit={handleSearch}>
       <label htmlFor="simple-search" className="sr-only">Search</label>
-
-      {/* Contenedor para el input de búsqueda */}
-      <div className="relative w-full">
-        {/* Botón de filtros con ícono de "delete" */}
+      <div className="relative flex-1">
         <button
           type="button"
-          className="absolute inset-y-0 flex items-center start-0 ps-3"
-          onClick={handleFilterClick} // Maneja el clic
+          className="absolute inset-y-0 flex items-center pl-3"
+          onClick={handleFilterClick}
         >
           <span className="text-gray-500 material-symbols-outlined">tune</span>
         </button>
-
-        {/* Input de búsqueda */}
         <input
           type="text"
           id="simple-search"
-          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5"
+          className="w-full py-2 pl-10 pr-4 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
           placeholder="Buscar"
-          required
-          // Modifica el tamaño aquí para alargar el input
-          style={{ width: '100%' }} // Puedes cambiar '100%' por un valor específico como '300px'
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
-
-      {/* Botón de envío */}
       <button
         type="submit"
-        className="p-2.5 ms-2 text-sm font-medium text-white bg-blue-700 rounded-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300"
+        className="ml-2 p-2.5 text-sm font-medium text-white bg-blue-700 rounded-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300"
       >
         <svg
           className="w-4 h-4"
@@ -58,6 +133,7 @@ const SearchBar = () => {
         </svg>
         <span className="sr-only">Search</span>
       </button>
+      {renderModal()}
     </form>
   );
 };
