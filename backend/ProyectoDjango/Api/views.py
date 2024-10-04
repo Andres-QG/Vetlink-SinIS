@@ -100,4 +100,31 @@ def consult_client(request):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(['GET'])
+def consult_mascotas(request):
+    search = request.GET.get('search', '')
+    column = request.GET.get('column', 'nombre')  
+    order = request.GET.get('order', 'asc')
 
+    try:
+        mascotas = Mascotas.objects.all()
+
+        if search:
+            # Realizar la búsqueda en la columna especificada
+            search_filter = {f'{column}__icontains': search}
+            mascotas = mascotas.filter(**search_filter)
+
+        if order == 'desc':
+            mascotas = mascotas.order_by(f'-{column}')
+        else:
+            mascotas = mascotas.order_by(column)
+
+        # Paginar los resultados
+        paginator = CustomPagination()
+        result_page = paginator.paginate_queryset(mascotas, request)
+        serializer = MascotaSerializer(result_page, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -5,7 +5,6 @@ import LandingPage from "./routes/LandingPage";
 import Services from "./routes/Services";
 import ConsultClients from "./routes/ConsultClients";
 import ConsultPets from "./routes/ConsultPets";
-import CreatePet from "./routes/CreatePet";
 import Owner from "./routes/Owner";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -18,8 +17,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/services" element={<Services />} />
           <Route path="/consultclients" element={<ConsultClients />} />
-          <Route path="/consultclients/pets" element={<ConsultPets />} />
-          <Route path="/consultclients/pets/add" element={<CreatePet />} />
+          <Route path="/consultpets" element={<ConsultPets />} />
           <Route
             path="/owner"
             element={
