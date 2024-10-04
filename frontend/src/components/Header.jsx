@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useContext, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
-import React from "react";
 import Button from "./Button";
 
 function Header() {
@@ -10,6 +10,8 @@ function Header() {
   const [burger_class, setBurgerClass] = useState("burger-bar unclicked");
   const [menu_class, setMenuClass] = useState("menu_hidden");
   const [isMenuClicked, setIsMenuClicked] = useState(false);
+
+  const { role } = useContext(AuthContext);
 
   const updateMenu = () => {
     setBurgerClass(
@@ -23,13 +25,21 @@ function Header() {
     navigate(`/${route}`);
   };
 
-  const menuItems = [
-    { text: "Sobre nosotros", href: "/" },
-    { text: "Servicios", href: "services" },
-    { text: "Contacto", href: "#" },
-    { text: "Iniciar Sesión", href: "login" },
-    { text: "Registrarme", href: "#" },
-  ];
+  const menuItems = role !== 0
+    ? [
+      { text: "Sobre nosotros", href: "/" },
+      { text: "Servicios", href: "services" },
+      { text: "Contacto", href: "#" },
+      { text: "Dashboard", href: role }, 
+      { text: "Cerrar Sesión", href: "logout" },
+    ]
+    : [
+      { text: "Sobre nosotros", href: "/" },
+      { text: "Servicios", href: "services" },
+      { text: "Contacto", href: "#" },
+      { text: "Iniciar Sesión", href: "login" },
+      { text: "Registrarme", href: "#" },
+    ]; 
 
   return (
     <>
@@ -81,19 +91,30 @@ function Header() {
               </li>
             </ul>
           </nav>
-          <div className="hidden lg:flex space-x-3 mt-4 md:mt-0 font-bold">
+          {role === 0 ? (
+            <div className="hidden lg:flex space-x-3 mt-4 md:mt-0 font-bold">
+              <Button
+                className="border-primary transition-all duration-300 hover:scale-105"
+                onClick={() => {
+                  handleClick("login");
+                }}
+              >
+                Iniciar sesión
+              </Button>
+              <Button className="border-primary bg-primary text-bgsecondary hover:text-bgprimary hover:border-primary hover:scale-105 transition-all duration-300">
+                Registrarme
+              </Button>
+            </div>
+          ) : (
             <Button
-              className="border-primary transition-all duration-300 hover:scale-105"
+              className="border-primary bg-primary text-bgsecondary hover:text-bgprimary hover:border-primary hover:scale-105 transition-all duration-300"
               onClick={() => {
-                handleClick("login");
               }}
             >
-              Iniciar sesión
+              Cerrar Sesión
             </Button>
-            <Button className="border-primary bg-primary text-bgsecondary hover:text-bgprimary hover:border-primary hover:scale-105 transition-all duration-300">
-              Registrarme
-            </Button>
-          </div>
+          )
+          }
           <div
             className="burger-menu flex flex-col space-y-1 lg:hidden cursor-pointer  "
             onClick={updateMenu}
