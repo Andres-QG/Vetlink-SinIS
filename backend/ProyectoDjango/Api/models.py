@@ -261,7 +261,6 @@ class HistorialServicios(models.Model):
         db_table_comment = 'La tabla HISTORIAL_SERVICIOS almacena informaci≤n sobre los servicios que han sido prestados a las mascotas a lo largo del tiempo. Esta tabla permite llevar un registro detallado de cada servicio realizado, junto con la fecha y otros detalles relevantes.'
 
 
-<<<<<<< HEAD
 class Mascotas(models.Model):
     mascota_id = models.FloatField(primary_key=True, db_comment='Este campo es la llave primaria de la tabla. Almacena un identificador ·nico para cada mascota. Este valor debe ser ·nico y permite distinguir cada mascota de manera clara.')
     usuario_cliente = models.ForeignKey('Usuarios', models.DO_NOTHING, db_column='usuario_cliente', db_comment='Este campo es una llave forßnea que hace referencia al usuario cliente que posee la mascota. Permite vincular la mascota con el cliente correspondiente en el sistema.')
@@ -277,8 +276,6 @@ class Mascotas(models.Model):
         db_table_comment = 'La tabla MASCOTAS almacena informaci≤n sobre las mascotas de los clientes de la clφnica veterinaria. Cada mascota tiene un identificador ·nico y se asocia con un cliente, permitiendo llevar un registro de las mascotas que son atendidas en la clφnica.'
 
 
-=======
->>>>>>> main
 class MetodosDePago(models.Model):
     metodo_pago_id = models.FloatField(primary_key=True, db_comment='Este campo es la llave primaria de la tabla. Almacena un identificador ·nico para cada mΘtodo de pago. Este valor debe ser ·nico y permite distinguir cada mΘtodo de manera clara.')
     usuario_cliente = models.ForeignKey('Usuarios', models.DO_NOTHING, db_column='usuario_cliente', db_comment='Este campo es una llave forßnea que hace referencia al usuario cliente que posee el mΘtodo de pago. Permite vincular el mΘtodo de pago con el cliente correspondiente en el sistema.')
@@ -403,21 +400,6 @@ class Usuarios(models.Model):
         managed = False
         db_table = 'usuarios'
         db_table_comment = 'La tabla USUARIOS almacena informaci≤n sobre los usuarios del sistema, que pueden ser veterinarios, administradores o due±os de clφnicas. Cada usuario tiene un identificador ·nico y puede incluir detalles como cΘdula, nombre, telΘfono, correo electr≤nico, contrase±a, especialidad, clφnica y rol.'
-
-class Mascotas(models.Model):
-    mascota_id = models.AutoField(primary_key=True)
-    usuario_cliente = models.ForeignKey(Usuarios, to_field='usuario', db_column='usuario_cliente', on_delete=models.DO_NOTHING)
-    nombre = models.CharField(max_length=30, blank=True, null=True)
-    fecha_nacimiento = models.DateField(blank=True, null=True)
-    especie = models.CharField(max_length=30)
-    raza = models.CharField(max_length=30, blank=True, null=True)
-    sexo = models.CharField(max_length=1, choices=[('M', 'Macho'), ('H', 'Hembra')])
-
-    class Meta:
-        managed = False
-        db_table = 'mascotas'
-        db_table_comment = 'La tabla MASCOTAS almacena informaci≤n sobre las mascotas de los clientes de la clφnica veterinaria. Cada mascota tiene un identificador ·nico y se asocia con un cliente, permitiendo llevar un registro de las mascotas que son atendidas en la clφnica.'
-
 class Pesos(models.Model):
     mascota = models.OneToOneField(Mascotas, models.DO_NOTHING, primary_key=True, db_comment='Este campo es la llave primaria y forßnea de la tabla. Almacena el identificador de la mascota cuyo peso se registra, haciendo referencia a la tabla MASCOTAS. Permite vincular cada registro de peso con la mascota correspondiente.')  # The composite primary key (mascota_id, fecha) found, that is not supported. The first column is selected.
     fecha = models.DateField(db_comment='Este campo almacena la fecha en que se registr≤ el peso. Aunque tφpicamente se usarφa un tipo de dato DATE, aquφ se ha definido como VARCHAR. Es importante para rastrear cußndo se tomaron las mediciones de peso.')
