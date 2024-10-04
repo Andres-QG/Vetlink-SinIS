@@ -2,16 +2,17 @@ import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
+import axios from 'axios';
 import Button from "./Button";
 
-function Header() {
+const Header = React.memo(function Header() {
   const navigate = useNavigate();
 
   const [burger_class, setBurgerClass] = useState("burger-bar unclicked");
   const [menu_class, setMenuClass] = useState("menu_hidden");
   const [isMenuClicked, setIsMenuClicked] = useState(false);
 
-  const { role } = useContext(AuthContext);
+  const { role, setRole } = useContext(AuthContext);
 
   const updateMenu = () => {
     setBurgerClass(
@@ -25,13 +26,22 @@ function Header() {
     navigate(`/${route}`);
   };
 
+  async function logOut () {
+    try {
+      await axios.post('http://localhost:8000/api/log-out/', {}, { withCredentials: true });
+      setRole(0)
+      navigate("/login");
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  }
+
   const menuItems = role !== 0
     ? [
       { text: "Sobre nosotros", href: "/" },
       { text: "Servicios", href: "services" },
       { text: "Contacto", href: "#" },
-      { text: "Dashboard", href: role }, 
-      { text: "Cerrar Sesión", href: "logout" },
+      { text: "Cerrar Sesión", onClick: logOut},
     ]
     : [
       { text: "Sobre nosotros", href: "/" },
@@ -40,6 +50,7 @@ function Header() {
       { text: "Iniciar Sesión", href: "login" },
       { text: "Registrarme", href: "#" },
     ]; 
+
 
   return (
     <>
@@ -107,9 +118,8 @@ function Header() {
             </div>
           ) : (
             <Button
-              className="border-primary bg-primary text-bgsecondary hover:text-bgprimary hover:border-primary hover:scale-105 transition-all duration-300"
-              onClick={() => {
-              }}
+                className="hidden lg:flex border-primary bg-primary text-bgsecondary hover:text-bgprimary hover:border-primary hover:scale-105 transition-all duration-300"
+                onClick={logOut}
             >
               Cerrar Sesión
             </Button>
@@ -159,8 +169,15 @@ function Header() {
                 }}
               >
                 <a
-                  href={item.href}
-                  className="font-bold hover:text-action transition duration-500"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (item.onClick) {
+                      item.onClick();
+                    } else {
+                      window.location.href = item.href;
+                    }
+                  }}
+                  className="font-bold hover:text-action transition duration-500 cursor-pointer"
                 >
                   {item.text}
                 </a>
@@ -172,6 +189,6 @@ function Header() {
       </div>
     </>
   );
-}
+})
 
 export default Header;

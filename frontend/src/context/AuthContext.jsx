@@ -9,6 +9,7 @@ function AuthProvider({ children }) {
     useEffect(() => {
         const fetchUserRole = async () => {
             try {
+                console.log("Creando solicitud")
                 const response = await axios.get('http://localhost:8000/api/get-user-role/', {
                     withCredentials: true,  
                 });
@@ -17,6 +18,7 @@ function AuthProvider({ children }) {
                 } else {
                     setRole(0)
                 }
+                console.log(response)
             } catch (error) {
                 setRole(0)
             }
@@ -25,7 +27,7 @@ function AuthProvider({ children }) {
     }, [role]);
 
     return (
-        <AuthContext.Provider value={{ role }}>
+        <AuthContext.Provider value={{ role, setRole }}>
             {children} 
         </AuthContext.Provider>
     );

@@ -1,5 +1,7 @@
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
+from django.contrib.auth import logout
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -64,7 +66,7 @@ def create_pet(request):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-
+@csrf_exempt
 @api_view(['GET'])
 def get_user_role(request):
     role = request.session.get('role')
@@ -111,6 +113,16 @@ def consult_client(request):
         return paginator.get_paginated_response(serializer_data)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+def log_out(request):
+    if logout(request):
+        return Response({'status':'success', 'message':'User logged out succesfully'})
+    else:
+        return Response({'status':'failed', 'message':'Couldn\' log out'})
+    
+
 
 @api_view(['GET'])
 def consult_mascotas(request):
