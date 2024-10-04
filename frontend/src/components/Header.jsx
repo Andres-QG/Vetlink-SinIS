@@ -12,7 +12,7 @@ const Header = React.memo(function Header() {
   const [menu_class, setMenuClass] = useState("menu_hidden");
   const [isMenuClicked, setIsMenuClicked] = useState(false);
 
-  const { role, setRole } = useContext(AuthContext);
+  const { role, fetchUserRole } = useContext(AuthContext);
 
   const updateMenu = () => {
     setBurgerClass(
@@ -29,12 +29,14 @@ const Header = React.memo(function Header() {
   async function logOut () {
     try {
       await axios.post('http://localhost:8000/api/log-out/', {}, { withCredentials: true });
-      setRole(0)
+      await fetchUserRole()
       navigate("/login");
     } catch (error) {
       console.error('Error logging out:', error);
     }
   }
+
+  console.log(role)
 
   const menuItems = role !== 0
     ? [

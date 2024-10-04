@@ -7,8 +7,9 @@ import eyeOnIcon from "../assets/icons/eye-on.png";
 import eyeOffIcon from "../assets/icons/eye-off.png";
 
 import axios from 'axios';
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from '../context/AuthContext';
 
 function Login() {
     const navigate = useNavigate();
@@ -19,6 +20,7 @@ function Login() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
+    const { setRole } = useContext(AuthContext);
 
     const togglePasswordVisibility = () => {
         setShowPassword((prev) => !prev);
@@ -51,13 +53,18 @@ function Login() {
                 withCredentials: true
             });
             setLoading(false)
-            navigate(`/${redirectItems.get(response.data.rol)}`);
+            if (response.data.rol) {
+                setRole(response.data.rol)
+                navigate(`/${redirectItems.get(response.data.rol)}`);
+            } else {
+                setRole(0)
+                setError(errorTexts[4])
+            }
         } catch (error) {
             console.log(error)
             setLoading(false)
             setError(errorTexts[4]);
         }
-
     }
 
     const errorTexts = [
@@ -72,7 +79,7 @@ function Login() {
     return (
         <>
             {loading ? (
-                <Loading/>
+                <Loading text={"Verificando Rol"} />
             ) : (
             <div className="min-h-screen flex flex-col">
                 <Header />
