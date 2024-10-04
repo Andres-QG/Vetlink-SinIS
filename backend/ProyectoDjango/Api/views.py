@@ -5,7 +5,10 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
-from .models import Usuarios
+from django.db.models import Q
+from django.db import transaction
+from .models import Usuarios, Mascotas
+from .serializers import MascotaSerializer
 
 class CustomPagination(PageNumberPagination):
     page_size = 10  # Número de registros por página
@@ -34,6 +37,34 @@ def check_user_exists(request):
     except:
         return Response({'exists': False, 'message': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
 
+
+@api_view(['POST'])
+def create_pet(request):
+    try:
+        usuario = request.data.get('usuario_cliente')
+        
+        # Verify client existence
+        try:
+            usuario_cliente = Usuarios.objects.get(usuario=usuario)  # Usar la columna usuario
+        except Usuarios.DoesNotExist:
+            return Response({'error': 'Usuario no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Create a new pet that's associated with a client
+        data = request.data
+        data['usuario_cliente'] = usuario_cliente.usuario  
+        
+        serializer = MascotaSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()  
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
 @api_view(['GET'])
 def get_user_role(request):
     role = request.session.get('role')
@@ -46,13 +77,26 @@ def get_user_role(request):
 
 @api_view(['GET'])
 def consult_client(request):
+    search = request.GET.get('search', '')
+    column = request.GET.get('column', 'usuario')  # Ajustar para que 'usuario' sea la columna por defecto
+    order = request.GET.get('order', 'asc')
+
     try:
+        # Filtrar usuarios por rol 4
         usuarios_clientes = Usuarios.objects.filter(rol=4)
 
-        # Crear instancia de paginador
+        if search:
+            # Asegurarse de que el filtrado se realice en la columna especificada
+            kwargs = {f'{column}__icontains': search}
+            usuarios_clientes = usuarios_clientes.filter(**kwargs)
+
+        if order == 'desc':
+            usuarios_clientes = usuarios_clientes.order_by(f'-{column}')
+        else:
+            usuarios_clientes = usuarios_clientes.order_by(column)
+
         paginator = CustomPagination()
         result_page = paginator.paginate_queryset(usuarios_clientes, request)
-
         serializer_data = [
             {
                 "usuario": usuario.usuario,
@@ -64,7 +108,36 @@ def consult_client(request):
             for usuario in result_page
         ]
 
-        return paginator.get_paginated_response(serializer_data)  # Devuelve respuesta paginada
+        return paginator.get_paginated_response(serializer_data)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+def consult_mascotas(request):
+    search = request.GET.get('search', '')
+    column = request.GET.get('column', 'nombre')  
+    order = request.GET.get('order', 'asc')
+
+    try:
+        mascotas = Mascotas.objects.all()
+
+        if search:
+            # Realizar la búsqueda en la columna especificada
+            search_filter = {f'{column}__icontains': search}
+            mascotas = mascotas.filter(**search_filter)
+
+        if order == 'desc':
+            mascotas = mascotas.order_by(f'-{column}')
+        else:
+            mascotas = mascotas.order_by(column)
+
+        # Paginar los resultados
+        paginator = CustomPagination()
+        result_page = paginator.paginate_queryset(mascotas, request)
+        serializer = MascotaSerializer(result_page, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
+
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

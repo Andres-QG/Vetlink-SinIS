@@ -13,12 +13,34 @@ import whoAreWe from "../assets/img/who_are_we.jpg";
 function LandingPage() {
   const faqs = [
     {
-      title: "¿Cuál es la diferencia entre una mascota y un perro?",
-      content: "Ninguna.",
+      title: "¿Qué información se almacena sobre mi mascota en este sistema?",
+      content:
+        "Se almacena información básica de tu mascota, como su nombre,especie, raza, edad, sexo, peso, padecimientos y vacunaciones. Esto ayuda a los veterinarios a ofrecer un mejor servicio y atención médica.",
     },
     {
-      title: "¿Cuál es la diferencia entre una mascota y un gato?",
-      content: "Ninguna.",
+      title: "¿Puedo acceder al historial médico de mi mascota?",
+      content:
+        "Actualmente, el sistema está diseñado para ser usado por veterinarios y administradores de la clínica. Si deseas acceder al historial médico de tu mascota, puedes solicitarlo directamente a tu clínica veterinaria, que podrá proporcionarte la información.",
+    },
+    {
+      title: "¿Cómo protege el sistema mi información y la de mi mascota?",
+      content:
+        "La seguridad de la información es una prioridad. Todos los datos personales y médicos se almacenan de forma segura, cumpliendo con los estándares de protección de datos.",
+    },
+    {
+      title: "¿Puedo actualizar los datos de mi mascota en el sistema?",
+      content:
+        "Para actualizar los datos de tu mascota, puedes comunicarte con tu clínica veterinaria. Ellos podrán realizar las modificaciones necesarias en el sistema.",
+    },
+    {
+      title: "¿Este sistema permite teleconsultas o consultas en línea?",
+      content:
+        "De momento, el sistema está diseñado para gestionar la información interna de la clínica, por lo que no se ofrecen consultas en línea.",
+    },
+    {
+      title: "¿Qué sucede si cambio de clínica veterinaria?",
+      content:
+        "Si decides cambiar de clínica, puedes solicitar que te proporcionen una copia del historial médico de tu mascota para que lo lleves a tu nueva veterinaria. Sin embargo si el cambio de clínica es dentro alguna de nuestras clínicas entonces el cambio se hará de forma automática al solicitar el cambio.",
     },
   ];
 
