@@ -66,22 +66,28 @@ def create_pet(request):
 @api_view(['GET'])
 def consult_client(request):
     search = request.GET.get('search', '')
-    column = request.GET.get('column', 'usuario')  # Ajustar para que 'usuario' sea la columna por defecto
+    column = request.GET.get('column', 'usuario')
     order = request.GET.get('order', 'asc')
 
     try:
-        # Filtrar usuarios por rol 4
         usuarios_clientes = Usuarios.objects.filter(rol=4)
-
         if search:
-            # Asegurarse de que el filtrado se realice en la columna especificada
-            kwargs = {f'{column}__icontains': search}
-            usuarios_clientes = usuarios_clientes.filter(**kwargs)
+            if column == "apellidos":
+                # Si la columna de búsqueda es 'apellidos', filtra por 'apellido1' y 'apellido2'
+                usuarios_clientes = usuarios_clientes.filter(
+                    Q(apellido1__icontains=search) | Q(apellido2__icontains=search)
+                )
+            else:
+                # Para otras columnas, utiliza el filtrado dinámico basado en kwargs
+                kwargs = {f'{column}__icontains': search}
+                usuarios_clientes = usuarios_clientes.filter(**kwargs)
 
-        if order == 'desc':
-            usuarios_clientes = usuarios_clientes.order_by(f'-{column}')
+        # Ordenación de resultados
+        if column == "apellidos":
+            # Si se ordena por 'apellidos', se ordena por 'apellido1' y luego por 'apellido2'
+            usuarios_clientes = usuarios_clientes.order_by(f'-apellido1', '-apellido2' if order == 'desc' else 'apellido1', 'apellido2')
         else:
-            usuarios_clientes = usuarios_clientes.order_by(column)
+            usuarios_clientes = usuarios_clientes.order_by(f'-{column}' if order == 'desc' else column)
 
         paginator = CustomPagination()
         result_page = paginator.paginate_queryset(usuarios_clientes, request)
@@ -90,6 +96,7 @@ def consult_client(request):
                 "usuario": usuario.usuario,
                 "cedula": usuario.cedula,
                 "nombre": usuario.nombre,
+                "apellidos": f"{usuario.apellido1} {usuario.apellido2}",
                 "telefono": usuario.telefono,
                 "correo": usuario.correo,
             }
