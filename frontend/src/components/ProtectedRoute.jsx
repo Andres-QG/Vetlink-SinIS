@@ -1,5 +1,6 @@
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
+import Error from '../routes/Error';
 
 function ProtectedRoute ({children, requiredRole='null'}) {
     const { role } = useContext(AuthContext);
@@ -12,7 +13,7 @@ function ProtectedRoute ({children, requiredRole='null'}) {
         [5, 'reset'],
     ]);
        
-    return redirectItems.get(role) === requiredRole ? children : null;
+    return redirectItems.get(role) === requiredRole ? children : <Error/>;
 };
 
 export default ProtectedRoute

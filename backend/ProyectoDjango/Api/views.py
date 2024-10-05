@@ -1,6 +1,7 @@
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth import logout
+from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from rest_framework.decorators import api_view
@@ -11,6 +12,7 @@ from django.db.models import Q
 from django.db import transaction
 from .models import Usuarios, Mascotas
 from .serializers import MascotaSerializer
+import random
 
 class CustomPagination(PageNumberPagination):
     page_size = 10  # Número de registros por página
@@ -38,6 +40,42 @@ def check_user_exists(request):
 
     except:
         return Response({'exists': False, 'message': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+@api_view(['POST'])
+def reset_password(request):
+    email = request.data.get('email') # Obtiene el correo de la solicitud
+    if not email:
+        return Response({"error": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        userResponse = Usuarios.objects.get(correo=email) # Revisa que exista un usuario que tenga ese correo asociado
+        verification_code = random.randint(100000, 999999) # Genera un número aleatorio de 6 dígitos
+        
+        send_mail(
+            'Código de reinicio de contraseña', #Asunto
+            f'Tu código para reiniciar la contraseña es {verification_code}.', # Cuerpo
+            'vetlinkmail@gmail.com', # Desde este correo
+            [email], # Hacia este correo
+            fail_silently=False, # Mostrar errores
+        )
+
+        request.session['reset_code'] = verification_code # Guarda el código en la sesión
+        if userResponse.correo == email:
+            return Response({'exists': True, 'message': f'Email authenticated.', 'rol': 5}, status=status.HTTP_200_OK)
+    except Usuarios.DoesNotExist:
+        return Response({'exists': False, 'message': 'Failed to verify email.'}, status=status.HTTP_404_NOT_FOUND)
+
+    
+@api_view(['POST'])
+def verify_code(request):
+    values_str = int(''.join(request.data.get('values'))) # Casteo a int de los valores digitados por el usuario
+    if request.session.get('reset_code') == values_str: # Verificacion de que el codigo sea el enviado al correo
+        return Response({'exists': True, 'status': 'success'}, status=status.HTTP_200_OK)
+    else:
+        return Response({'exists': False, 'message': 'Failed to verify code.'}, status=status.HTTP_404_NOT_FOUND)
+
+    
 
 
 @api_view(['POST'])
