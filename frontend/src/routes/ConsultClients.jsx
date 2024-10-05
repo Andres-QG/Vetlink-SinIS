@@ -1,81 +1,92 @@
-import React, { useEffect, useState } from "react";
-import UserTable from "../components/UserTable";
+import { useState, useEffect } from "react";
+import { CircularProgress, Button, Box } from "@mui/material";
+import { Add } from "@mui/icons-material";
+import ConsultClientsTable from "../components/ConsultClients/ConsultClientsTable";
+import SearchBar from "../components/ConsultClients/SearchBar";
+import axios from "axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import SearchBar from "../components/SearchBar";
-import LoadingSpinner from "../components/LoadingSpinner"; // Importa el componente
 
 const ConsultClients = () => {
-  const [users, setUsers] = useState([]);
-  const [nextPage, setNextPage] = useState(null);
-  const [prevPage, setPrevPage] = useState(null);
-  const [totalPages, setTotalPages] = useState(0);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterColumn, setFilterColumn] = useState('usuario');
-  const [order, setOrder] = useState('asc');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false); // Estado para mostrar la rueda de carga
-
-  const fetchUsers = async (page = 1) => {
-    setIsLoading(true); // Inicia el estado de carga
-    const url = `http://localhost:8000/api/consult-client/?page=${page}&search=${searchTerm}&column=${filterColumn}&order=${order}`;
-    
-    try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Network response was not ok");
-      const data = await response.json();
-      setUsers(data.results);
-      setNextPage(data.next);
-      setPrevPage(data.previous);
-      setTotalPages(Math.ceil(data.count / 10));
-      setCurrentPage(page);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    } finally {
-      setIsLoading(false); // Finaliza el estado de carga
-    }
-  };
+  const [clients, setClients] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchColumn, setSearchColumn] = useState("usuario");
+  const [order, setOrder] = useState("asc");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    fetchUsers();
-  }, [searchTerm, filterColumn, order]);
+    fetchClients();
+  }, [searchTerm, searchColumn, order, page]);
 
-  const handlePageChange = (page) => {
-    fetchUsers(page); // Cambia a la página seleccionada
+  const fetchClients = async () => {
+    setLoading(true);
+    const params = {
+      search: searchTerm,
+      column: searchColumn,
+      order: order,
+      page: page,
+    };
+
+    try {
+      const response = await axios.get(
+        "http://localhost:8000/api/consult-client/",
+        { params }
+      );
+      const data = response.data;
+      setClients(data.results);
+      setTotalPages(Math.ceil(data.count / 10));
+    } catch (error) {
+      console.error("Failed to fetch clients:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSearch = (term, column, sortOrder) => {
     setSearchTerm(term);
-    setFilterColumn(column);
+    setSearchColumn(column);
     setOrder(sortOrder);
+    setPage(1);
   };
 
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <div className="flex flex-col flex-grow">
-        <div className="flex items-center justify-between m-5 mb-0">
-          <div className="flex items-center">
-            <h1 className="mr-2 text-2xl font-bold">Clientes</h1>
-            <button onClick={() => alert("Agregar nuevo cliente")}>
-              <span className="mt-3 text-brand material-symbols-outlined">person_add</span>
-            </button>
-          </div>
-          <div className="flex items-center">
+      <div className="flex-grow p-4">
+        <div className="flex flex-col items-center justify-between mb-4 space-y-4 md:flex-row md:space-y-0">
+          <h1 className="text-2xl font-semibold">Consultar Clientes</h1>
+          <div className="flex flex-col w-full space-y-4 md:w-auto md:flex-row md:items-center md:space-y-0">
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              onClick={() => {}}
+              sx={{
+                backgroundColor: "#00308F",
+                "&:hover": { backgroundColor: "#00246d" },
+                minWidth: "190px",
+                marginBottom: { xs: "-4px", md: "0px" },
+                marginRight: { xs: "0px", md: "10px" },
+                width: { xs: "100%", md: "auto" }, // Se ajusta en pantallas pequeñas
+              }}
+            >
+              Agregar Cliente
+            </Button>
             <SearchBar onSearch={handleSearch} />
           </div>
         </div>
-        {/* Muestra la rueda de carga si los datos están cargando */}
-        {isLoading ? (
-          <LoadingSpinner />
+
+        {loading ? (
+          <div className="flex items-center justify-center">
+            <CircularProgress />
+          </div>
         ) : (
-          <UserTable
-            users={users}
-            nextPage={nextPage}
-            prevPage={prevPage}
-            onPageChange={handlePageChange}
+          <ConsultClientsTable
+            clients={clients}
+            page={page}
+            setPage={setPage}
             totalPages={totalPages}
-            currentPage={currentPage}
           />
         )}
       </div>

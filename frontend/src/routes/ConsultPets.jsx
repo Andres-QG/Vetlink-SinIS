@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   TextField,
   Button,
@@ -92,7 +92,7 @@ const ConsultPets = () => {
 
   return (
     <div className="p-4">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-semibold">Consultar Mascotas</h1>
         <Button
           variant="contained"
@@ -133,7 +133,7 @@ const ConsultPets = () => {
             <MenuItem value="raza">Raza</MenuItem>
             <MenuItem value="sexo">Sexo</MenuItem>
             <MenuItem value="edad">Edad</MenuItem>
-            <MenuItem value="usuario_cliente">Due o</MenuItem>{" "}
+            <MenuItem value="usuario_cliente">Dueño</MenuItem>{" "}
           </Select>
         </FormControl>
 
@@ -148,7 +148,7 @@ const ConsultPets = () => {
 
       {/* Círculo de carga */}
       {loading ? (
-        <div className="flex justify-center items-center">
+        <div className="flex items-center justify-center">
           <CircularProgress />
         </div>
       ) : (
@@ -212,7 +212,7 @@ const ConsultPets = () => {
 
       {/* Modal para agregar mascota */}
       <Modal open={open} onClose={handleClose}>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg shadow-lg">
+        <div className="absolute p-6 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg top-1/2 left-1/2">
           <CreatePet handleClose={handleClose} />
         </div>
       </Modal>
