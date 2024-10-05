@@ -407,7 +407,7 @@ class Usuarios(models.Model):
     clinica = models.ForeignKey(Clinicas, models.DO_NOTHING, blank=True, null=True, db_comment='Este campo es una llave forßnea que hace referencia a la clÝnica en la que trabaja el usuario. Ayuda a identificar la relaci¾n del usuario con una clÝnica especÝfica.')
     rol = models.ForeignKey(Roles, models.DO_NOTHING, blank=True, null=True, db_comment='Este campo almacena el apellido 1 del usuario. Es ·til para identificar al usuario dentro del sistema.')
     apellido2 = models.CharField(max_length=50, blank=True, null=True, db_comment='Este campo almacena el apellido 1 del usuario. Es ·til para identificar al usuario dentro del sistema.')
-    apellido1 = models.CharField(max_length=50, blank=True, null=True, db_comment='Este campo almacena el apellido 1 del usuario. Es ·til para identificar al usuario dentro del sistema.')
+    apellido1 = models.CharField(max_length=50, db_comment='Este campo almacena el apellido 1 del usuario. Es ·til para identificar al usuario dentro del sistema.')
 
     class Meta:
         managed = False
