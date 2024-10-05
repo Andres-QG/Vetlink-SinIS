@@ -90,7 +90,7 @@ estando en la carpeta del proyecto:
 `python manage.py migrate`
 
 Traer los datos de la base a modelo de django
-`python manage.py inspectdb > models.py`
+`python manage.py inspectdb > Api/models.py`
 
 En la base de datos se crearan las tablas necesarias para el funcionamiento de django
 

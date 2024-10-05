@@ -258,7 +258,22 @@ class HistorialServicios(models.Model):
         managed = False
         db_table = 'historial_servicios'
         unique_together = (('servicio', 'fecha'),)
-        db_table_comment = 'La tabla HISTORIAL_SERVICIOS almacena informaci≤n sobre los servicios que han sido prestados a las mascotas a lo largo del tiempo. Esta tabla permite llevar un registro detallado de cada servicio realizado, junto con la fecha y otros detalles relevantes.'
+        db_table_comment = 'La tabla HISTORIAL_SERVICIOS almacena informaci¾n sobre los servicios que han sido prestados a las mascotas a lo largo del tiempo. Esta tabla permite llevar un registro detallado de cada servicio realizado, junto con la fecha y otros detalles relevantes.'
+
+
+class Mascotas(models.Model):
+    mascota_id = models.FloatField(primary_key=True, db_comment='Este campo es la llave primaria de la tabla. Almacena un identificador ·nico para cada mascota. Este valor debe ser ·nico y permite distinguir cada mascota de manera clara.')
+    usuario_cliente = models.ForeignKey('Usuarios', models.DO_NOTHING, db_column='usuario_cliente', db_comment='Este campo es una llave forßnea que hace referencia al usuario cliente que posee la mascota. Permite vincular la mascota con el cliente correspondiente en el sistema.')
+    nombre = models.CharField(max_length=30, blank=True, null=True, db_comment='Este campo es una llave forßnea que almacena el n·mero de cÚdula del cliente. Es ·til para identificar al cliente de manera oficial y asegurar que la mascota pertenece a Úl.')
+    fecha_nacimiento = models.DateField(blank=True, null=True, db_comment='Este campo almacena la fecha de nacimiento de la mascota. Es relevante para determinar la edad y estado de salud de la mascota, asÝ como para el seguimiento de su cuidado.')
+    especie = models.CharField(max_length=30, db_comment='Este campo almacena la especie de la mascota (por ejemplo, "Perro", "Gato"). Ayuda a clasificar las mascotas y gestionar su atenci¾n de acuerdo a su especie.')
+    raza = models.CharField(max_length=30, blank=True, null=True, db_comment='Este campo almacena la raza de la mascota (por ejemplo, "Labrador", "Siames"). Proporciona informaci¾n adicional que puede ser importante para el cuidado y tratamiento especÝfico de la mascota.')
+    sexo = models.CharField(max_length=1, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'mascotas'
+        db_table_comment = 'La tabla MASCOTAS almacena informaci¾n sobre las mascotas de los clientes de la clÝnica veterinaria. Cada mascota tiene un identificador ·nico y se asocia con un cliente, permitiendo llevar un registro de las mascotas que son atendidas en la clÝnica.'
 
 
 class MetodosDePago(models.Model):
