@@ -36,7 +36,6 @@ function Login() {
             setError(errorTexts[3])
             return
         };
-        setError('')
 
         const redirectItems = new Map([
             [1, 'owner'],
@@ -134,7 +133,7 @@ function Login() {
                                         )}
 
                                         {/* Olvidaste tu contraseña */}
-                                        <a href="verificacion" className="pt-5 font-bold text-primary hover:underline">
+                                        <a href="reset" className="pt-5 font-bold text-primary hover:underline">
                                             ¿Olvidaste tu contraseña?
                                         </a>
 
