@@ -33,6 +33,46 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
 
   const [formData, setFormData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({}); // Estado para los errores de validación
+
+  // Función de validación de campos
+  const validate = () => {
+    const newErrors = {};
+
+    // Validación de usuario
+    if (!formData.usuario) {
+      newErrors.usuario = "El usuario es requerido.";
+    }
+
+    // Validación de cédula (9 dígitos exactos)
+    const cedulaRegex = /^[0-9]{9}$/;
+    if (!formData.cedula || !cedulaRegex.test(formData.cedula)) {
+      newErrors.cedula = "La cédula debe tener 9 dígitos.";
+    }
+
+    // Validación de correo
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.correo || !emailRegex.test(formData.correo)) {
+      newErrors.correo = "El correo electrónico no es válido.";
+    }
+
+    // Validación de contraseña (al menos 8 caracteres, una mayúscula, un número y un carácter especial)
+    const passwordRegex =
+      /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
+    if (!formData.clave || !passwordRegex.test(formData.clave)) {
+      newErrors.clave =
+        "La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial.";
+    }
+
+    // Validación de teléfono (8 dígitos exactos)
+    const telefonoRegex = /^[0-9]{8}$/;
+    if (!formData.telefono || !telefonoRegex.test(formData.telefono)) {
+      newErrors.telefono = "El teléfono debe tener 8 dígitos.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleChange = (e) => {
     setFormData({
@@ -42,16 +82,19 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
   };
 
   const handleSubmit = async () => {
-    setLoading(true);
-    const success = await onSubmit(formData);
-    setLoading(false);
-    if (success) {
-      setFormData(initialFormData); // Limpiar los campos si se agrega correctamente
+    if (validate()) {
+      setLoading(true);
+      const success = await onSubmit(formData);
+      setLoading(false);
+      if (success) {
+        setFormData(initialFormData); // Limpiar los campos si se agrega correctamente
+      }
     }
   };
 
   const handleClear = () => {
     setFormData(initialFormData);
+    setErrors({});
   };
 
   return (
@@ -67,7 +110,7 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: { xs: "90%", sm: "80%", md: 450 }, // Ajusta el ancho según el tamaño de pantalla
+          width: { xs: "90%", sm: "80%", md: 450 },
           bgcolor: "background.paper",
           boxShadow: 24,
           p: 4,
@@ -108,6 +151,8 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
           onChange={handleChange}
           sx={{ mb: 2 }}
           required
+          error={!!errors.usuario}
+          helperText={errors.usuario}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -124,6 +169,8 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
           onChange={handleChange}
           sx={{ mb: 2 }}
           required
+          error={!!errors.cedula}
+          helperText={errors.cedula}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -140,6 +187,8 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
           onChange={handleChange}
           sx={{ mb: 2 }}
           required
+          error={!!errors.correo}
+          helperText={errors.correo}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -202,10 +251,16 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
           value={formData.telefono}
           onChange={handleChange}
           sx={{ mb: 2 }}
+          required
+          error={!!errors.telefono}
+          helperText={errors.telefono}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
                 <Phone />
+                <Box component="span" sx={{ ml: 1 }}>
+                  +506
+                </Box>
               </InputAdornment>
             ),
           }}
@@ -219,6 +274,8 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
           onChange={handleChange}
           sx={{ mb: 2 }}
           required
+          error={!!errors.clave}
+          helperText={errors.clave}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
