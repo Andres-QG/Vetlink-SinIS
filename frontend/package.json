@@ -15,7 +15,10 @@
     "@heroicons/react": "^2.1.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.26.2"
+    "react-router-dom": "^6.26.2",
+    "@mui/material": "^5.13.7",
+    "@emotion/react": "^11.10.6",
+    "@emotion/styled": "^11.10.6"
   },
   "devDependencies": {
     "axios": "^1.7.7",

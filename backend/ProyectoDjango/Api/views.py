@@ -9,6 +9,7 @@ from django.db.models import Q
 from django.db import transaction
 from .models import Usuarios, Mascotas
 from .serializers import MascotaSerializer
+from .serializers import UsuariosSerializer
 
 class CustomPagination(PageNumberPagination):
     page_size = 10  # Número de registros por página
@@ -40,27 +41,26 @@ def check_user_exists(request):
 def create_pet(request):
     try:
         usuario = request.data.get('usuario_cliente')
-        
+
         # Verify client existence
         try:
             usuario_cliente = Usuarios.objects.get(usuario=usuario)  # Usar la columna usuario
         except Usuarios.DoesNotExist:
             return Response({'error': 'Usuario no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
-        
+
         # Create a new pet that's associated with a client
         data = request.data
         data['usuario_cliente'] = usuario_cliente.usuario  
-        
+
         serializer = MascotaSerializer(data=data)
         if serializer.is_valid():
             serializer.save()  
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 
 @api_view(['GET'])
@@ -101,3 +101,42 @@ def consult_client(request):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@api_view(["GET"])
+def consult_vet(request):
+    try:
+        users = Usuarios.objects.filter(rol=3)
+        serializer = UsuariosSerializer(users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["POST"])
+def create_user(request):
+    try:
+        serializer = UsuariosSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+"""
+curl -X POST http://127.0.0.1:8000/create-user/ \
+-H "Content-Type: application/json" \
+-d '{
+    "usuario": "nuevo_usuario",
+    "rol": 3,
+    "clave": "123456",
+    "cedula": "123456789",
+    "nombre": "prueba",
+    "telefono": "0987654321",
+    "correo": "prueba.subida@correo.com"
+    "clinica" : 1,
+    "especialidad" : 1
+    
+    
+}'
+"""
