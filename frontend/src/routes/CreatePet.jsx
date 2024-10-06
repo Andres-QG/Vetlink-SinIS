@@ -54,13 +54,6 @@ const CreatePet = ({ handleClose }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Calcular una fecha de nacimiento estimada
-  const calculateFechaNacimiento = (edad) => {
-    const currentDate = new Date();
-    const birthYear = currentDate.getFullYear() - edad;
-    return new Date(birthYear, 0, 1).toISOString().split("T")[0];
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) {
@@ -71,7 +64,7 @@ const CreatePet = ({ handleClose }) => {
     const formDataToSend = {
       usuario_cliente: formData.usuario_cliente,
       nombre: formData.nombre,
-      fecha_nacimiento: calculateFechaNacimiento(formData.edad),
+      edad: formData.edad,
       especie:
         formData.especie === "otro" ? formData.otraEspecie : formData.especie,
       raza: formData.raza || "-",
