@@ -220,6 +220,8 @@ def consult_client(request):
                 "usuario": usuario.usuario,
                 "cedula": usuario.cedula,
                 "nombre": usuario.nombre,
+                "apellido1": usuario.apellido1,
+                "apellido2": usuario.apellido2,
                 "apellidos": f"{usuario.apellido1} {usuario.apellido2}",
                 "telefono": usuario.telefono,
                 "correo": usuario.correo,
@@ -267,6 +269,48 @@ def add_client(request):
 
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['PUT'])
+def update_client(request, usuario):
+    try:
+        # Verificar si se recibe el usuario correctamente
+        print(f"Actualizando usuario: {usuario}")
+
+        user = Usuarios.objects.get(usuario=usuario)  # Buscar el usuario por la llave primaria
+
+        # Imprimir los datos recibidos en la solicitud
+        print(f"Datos recibidos: {request.data}")
+
+        # No permitimos modificar la llave primaria (usuario)
+        correo = request.data.get('correo')
+        nombre = request.data.get('nombre')
+        apellido1 = request.data.get('apellido1')
+        apellido2 = request.data.get('apellido2')
+        telefono = request.data.get('telefono')
+        cedula = request.data.get('cedula')
+
+        # Verificar si el correo ya está en uso por otro usuario
+        if Usuarios.objects.filter(correo=correo).exclude(usuario=usuario).exists():
+            return Response({'error': 'El correo ya está en uso.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Actualizar los datos del usuario
+        user.cedula = cedula
+        user.correo = correo
+        user.nombre = nombre
+        user.apellido1 = apellido1
+        user.apellido2 = apellido2
+        user.telefono = telefono
+        user.save()
+
+        return Response({'message': 'Usuario actualizado con éxito.'}, status=status.HTTP_200_OK)
+
+    except Usuarios.DoesNotExist:
+        return Response({'error': 'Usuario no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        # Imprimir el error exacto en el servidor
+        print(f"Error actualizando usuario: {str(e)}")
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 
 @api_view(['POST'])
