@@ -241,7 +241,10 @@ def consult_mascotas(request):
 
         if search:
             # Realizar la búsqueda en la columna especificada
-            search_filter = {f'{column}__icontains': search}
+            if column == "usuario_cliente":
+                search_filter = {'usuario_cliente__usuario__icontains': search}
+            else:
+                search_filter = {f'{column}__icontains': search}
             mascotas = mascotas.filter(**search_filter)
 
         if order == 'desc':
