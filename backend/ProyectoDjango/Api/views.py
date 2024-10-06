@@ -121,6 +121,43 @@ def consult_client(request):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(['POST'])
+@transaction.atomic
+def add_client(request):
+    try:
+        data = request.data
+        usuario = data.get('usuario')
+        cedula = data.get('cedula')
+        correo = data.get('correo')
+        nombre = data.get('nombre')
+        apellido1 = data.get('apellido1')
+        apellido2 = data.get('apellido2')
+        telefono = data.get('telefono')
+        clave = data.get('clave')
+
+        # Verificar si ya existe un usuario con el mismo 'usuario' o 'correo'
+        if Usuarios.objects.filter(Q(usuario=usuario) | Q(correo=correo)).exists():
+            return Response({'error': 'El usuario o el correo ya están en uso.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        hashed_password = make_password(clave)  # Hashear la contraseña
+
+        nuevo_cliente = Usuarios(
+            usuario=usuario,
+            cedula=cedula,
+            nombre=nombre,
+            apellido1=apellido1,
+            apellido2=apellido2,
+            telefono=telefono,
+            correo=correo,
+            clave=hashed_password,
+            rol_id=4  # Rol para cliente
+        )
+        nuevo_cliente.save()
+        return Response({'message': 'Cliente agregado con éxito'}, status=status.HTTP_201_CREATED)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(['POST'])
 def log_out(request):
