@@ -78,7 +78,7 @@ function Login() {
     return (
         <>
             {loading ? (
-                <Loading text={"Verificando Rol"} />
+                <Loading text={"Verificando permisos"} />
             ) : (
             <div className="min-h-screen flex flex-col">
                         <Header />

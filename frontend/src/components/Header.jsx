@@ -1,16 +1,19 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 import axios from 'axios';
 import Button from "./Button";
+import Loading from '../components/Loading';
 
-const Header = React.memo(function Header() {
+function Header() {
   const navigate = useNavigate();
 
   const [burger_class, setBurgerClass] = useState("burger-bar unclicked");
   const [menu_class, setMenuClass] = useState("menu_hidden");
   const [isMenuClicked, setIsMenuClicked] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [loadText, setLoadText] = useState("Cerrando sesión");
 
   const { role, fetchUserRole } = useContext(AuthContext);
 
@@ -28,17 +31,30 @@ const Header = React.memo(function Header() {
 
   async function logOut () {
     try {
+      setLoadText("Cerrando sesión")
+      setLoading(true)
       await axios.post('http://localhost:8000/api/log-out/', {}, { withCredentials: true });
       await fetchUserRole()
+      setLoading(false)
       navigate("/login");
     } catch (error) {
       console.error('Error logging out:', error);
     }
   }
 
-  console.log(role)
-
-  const menuItems = role !== 0 && role !== 5
+  useEffect(() => {
+    if (role === undefined) {
+      setLoadText("Obteniendo rol")
+      const fetchRole = async () => {
+        setLoading(true);
+        await fetchUserRole();
+        setLoading(false);
+      };
+      fetchRole();
+    }
+  }, [role]);
+ 
+  const menuItems = role !== undefined && role !== 5 
     ? [
       { text: "Sobre nosotros", href: "/" },
       { text: "Servicios", href: "services" },
@@ -53,6 +69,9 @@ const Header = React.memo(function Header() {
       { text: "Registrarme", href: "#" },
     ]; 
 
+    if (loading) {
+      return <Loading text={loadText}/>
+    } 
 
   return (
     <>
@@ -104,7 +123,7 @@ const Header = React.memo(function Header() {
               </li>
             </ul>
           </nav>
-          {(role === 0 || role === 5) ? (
+          {(role === undefined || role === 5) ? (
             <div className="hidden lg:flex space-x-3 mt-4 md:mt-0 font-bold">
               <Button
                 className="border-primary transition-all duration-300 hover:scale-105"
@@ -191,6 +210,6 @@ const Header = React.memo(function Header() {
       </div>
     </>
   );
-})
+}
 
 export default Header;

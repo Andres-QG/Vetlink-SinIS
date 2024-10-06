@@ -89,32 +89,32 @@ const GeneralTable = ({
                 >
                   Acciones
                 </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {data.map((item) => (
-                <TableRow key={item.id}>
-                  {columns.map((col) => (
-                    <TableCell key={col.field}>{item[col.field]}</TableCell>
-                  ))}
-                  <TableCell>
-                    <IconButton onClick={() => console.log("Edit clicked")}>
-                      <Edit />
-                    </IconButton>
-                    <IconButton onClick={() => console.log("Delete clicked")}>
-                      <Delete />
-                    </IconButton>
-                  </TableCell>
                 </TableRow>
-              ))}
-              {data.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={columns.length + 1} align="center">
-                    No hay datos disponibles
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
+              </TableHead>
+              <TableBody>
+                {data.map((item) => (
+                  <TableRow key={`row-${item.id}`}>
+                    {columns.map((col, index) => (
+                      <TableCell key={`cell-${item.id}-${col.field}`}>{item[col.field]}</TableCell>
+                    ))}
+                    <TableCell key={`actions-${item.id}`}>
+                      <IconButton onClick={() => console.log("Edit clicked")}>
+                        <Edit />
+                      </IconButton>
+                      <IconButton onClick={() => console.log("Delete clicked")}>
+                        <Delete />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {data.length === 0 && (
+                  <TableRow key="empty-row">
+                    <TableCell colSpan={columns.length + 1} align="center">
+                      No hay datos disponibles
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
           </Table>
         )}
       </TableContainer>

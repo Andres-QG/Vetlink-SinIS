@@ -4,7 +4,9 @@ import axios from 'axios';
 export const AuthContext = createContext();
 
 function AuthProvider({ children }) {
-    const [role, setRole] = useState(0);
+    const [role, setRole] = useState(undefined);
+
+    console.log("Context: "+role)
 
     const fetchUserRole = async () => {
         try {
@@ -15,11 +17,11 @@ function AuthProvider({ children }) {
             if (response.data.role) {
                 setRole(response.data.role)
             } else {
-                setRole(0)
+                setRole(undefined)
             }
             console.log(response)
         } catch (error) {
-            setRole(0)
+            setRole(undefined)
         }
     };
 
