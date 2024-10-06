@@ -38,7 +38,7 @@ const Header = React.memo(function Header() {
 
   console.log(role)
 
-  const menuItems = role !== 0
+  const menuItems = role !== 0 && role !== 5
     ? [
       { text: "Sobre nosotros", href: "/" },
       { text: "Servicios", href: "services" },
@@ -104,7 +104,7 @@ const Header = React.memo(function Header() {
               </li>
             </ul>
           </nav>
-          {role === 0 ? (
+          {(role === 0 || role === 5) ? (
             <div className="hidden lg:flex space-x-3 mt-4 md:mt-0 font-bold">
               <Button
                 className="border-primary transition-all duration-300 hover:scale-105"
