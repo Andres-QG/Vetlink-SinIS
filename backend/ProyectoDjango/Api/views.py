@@ -59,8 +59,9 @@ def reset_password(request):
             [email], # Hacia este correo
             fail_silently=False, # Mostrar errores
         )
-
         request.session['reset_code'] = verification_code # Guarda el código en la sesión
+        request.session['email'] = email
+        
         if userResponse.correo == email:
             return Response({'exists': True, 'message': f'Email authenticated.', 'rol': 5}, status=status.HTTP_200_OK)
     except Usuarios.DoesNotExist:
@@ -75,7 +76,30 @@ def verify_code(request):
     else:
         return Response({'exists': False, 'message': 'Failed to verify code.'}, status=status.HTTP_404_NOT_FOUND)
 
-    
+
+@api_view(['POST'])
+def check_new_pass(request):
+    newPass = request.data.get('newPass')
+    confPass = request.data.get('confPass')
+    if newPass != confPass or not newPass or not confPass: # Revisa que las contraseñas no esten vacias y sean iguales
+        return Response({'exists': False, 'message': 'Failed to verify passwords.'}, status=status.HTTP_404_NOT_FOUND)
+
+    email = request.session.get('email')
+    if email:
+        try:
+            userResponse = Usuarios.objects.get(correo = email) # Revisa que exista un usuario que tenga ese correo asociado
+        except Usuarios.DoesNotExist:
+            return Response({'exists': False, 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    else:
+        return Response({'exists': False, 'message': 'Failed to verify passwords.'}, status=status.HTTP_404_NOT_FOUND)
+
+    if check_password(newPass, userResponse.clave):
+        return Response({'exists': False, 'message': 'Password can\'t be the same as your previous', 'same': True}, status=status.HTTP_200_OK)
+
+    hashed_password = make_password(newPass)
+    userResponse.clave = hashed_password
+    userResponse.save()
+    return Response({'exists': True, 'status': 'success'}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])

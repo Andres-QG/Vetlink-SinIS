@@ -6,7 +6,7 @@ import LandingPage from "./routes/LandingPage";
 import Services from "./routes/Services";
 import ConsultClients from "./routes/ConsultClients";
 import ConsultPets from "./routes/ConsultPets";
-import { PassReset, CheckCode, ChangePass } from "./routes/PassReset";
+import { PassReset, CheckCode, ChangePass, PassSuccess } from "./routes/PassReset";
 import Owner from "./routes/Owner";
 import Error from './routes/Error';
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -33,6 +33,14 @@ function App() {
               element={
                 <ProtectedRoute requiredRole="reset">
                   <ChangePass />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/pass-success"
+              element={
+                <ProtectedRoute requiredRole="reset">
+                  <PassSuccess />
                 </ProtectedRoute>
               }
             />
