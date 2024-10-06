@@ -81,6 +81,13 @@ const ConsultClients = () => {
     }
   };
 
+  // Función para mostrar el Snackbar desde ConsultClientsTable
+  const showSnackbar = (message, severity) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
   const handleSearch = (term, column, sortOrder) => {
     setSearchTerm(term);
     setSearchColumn(column);
@@ -124,6 +131,8 @@ const ConsultClients = () => {
             page={page}
             setPage={setPage}
             totalPages={totalPages}
+            fetchClients={fetchClients} // Pasa la función para recargar la tabla
+            showSnackbar={showSnackbar} // Pasa la función para mostrar el snackbar
           />
         )}
       </div>

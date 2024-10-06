@@ -288,21 +288,6 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
         {/* Botones de Agregar y Limpiar */}
         <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
           <Button
-            variant="contained"
-            onClick={handleSubmit}
-            fullWidth
-            disabled={loading}
-            startIcon={loading && <CircularProgress size={20} />}
-            sx={{
-              backgroundColor: "#00308F",
-              "&:hover": {
-                backgroundColor: "#00246d",
-              },
-            }}
-          >
-            {loading ? "Agregando..." : "Agregar Cliente"}
-          </Button>
-          <Button
             variant="outlined"
             onClick={handleClear}
             fullWidth
@@ -317,6 +302,21 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
             }}
           >
             Limpiar
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            fullWidth
+            disabled={loading}
+            startIcon={loading && <CircularProgress size={20} />}
+            sx={{
+              backgroundColor: "#00308F",
+              "&:hover": {
+                backgroundColor: "#00246d",
+              },
+            }}
+          >
+            {loading ? "Agregando..." : "Agregar Cliente"}
           </Button>
         </Box>
       </Box>
