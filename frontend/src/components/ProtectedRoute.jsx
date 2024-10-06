@@ -13,6 +13,8 @@ function ProtectedRoute ({children, requiredRole='null'}) {
         [5, 'reset'],
     ]);
        
+    console.log(role)
+
     return redirectItems.get(role) === requiredRole ? children : <Error/>;
 };
 

@@ -59,7 +59,7 @@ const GeneralTable = ({
             >
               {columns.map((col) => (
                 <div key={col.field} style={{ marginBottom: "5px" }}>
-                  <strong>{col.headerName}:</strong> {item[col.field]}
+                  <strong>{col.headerName} :</strong> {item[col.field]}
                 </div>
               ))}
               <div>
