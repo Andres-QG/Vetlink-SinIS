@@ -1,14 +1,15 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-import AuthProvider from './context/AuthContext';
+import AuthProvider from "./context/AuthContext";
 import Login from "./routes/Login";
 import LandingPage from "./routes/LandingPage";
 import Services from "./routes/Services";
 import ConsultClients from "./routes/ConsultClients";
 import ConsultPets from "./routes/ConsultPets";
 import Owner from "./routes/Owner";
-import Error from './routes/Error';
+import Error from "./routes/Error";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Clients from "./components/Consult/Clients";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
             <Route path="/error" element={<Error />} />
             <Route path="*" element={<Error />} />
             <Route path="/consultpets" element={<ConsultPets />} />
+            <Route path="/clients" element={<Clients />} />
             <Route
               path="/owner"
               element={
