@@ -9,19 +9,21 @@ function AuthProvider({ children }) {
     console.log("Context: "+role)
 
     const fetchUserRole = async () => {
-        try {
-            console.log("Creando solicitud")
-            const response = await axios.get('http://localhost:8000/api/get-user-role/', {
-                withCredentials: true,
-            });
-            if (response.data.role) {
-                setRole(response.data.role)
-            } else {
+        if (role !== 5) {
+            try {
+                console.log("Creando solicitud")
+                const response = await axios.get('http://localhost:8000/api/get-user-role/', {
+                    withCredentials: true,
+                });
+                if (response.data.role) {
+                    setRole(response.data.role)
+                } else {
+                    setRole(undefined)
+                }
+                console.log(response)
+            } catch (error) {
                 setRole(undefined)
             }
-            console.log(response)
-        } catch (error) {
-            setRole(undefined)
         }
     };
 

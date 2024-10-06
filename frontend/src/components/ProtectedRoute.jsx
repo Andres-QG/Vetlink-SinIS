@@ -20,11 +20,12 @@ function ProtectedRoute ({children, requiredRole}) {
 
 
     const redirectItems = new Map([
+        [undefined, 'ntlog'],
         [1, 'owner'],
         [2, 'admin'],
         [3, 'vet'],
         [4, 'clnt'],
-        [undefined, 'reset'],
+        [5, 'reset'],
     ]);
 
     if (loading) {

@@ -43,7 +43,6 @@ function Header() {
   }
 
   useEffect(() => {
-    if (role === undefined) {
       setLoadText("Obteniendo rol")
       const fetchRole = async () => {
         setLoading(true);
@@ -51,8 +50,7 @@ function Header() {
         setLoading(false);
       };
       fetchRole();
-    }
-  }, [role]);
+    }, [role]);
  
   const menuItems = role !== undefined && role !== 5 
     ? [

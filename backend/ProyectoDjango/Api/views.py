@@ -48,7 +48,8 @@ def reset_password(request):
     email = request.data.get('email') # Obtiene el correo de la solicitud
     if not email:
         return Response({"error": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
-
+    
+    request.session['role'] = 5
     try:
         userResponse = Usuarios.objects.get(correo=email) # Revisa que exista un usuario que tenga ese correo asociado
         verification_code = random.randint(100000, 999999) # Genera un número aleatorio de 6 dígitos

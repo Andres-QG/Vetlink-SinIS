@@ -43,8 +43,8 @@ export function PassReset() {
                 withCredentials: true
             });
             console.log(response)
-            if (response.data.rol) {
-                setRole(response.data.rol)
+            if (response.data.exists === true) {
+                setRole(5)
                 navigate('/check-reset');
             } 
         } catch (error) {
