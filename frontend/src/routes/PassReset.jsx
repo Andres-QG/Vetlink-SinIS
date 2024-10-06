@@ -364,7 +364,7 @@ export function PassSuccess() {
                             <Button
                                 className="mt-5 text-xl w-72 h-12 border-none text-bgsecondary bg-primary hover:scale-[1.03]"
                                 type="submit"
-                                onClick={navigate('/login')}
+                                onClick={() => navigate('/login')}
                             >
                                 Iniciar Sesión
                             </Button>
