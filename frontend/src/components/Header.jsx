@@ -1,15 +1,18 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useContext, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
-import React from "react";
+import axios from 'axios';
 import Button from "./Button";
 
-function Header() {
+const Header = React.memo(function Header() {
   const navigate = useNavigate();
 
   const [burger_class, setBurgerClass] = useState("burger-bar unclicked");
   const [menu_class, setMenuClass] = useState("menu_hidden");
   const [isMenuClicked, setIsMenuClicked] = useState(false);
+
+  const { role, fetchUserRole } = useContext(AuthContext);
 
   const updateMenu = () => {
     setBurgerClass(
@@ -23,13 +26,33 @@ function Header() {
     navigate(`/${route}`);
   };
 
-  const menuItems = [
-    { text: "Sobre nosotros", href: "/" },
-    { text: "Servicios", href: "services" },
-    { text: "Contacto", href: "#" },
-    { text: "Iniciar Sesión", href: "login" },
-    { text: "Registrarme", href: "#" },
-  ];
+  async function logOut () {
+    try {
+      await axios.post('http://localhost:8000/api/log-out/', {}, { withCredentials: true });
+      await fetchUserRole()
+      navigate("/login");
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  }
+
+  console.log(role)
+
+  const menuItems = role !== 0
+    ? [
+      { text: "Sobre nosotros", href: "/" },
+      { text: "Servicios", href: "services" },
+      { text: "Contacto", href: "#" },
+      { text: "Cerrar Sesión", onClick: logOut},
+    ]
+    : [
+      { text: "Sobre nosotros", href: "/" },
+      { text: "Servicios", href: "services" },
+      { text: "Contacto", href: "#" },
+      { text: "Iniciar Sesión", href: "login" },
+      { text: "Registrarme", href: "#" },
+    ]; 
+
 
   return (
     <>
@@ -81,19 +104,29 @@ function Header() {
               </li>
             </ul>
           </nav>
-          <div className="hidden lg:flex space-x-3 mt-4 md:mt-0 font-bold">
+          {role === 0 ? (
+            <div className="hidden lg:flex space-x-3 mt-4 md:mt-0 font-bold">
+              <Button
+                className="border-primary transition-all duration-300 hover:scale-105"
+                onClick={() => {
+                  handleClick("login");
+                }}
+              >
+                Iniciar sesión
+              </Button>
+              <Button className="border-primary bg-primary text-bgsecondary hover:text-bgprimary hover:border-primary hover:scale-105 transition-all duration-300">
+                Registrarme
+              </Button>
+            </div>
+          ) : (
             <Button
-              className="border-primary transition-all duration-300 hover:scale-105"
-              onClick={() => {
-                handleClick("login");
-              }}
+                className="hidden lg:flex border-primary bg-primary text-bgsecondary hover:text-bgprimary hover:border-primary hover:scale-105 transition-all duration-300"
+                onClick={logOut}
             >
-              Iniciar sesión
+              Cerrar Sesión
             </Button>
-            <Button className="border-primary bg-primary text-bgsecondary hover:text-bgprimary hover:border-primary hover:scale-105 transition-all duration-300">
-              Registrarme
-            </Button>
-          </div>
+          )
+          }
           <div
             className="burger-menu flex flex-col space-y-1 lg:hidden cursor-pointer  "
             onClick={updateMenu}
@@ -138,8 +171,15 @@ function Header() {
                 }}
               >
                 <a
-                  href={item.href}
-                  className="font-bold hover:text-action transition duration-500"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (item.onClick) {
+                      item.onClick();
+                    } else {
+                      window.location.href = item.href;
+                    }
+                  }}
+                  className="font-bold hover:text-action transition duration-500 cursor-pointer"
                 >
                   {item.text}
                 </a>
@@ -151,6 +191,6 @@ function Header() {
       </div>
     </>
   );
-}
+})
 
 export default Header;

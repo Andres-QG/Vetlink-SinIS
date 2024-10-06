@@ -1,8 +1,27 @@
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { useState, useContext, useEffect } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 import Services_Gallery from "../components/Services_Gallery";
+import Loading from "../components/Loading";
+
 function Services() {
+  const { fetchUserRole } = useContext(AuthContext);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRole = async () => {
+      await fetchUserRole();
+      setIsLoading(false);
+    };
+    fetchRole();
+  }, [fetchUserRole]);
+
+  if (isLoading) {
+    return <Loading text={"Cargando Servicios"}/>;
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />

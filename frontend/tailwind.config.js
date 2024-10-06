@@ -11,6 +11,7 @@ export default {
         bgprimary: "var(--color-bg-primary)",
         bgsecondary: "var(--color-bg-secondary)",
         primary: "var(--color-primary)",
+        hoverPrimary: "#00246d",
         secondary: "var(--color-secondary)",
         action: "var(--color-action)",
         elemsec: "var(--color-elems-secondary)",

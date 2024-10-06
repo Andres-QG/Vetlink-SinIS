@@ -1,5 +1,7 @@
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
+from django.contrib.auth import logout
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -28,7 +30,9 @@ def check_user_exists(request):
         userResponse = Usuarios.objects.get(usuario=user) 
 
         if check_password(password, userResponse.clave):
-            request.session['username'] = userResponse.usuario
+            request.session['user'] = userResponse.usuario
+            request.session['role'] = userResponse.rol_id
+            print("Current session:", request.session.items())
             return Response({'exists': True, 'message': f'User {user} authenticated.', 'rol': userResponse.rol_id}, status=status.HTTP_200_OK)
         else:
             return Response({'exists': False, 'message': 'Password incorrect.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -62,26 +66,42 @@ def create_pet(request):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@csrf_exempt
+@api_view(['GET'])
+def get_user_role(request):
+    role = request.session.get('role')
+    
+    print("Current session:", request.session.items())
+    if role:
+        return Response({'status':'success', 'message': 'Role acquired', 'role': role})
+    else:
+        return Response({'status':'error', 'message':'User not logged in'})
 
 @api_view(['GET'])
 def consult_client(request):
     search = request.GET.get('search', '')
-    column = request.GET.get('column', 'usuario')  # Ajustar para que 'usuario' sea la columna por defecto
+    column = request.GET.get('column', 'usuario')
     order = request.GET.get('order', 'asc')
 
     try:
-        # Filtrar usuarios por rol 4
         usuarios_clientes = Usuarios.objects.filter(rol=4)
-
         if search:
-            # Asegurarse de que el filtrado se realice en la columna especificada
-            kwargs = {f'{column}__icontains': search}
-            usuarios_clientes = usuarios_clientes.filter(**kwargs)
+            if column == "apellidos":
+                # Si la columna de búsqueda es 'apellidos', filtra por 'apellido1' y 'apellido2'
+                usuarios_clientes = usuarios_clientes.filter(
+                    Q(apellido1__icontains=search) | Q(apellido2__icontains=search)
+                )
+            else:
+                # Para otras columnas, utiliza el filtrado dinámico basado en kwargs
+                kwargs = {f'{column}__icontains': search}
+                usuarios_clientes = usuarios_clientes.filter(**kwargs)
 
-        if order == 'desc':
-            usuarios_clientes = usuarios_clientes.order_by(f'-{column}')
+        # Ordenación de resultados
+        if column == "apellidos":
+            # Si se ordena por 'apellidos', se ordena por 'apellido1' y luego por 'apellido2'
+            usuarios_clientes = usuarios_clientes.order_by(f'-apellido1', '-apellido2' if order == 'desc' else 'apellido1', 'apellido2')
         else:
-            usuarios_clientes = usuarios_clientes.order_by(column)
+            usuarios_clientes = usuarios_clientes.order_by(f'-{column}' if order == 'desc' else column)
 
         paginator = CustomPagination()
         result_page = paginator.paginate_queryset(usuarios_clientes, request)
@@ -90,6 +110,7 @@ def consult_client(request):
                 "usuario": usuario.usuario,
                 "cedula": usuario.cedula,
                 "nombre": usuario.nombre,
+                "apellidos": f"{usuario.apellido1} {usuario.apellido2}",
                 "telefono": usuario.telefono,
                 "correo": usuario.correo,
             }
@@ -100,6 +121,81 @@ def consult_client(request):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(['POST'])
+@transaction.atomic
+def add_client(request):
+    try:
+        data = request.data
+        usuario = data.get('usuario')
+        cedula = data.get('cedula')
+        correo = data.get('correo')
+        nombre = data.get('nombre')
+        apellido1 = data.get('apellido1')
+        apellido2 = data.get('apellido2')
+        telefono = data.get('telefono')
+        clave = data.get('clave')
+
+        # Verificar si ya existe un usuario con el mismo 'usuario' o 'correo'
+        if Usuarios.objects.filter(Q(usuario=usuario) | Q(correo=correo)).exists():
+            return Response({'error': 'El usuario o el correo ya están en uso.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        hashed_password = make_password(clave)  # Hashear la contraseña
+
+        nuevo_cliente = Usuarios(
+            usuario=usuario,
+            cedula=cedula,
+            nombre=nombre,
+            apellido1=apellido1,
+            apellido2=apellido2,
+            telefono=telefono,
+            correo=correo,
+            clave=hashed_password,
+            rol_id=4  # Rol para cliente
+        )
+        nuevo_cliente.save()
+        return Response({'message': 'Cliente agregado con éxito'}, status=status.HTTP_201_CREATED)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+def log_out(request):
+    if logout(request):
+        return Response({'status':'success', 'message':'User logged out succesfully'})
+    else:
+        return Response({'status':'failed', 'message':'Couldn\' log out'})
+    
+
+
+@api_view(['GET'])
+def consult_mascotas(request):
+    search = request.GET.get('search', '')
+    column = request.GET.get('column', 'nombre')  
+    order = request.GET.get('order', 'asc')
+
+    try:
+        mascotas = Mascotas.objects.all()
+
+        if search:
+            # Realizar la búsqueda en la columna especificada
+            search_filter = {f'{column}__icontains': search}
+            mascotas = mascotas.filter(**search_filter)
+
+        if order == 'desc':
+            mascotas = mascotas.order_by(f'-{column}')
+        else:
+            mascotas = mascotas.order_by(column)
+
+        # Paginar los resultados
+        paginator = CustomPagination()
+        result_page = paginator.paginate_queryset(mascotas, request)
+        serializer = MascotaSerializer(result_page, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(["GET"])
 def consult_vet(request):

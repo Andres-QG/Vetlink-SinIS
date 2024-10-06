@@ -1,20 +1,28 @@
 import axios from "axios";
-import {
-  TextInput,
-  DateInput,
-  SelectInput,
-} from "../components/FormComponents";
 import { useState } from "react";
+import {
+  TextField,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  Button,
+  Box,
+  Stack,
+} from "@mui/material";
 
-const AddPetForm = () => {
+const CreatePet = ({ handleClose }) => {
   const [formData, setFormData] = useState({
     usuario_cliente: "",
     nombre: "",
-    fecha_nacimiento: "",
+    edad: "",
     especie: "",
     raza: "",
     sexo: "M",
+    otraEspecie: "",
   });
+
+  const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     setFormData({
@@ -23,20 +31,57 @@ const AddPetForm = () => {
     });
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.usuario_cliente) {
+      newErrors.usuario_cliente = "Usuario cliente es obligatorio";
+    }
+    if (!formData.nombre) {
+      newErrors.nombre = "Nombre es obligatorio";
+    }
+    if (!formData.especie) {
+      newErrors.especie = "Especie es obligatorio";
+    }
+    if (!formData.sexo) {
+      newErrors.sexo = "Sexo es obligatorio";
+    }
+    if (!formData.edad || isNaN(formData.edad) || formData.edad <= 0) {
+      newErrors.edad = "Por favor, introduzca una edad válida";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Calcular una fecha de nacimiento estimada
+  const calculateFechaNacimiento = (edad) => {
+    const currentDate = new Date();
+    const birthYear = currentDate.getFullYear() - edad;
+    return new Date(birthYear, 0, 1).toISOString().split("T")[0];
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) {
+      return;
+    }
 
-    const formattedDate = new Date(formData.fecha_nacimiento)
-      .toISOString()
-      .split("T")[0];
+    // '-' como valor por defecto en campos no obligatorios.
+    const formDataToSend = {
+      usuario_cliente: formData.usuario_cliente,
+      nombre: formData.nombre,
+      fecha_nacimiento: calculateFechaNacimiento(formData.edad),
+      especie:
+        formData.especie === "otro" ? formData.otraEspecie : formData.especie,
+      raza: formData.raza || "-",
+      sexo: formData.sexo,
+    };
 
     try {
       const response = await axios.post(
         "http://localhost:8000/api/create-pet/",
-        {
-          ...formData,
-          fecha_nacimiento: formattedDate,
-        },
+        formDataToSend,
         {
           headers: {
             "Content-Type": "application/json",
@@ -46,85 +91,136 @@ const AddPetForm = () => {
 
       if (response.status === 201) {
         alert("Mascota agregada exitosamente");
-        setFormData({
-          usuario_cliente: "",
-          nombre: "",
-          fecha_nacimiento: "",
-          especie: "",
-          raza: "",
-          sexo: "M",
-        });
+        handleClose(); // Cerrar modal al éxito
       }
     } catch (error) {
-      console.error(
-        "Error al agregar la mascota:",
-        error.response?.data || error.message
-      );
-      const errorMessage = error.response?.data
-        ? JSON.stringify(error.response.data)
-        : "Error desconocido";
-      alert("Hubo un error al agregar la mascota: " + errorMessage);
+      alert("Error al agregar mascota");
     }
   };
 
   return (
-    <div className="max-w-md mx-auto bg-bgsecondary p-8 mt-10 rounded shadow font-montserrat">
-      <h2 className="text-2xl font-bold mb-6 text-center text-secondary">
-        Agregar Mascota
+    <Box className="font-montserrat">
+      <h2 className="text-2xl font-semibold text-secondary p-3">
+        Crear Mascota
       </h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <TextInput
+
+      <form onSubmit={handleSubmit} className="space-y-6 font-montserrat">
+        <TextField
           label="Usuario Cliente"
+          variant="outlined"
+          fullWidth
           name="usuario_cliente"
           value={formData.usuario_cliente}
           onChange={handleChange}
-          required={true}
+          error={!!errors.usuario_cliente}
+          helperText={errors.usuario_cliente}
         />
-        <TextInput
-          label="Nombre de la Mascota"
+
+        <TextField
+          label="Nombre"
+          variant="outlined"
+          fullWidth
           name="nombre"
           value={formData.nombre}
           onChange={handleChange}
-          required={true}
+          error={!!errors.nombre}
+          helperText={errors.nombre}
         />
-        <DateInput
-          label="Fecha de Nacimiento"
-          name="fecha_nacimiento"
-          value={formData.fecha_nacimiento}
+
+        <TextField
+          label="Edad (años)"
+          variant="outlined"
+          fullWidth
+          name="edad"
+          value={formData.edad}
           onChange={handleChange}
+          error={!!errors.edad}
+          helperText={errors.edad}
         />
-        <TextInput
-          label="Especie"
-          name="especie"
-          value={formData.especie}
-          onChange={handleChange}
-          required={true}
-        />
-        <TextInput
+
+        <FormControl fullWidth variant="outlined">
+          <InputLabel>Especie</InputLabel>
+          <Select
+            label="Especie"
+            name="especie"
+            value={formData.especie}
+            onChange={handleChange}
+            error={!!errors.especie}
+          >
+            <MenuItem value="perro">Perro</MenuItem>
+            <MenuItem value="gato">Gato</MenuItem>
+            <MenuItem value="otro">Otro</MenuItem>
+          </Select>
+        </FormControl>
+
+        {formData.especie === "otro" && (
+          <TextField
+            label="Especifique la especie"
+            variant="outlined"
+            fullWidth
+            name="otraEspecie"
+            value={formData.otraEspecie}
+            onChange={handleChange}
+          />
+        )}
+
+        <TextField
           label="Raza"
+          variant="outlined"
+          fullWidth
           name="raza"
           value={formData.raza}
           onChange={handleChange}
         />
-        <SelectInput
-          label="Sexo"
-          name="sexo"
-          value={formData.sexo}
-          onChange={handleChange}
-          options={[
-            { value: "M", label: "Macho" },
-            { value: "H", label: "Hembra" },
-          ]}
-        />
-        <button
-          type="submit"
-          className="w-full bg-brand text-white py-2 rounded font-semibold hover:bg-teal-600"
-        >
-          Agregar Mascota
-        </button>
+
+        <FormControl fullWidth variant="outlined">
+          <InputLabel>Sexo</InputLabel>
+          <Select
+            label="Sexo"
+            name="sexo"
+            value={formData.sexo}
+            onChange={handleChange}
+            error={!!errors.sexo}
+          >
+            <MenuItem value="M">Macho</MenuItem>
+            <MenuItem value="H">Hembra</MenuItem>
+          </Select>
+        </FormControl>
+
+        <Stack direction="row" spacing={2}>
+          <Button
+            onClick={handleClose}
+            variant="outlined"
+            size="small"
+            sx={{
+              color: "#00308F",
+              borderColor: "#00308F",
+              "&:hover": {
+                backgroundColor: "#f0f0f0",
+              },
+            }}
+          >
+            Cancelar
+          </Button>
+
+          <Button
+            type="submit"
+            variant="contained"
+            size="small"
+            sx={{
+              backgroundColor: "#00308F",
+              color: "#fff",
+              "&:hover": {
+                backgroundColor: "#00246d",
+              },
+            }}
+          >
+            Agregar Mascota
+          </Button>
+        </Stack>
       </form>
-    </div>
+    </Box>
   );
 };
 
-export default AddPetForm;
+export default CreatePet;
