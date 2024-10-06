@@ -310,6 +310,17 @@ def update_client(request, usuario):
         # Imprimir el error exacto en el servidor
         print(f"Error actualizando usuario: {str(e)}")
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['DELETE'])
+def delete_client(request, usuario):
+    try:
+        user = Usuarios.objects.get(usuario=usuario)  # Buscar el usuario por su usuario
+        user.delete()  # Eliminar el usuario
+        return Response({'message': 'Usuario eliminado con éxito.'}, status=status.HTTP_200_OK)
+    except Usuarios.DoesNotExist:
+        return Response({'error': 'Usuario no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 

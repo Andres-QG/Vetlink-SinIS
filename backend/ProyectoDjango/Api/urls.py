@@ -11,8 +11,8 @@ urlpatterns = [
     path('consult-client/', consult_client, name='consult_client'),
     path('consult-clinics/', consult_clinics, name='consult_clinics'),
     path('add-client/', add_client, name='add_client'),
-    # Aceptar un parámetro dinámico 'usuario'
     path('update-client/<str:usuario>/', update_client, name='update_client'),
+    path('delete-client/<str:usuario>/', delete_client, name='delete_client'),
     path('consult-mascotas/', consult_mascotas, name='consult_mascotas'),
     path('create-pet/', create_pet, name='create_pet'),
 ]

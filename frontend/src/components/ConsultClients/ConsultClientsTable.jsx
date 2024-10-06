@@ -12,7 +12,8 @@ import {
   TablePagination,
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
-import ModifyClientModal from "./ModifyClientModal"; // Importa tu modal de modificación
+import ModifyClientModal from "./ModifyClientModal";
+import DeleteClientModal from "./DeleteClientModal";
 
 const ConsultClientsTable = ({
   clients,
@@ -23,31 +24,41 @@ const ConsultClientsTable = ({
   showSnackbar,
 }) => {
   const rowsPerPage = 10; // Número fijo de filas por página
-  const [openModal, setOpenModal] = useState(false); // Controla si el modal está abierto
-  const [selectedClient, setSelectedClient] = useState(null); // Cliente seleccionado para modificar
+  const [openModal, setOpenModal] = useState(false); // Controla el modal de modificación
+  const [openDeleteModal, setOpenDeleteModal] = useState(false); // Controla el modal de eliminación
+  const [selectedClient, setSelectedClient] = useState(null); // Cliente seleccionado
 
-  // Función para abrir el modal y seleccionar un cliente
+  // Función para abrir el modal de modificación
   const handleEditClick = (client) => {
     setSelectedClient(client);
     setOpenModal(true);
   };
 
-  // Función para cerrar el modal
+  // Función para abrir el modal de eliminación
+  const handleDeleteClick = (client) => {
+    setSelectedClient(client);
+    setOpenDeleteModal(true);
+  };
+
+  // Función para cerrar el modal de modificación
   const handleCloseModal = () => {
     setOpenModal(false);
     setSelectedClient(null);
   };
 
-  // Función para obtener la etiqueta ARIA para los botones de paginación
-  const getItemAriaLabel = (type) => {
-    return `Ir a la página ${type}`;
+  // Función para cerrar el modal de eliminación
+  const handleCloseDeleteModal = () => {
+    setOpenDeleteModal(false);
+    setSelectedClient(null);
   };
 
-  // Función para actualizar el cliente (este se puede pasar al modal)
-  const handleUpdateClient = async (updatedClient) => {
-    await fetchClients(); // Refrescar la lista de clientes
-    showSnackbar("Cliente modificado con éxito.", "success"); // Muestra el mensaje de éxito
-    handleCloseModal(); // Cierra el modal después de actualizar
+  // Definición de etiquetas de paginación accesibles
+  const getItemAriaLabel = (type) => {
+    if (type === "first") return "Ir a la primera página";
+    if (type === "last") return "Ir a la última página";
+    if (type === "next") return "Ir a la siguiente página";
+    if (type === "previous") return "Ir a la página anterior";
+    return "";
   };
 
   return (
@@ -87,7 +98,7 @@ const ConsultClientsTable = ({
                   <IconButton onClick={() => handleEditClick(client)}>
                     <Edit />
                   </IconButton>
-                  <IconButton>
+                  <IconButton onClick={() => handleDeleteClick(client)}>
                     <Delete />
                   </IconButton>
                 </TableCell>
@@ -102,39 +113,51 @@ const ConsultClientsTable = ({
             )}
           </TableBody>
           <TableFooter>
-            <TableRow>
-              <TablePagination
-                component="div"
-                count={totalPages * rowsPerPage}
-                rowsPerPage={rowsPerPage}
-                page={page - 1}
-                onPageChange={(event, newPage) => setPage(newPage + 1)}
-                labelDisplayedRows={({ from, to, count }) =>
-                  `${from}-${to} de ${count}`
-                }
-                rowsPerPageOptions={[]} // No muestra la selección de 'rows per page'
-                showFirstButton={true}
-                showLastButton={true}
-                getItemAriaLabel={getItemAriaLabel}
+            <TableRow
+              sx={{
+                height: "auto",
+              }}
+            >
+              <TableCell
+                colSpan={7}
                 sx={{
-                  ".MuiTablePagination-toolbar": {
-                    justifyContent: "flex-start", // Alinea los controles de paginación al final
-                    flexWrap: "wrap", // Permite que los elementos se envuelvan en pantallas pequeñas
-                    minWidth: "300px", // Asegura un ancho mínimo para los controles de paginación
-                  },
-                  ".MuiTablePagination-spacer": {
-                    flex: "none", // Asegura que el spacer adapte su tamaño correctamente
-                    minWidth: 50, // Establece un ancho mínimo para el spacer
-                    display: "none",
-                  },
-                  ".MuiTablePagination-selectRoot": {
-                    margin: 0, // Reduce el margen alrededor del selector de páginas
-                  },
-                  ".MuiTablePagination-actions": {
-                    flexShrink: 0, // Evita que los botones se reduzcan
-                  },
+                  borderBottom: "none",
+                  padding: "8px 0",
                 }}
-              />
+              >
+                <TablePagination
+                  component="div"
+                  count={totalPages * rowsPerPage}
+                  rowsPerPage={rowsPerPage}
+                  page={page - 1}
+                  onPageChange={(event, newPage) => setPage(newPage + 1)}
+                  labelDisplayedRows={({ from, to, count }) =>
+                    `${from}-${to} de ${count}`
+                  }
+                  rowsPerPageOptions={[]} // No muestra la selección de 'rows per page'
+                  showFirstButton={true}
+                  showLastButton={true}
+                  getItemAriaLabel={getItemAriaLabel}
+                  sx={{
+                    ".MuiTablePagination-toolbar": {
+                      justifyContent: "flex-start",
+                      flexWrap: "wrap",
+                      minWidth: "300px",
+                    },
+                    ".MuiTablePagination-spacer": {
+                      flex: "none",
+                      minWidth: 50,
+                      display: "none",
+                    },
+                    ".MuiTablePagination-selectRoot": {
+                      margin: 0,
+                    },
+                    ".MuiTablePagination-actions": {
+                      flexShrink: 0,
+                    },
+                  }}
+                />
+              </TableCell>
             </TableRow>
           </TableFooter>
         </Table>
@@ -146,7 +169,19 @@ const ConsultClientsTable = ({
           open={openModal}
           onClose={handleCloseModal}
           client={selectedClient}
-          onSubmit={handleUpdateClient} // Función que maneja la actualización
+          fetchClients={fetchClients}
+          showSnackbar={showSnackbar}
+        />
+      )}
+
+      {/* Modal de eliminación de cliente */}
+      {selectedClient && (
+        <DeleteClientModal
+          open={openDeleteModal}
+          onClose={handleCloseDeleteModal}
+          client={selectedClient}
+          fetchClients={fetchClients}
+          showSnackbar={showSnackbar}
         />
       )}
     </>

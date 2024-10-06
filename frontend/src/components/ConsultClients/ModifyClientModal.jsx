@@ -8,13 +8,17 @@ import {
   IconButton,
   CircularProgress,
   InputAdornment,
-  Snackbar,
-  Alert,
 } from "@mui/material";
 import { Close, Person, Email, Phone, Badge } from "@mui/icons-material";
 import axios from "axios";
 
-const ModifyClientModal = ({ open, onClose, client, onSubmit }) => {
+const ModifyClientModal = ({
+  open,
+  onClose,
+  client,
+  fetchClients,
+  showSnackbar,
+}) => {
   const initialFormData = {
     cedula: "",
     correo: "",
@@ -27,52 +31,42 @@ const ModifyClientModal = ({ open, onClose, client, onSubmit }) => {
   const [formData, setFormData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const [snackbarOpen, setSnackbarOpen] = useState(false); // Estado para el Snackbar
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
-  // Cargar los datos del cliente en el formulario cuando `client` cambie
   useEffect(() => {
     if (client) {
       setFormData({
         cedula: client.cedula || "",
         correo: client.correo || "",
         nombre: client.nombre || "",
-        apellido1: client.apellido1 || "", // Carga correctamente el primer apellido
-        apellido2: client.apellido2 || "", // Carga correctamente el segundo apellido
+        apellido1: client.apellido1 || "",
+        apellido2: client.apellido2 || "",
         telefono: client.telefono || "",
       });
     }
   }, [client]);
 
-  // Función de validación de campos
   const validate = () => {
     const newErrors = {};
 
-    // Validación de cédula (9 dígitos exactos)
     const cedulaRegex = /^[0-9]{9}$/;
     if (!formData.cedula || !cedulaRegex.test(formData.cedula)) {
       newErrors.cedula = "La cédula debe tener 9 dígitos.";
     }
 
-    // Validación de correo
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.correo || !emailRegex.test(formData.correo)) {
       newErrors.correo = "El correo electrónico no es válido.";
     }
 
-    // Validación de teléfono (8 dígitos exactos)
     const telefonoRegex = /^[0-9]{8}$/;
     if (!formData.telefono || !telefonoRegex.test(formData.telefono)) {
       newErrors.telefono = "El teléfono debe tener 8 dígitos.";
     }
 
-    // Validación de nombre
     if (!formData.nombre) {
       newErrors.nombre = "El nombre es requerido.";
     }
 
-    // Validación de apellido1
     if (!formData.apellido1) {
       newErrors.apellido1 = "El primer apellido es requerido.";
     }
@@ -93,17 +87,16 @@ const ModifyClientModal = ({ open, onClose, client, onSubmit }) => {
       setLoading(true);
       setErrors({});
       try {
-        const response = await axios.put(
-          `http://localhost:8000/api/update-client/${client.usuario}/`, // Envía la llave primaria
+        await axios.put(
+          `http://localhost:8000/api/update-client/${client.usuario}/`,
           formData
         );
-        onSubmit(response.data); // Llama a la función para actualizar la tabla
-        setSnackbarMessage("Cliente modificado con éxito.");
-        setSnackbarSeverity("success");
-        setSnackbarOpen(true); // Muestra el mensaje de éxito
+
+        await fetchClients(); // Refresca la lista de clientes
+        showSnackbar("Cliente modificado con éxito.", "success");
+
         onClose(); // Cierra el modal después de guardar
       } catch (error) {
-        // Manejo de errores específicos
         if (
           error.response &&
           error.response.data.error === "El correo ya está en uso."
@@ -112,9 +105,7 @@ const ModifyClientModal = ({ open, onClose, client, onSubmit }) => {
         } else {
           setErrors({ general: "Error al actualizar el cliente." });
         }
-        setSnackbarMessage("Error al modificar el cliente.");
-        setSnackbarSeverity("error");
-        setSnackbarOpen(true); // Muestra el mensaje de error
+        showSnackbar("Error al modificar el cliente.", "error");
       } finally {
         setLoading(false);
       }
@@ -127,207 +118,182 @@ const ModifyClientModal = ({ open, onClose, client, onSubmit }) => {
   };
 
   return (
-    <>
-      <Modal open={open} onClose={onClose}>
-        <Box
+    <Modal open={open} onClose={onClose}>
+      <Box
+        sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: { xs: "90%", sm: "80%", md: 450 },
+          bgcolor: "background.paper",
+          p: 4,
+          borderRadius: "10px",
+          boxShadow: 24,
+        }}
+      >
+        <IconButton
+          onClick={onClose}
+          sx={{ position: "absolute", top: 8, right: 8 }}
+        >
+          <Close />
+        </IconButton>
+
+        <Typography
+          variant="h6"
+          component="h2"
           sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: { xs: "90%", sm: "80%", md: 450 },
-            bgcolor: "background.paper",
-            p: 4,
-            borderRadius: "10px",
-            boxShadow: 24,
+            textAlign: "center",
+            marginBottom: "20px",
+            fontWeight: "bold",
+            color: "#333",
+            borderBottom: "1px solid #ddd",
+            paddingBottom: "10px",
           }}
         >
-          {/* Icono de cerrar modal */}
-          <IconButton
-            onClick={onClose}
-            sx={{ position: "absolute", top: 8, right: 8 }}
-          >
-            <Close />
-          </IconButton>
+          Modificar Cliente
+        </Typography>
 
-          {/* Título del modal */}
-          <Typography
-            variant="h6"
-            component="h2"
+        {/* Campos de formulario */}
+        <TextField
+          fullWidth
+          label="Cédula"
+          name="cedula"
+          value={formData.cedula}
+          onChange={handleChange}
+          sx={{ mb: 2 }}
+          required
+          error={!!errors.cedula}
+          helperText={errors.cedula}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Badge />
+              </InputAdornment>
+            ),
+          }}
+        />
+        <TextField
+          fullWidth
+          label="Correo"
+          name="correo"
+          value={formData.correo}
+          onChange={handleChange}
+          sx={{ mb: 2 }}
+          required
+          error={!!errors.correo}
+          helperText={errors.correo}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Email />
+              </InputAdornment>
+            ),
+          }}
+        />
+        <TextField
+          fullWidth
+          label="Nombre"
+          name="nombre"
+          value={formData.nombre}
+          onChange={handleChange}
+          sx={{ mb: 2 }}
+          required
+          error={!!errors.nombre}
+          helperText={errors.nombre}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Person />
+              </InputAdornment>
+            ),
+          }}
+        />
+        <TextField
+          fullWidth
+          label="Apellido 1"
+          name="apellido1"
+          value={formData.apellido1}
+          onChange={handleChange}
+          sx={{ mb: 2 }}
+          required
+          error={!!errors.apellido1}
+          helperText={errors.apellido1}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Person />
+              </InputAdornment>
+            ),
+          }}
+        />
+        <TextField
+          fullWidth
+          label="Apellido 2"
+          name="apellido2"
+          value={formData.apellido2}
+          onChange={handleChange}
+          sx={{ mb: 2 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Person />
+              </InputAdornment>
+            ),
+          }}
+        />
+        <TextField
+          fullWidth
+          label="Teléfono"
+          name="telefono"
+          value={formData.telefono}
+          onChange={handleChange}
+          sx={{ mb: 2 }}
+          required
+          error={!!errors.telefono}
+          helperText={errors.telefono}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Phone />
+                <Box component="span" sx={{ ml: 1 }}>
+                  +506
+                </Box>
+              </InputAdornment>
+            ),
+          }}
+        />
+
+        <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+          <Button
+            variant="outlined"
+            onClick={handleClear}
+            fullWidth
+            disabled={loading}
             sx={{
-              textAlign: "center",
-              marginBottom: "20px",
-              fontWeight: "bold",
-              color: "#333",
-              borderBottom: "1px solid #ddd",
-              paddingBottom: "10px",
+              borderColor: "#00308F",
+              color: "#00308F",
+              "&:hover": { color: "#00246d", borderColor: "#00246d" },
             }}
           >
-            Modificar Cliente
-          </Typography>
-
-          {/* Formulario de modificación de cliente */}
-          <TextField
+            Limpiar
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
             fullWidth
-            label="Cédula"
-            name="cedula"
-            value={formData.cedula}
-            onChange={handleChange}
-            sx={{ mb: 2 }}
-            required
-            error={!!errors.cedula}
-            helperText={errors.cedula}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Badge />
-                </InputAdornment>
-              ),
+            disabled={loading}
+            startIcon={loading && <CircularProgress size={20} />}
+            sx={{
+              backgroundColor: "#00308F",
+              "&:hover": { backgroundColor: "#00246d" },
             }}
-          />
-          <TextField
-            fullWidth
-            label="Correo"
-            name="correo"
-            value={formData.correo}
-            onChange={handleChange}
-            sx={{ mb: 2 }}
-            required
-            error={!!errors.correo}
-            helperText={errors.correo}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Email />
-                </InputAdornment>
-              ),
-            }}
-          />
-          <TextField
-            fullWidth
-            label="Nombre"
-            name="nombre"
-            value={formData.nombre}
-            onChange={handleChange}
-            sx={{ mb: 2 }}
-            required
-            error={!!errors.nombre}
-            helperText={errors.nombre}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Person />
-                </InputAdornment>
-              ),
-            }}
-          />
-          <TextField
-            fullWidth
-            label="Apellido 1"
-            name="apellido1"
-            value={formData.apellido1}
-            onChange={handleChange}
-            sx={{ mb: 2 }}
-            required
-            error={!!errors.apellido1}
-            helperText={errors.apellido1}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Person />
-                </InputAdornment>
-              ),
-            }}
-          />
-          <TextField
-            fullWidth
-            label="Apellido 2"
-            name="apellido2"
-            value={formData.apellido2}
-            onChange={handleChange}
-            sx={{ mb: 2 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Person />
-                </InputAdornment>
-              ),
-            }}
-          />
-          <TextField
-            fullWidth
-            label="Teléfono"
-            name="telefono"
-            value={formData.telefono}
-            onChange={handleChange}
-            sx={{ mb: 2 }}
-            required
-            error={!!errors.telefono}
-            helperText={errors.telefono}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Phone />
-                  <Box component="span" sx={{ ml: 1 }}>
-                    +506
-                  </Box>
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          {/* Botones de guardar cambios y cancelar */}
-          <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-            <Button
-              variant="outlined"
-              onClick={handleClear}
-              fullWidth
-              disabled={loading}
-              sx={{
-                borderColor: "#00308F",
-                color: "#00308F",
-                "&:hover": {
-                  color: "#00246d",
-                  borderColor: "#00246d",
-                },
-              }}
-            >
-              Limpiar
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleSubmit}
-              fullWidth
-              disabled={loading}
-              startIcon={loading && <CircularProgress size={20} />}
-              sx={{
-                backgroundColor: "#00308F",
-                "&:hover": {
-                  backgroundColor: "#00246d",
-                },
-              }}
-            >
-              {loading ? "Guardando..." : "Guardar Cambios"}
-            </Button>
-          </Box>
+          >
+            {loading ? "Guardando..." : "Guardar Cambios"}
+          </Button>
         </Box>
-      </Modal>
-
-      {/* Snackbar para mostrar mensajes de éxito o error */}
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={4000}
-        onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          onClose={() => setSnackbarOpen(false)}
-          severity={snackbarSeverity}
-        >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-    </>
+      </Box>
+    </Modal>
   );
 };
 
