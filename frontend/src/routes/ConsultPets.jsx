@@ -22,7 +22,7 @@ const ConsultPets = () => {
   const columns = [
     { field: "usuario_cliente", headerName: "Dueño" },
     { field: "nombre", headerName: "Nombre" },
-    { field: "edad", headerName: "Edad" },
+    { field: "fecha_nacimiento", headerName: "Fecha de nacimiento" },
     { field: "especie", headerName: "Especie" },
     { field: "raza", headerName: "Raza" },
     { field: "sexo", headerName: "Sexo" },

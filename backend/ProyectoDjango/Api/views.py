@@ -13,6 +13,7 @@ from django.db import transaction
 from .models import Usuarios, Mascotas
 from .serializers import MascotaSerializer
 import random
+from datetime import datetime
 
 class CustomPagination(PageNumberPagination):
     page_size = 10  # Número de registros por página
@@ -107,16 +108,30 @@ def create_pet(request):
     try:
         usuario = request.data.get('usuario_cliente')
         
-        # Verify client existence
+        # Verificar la existencia del cliente
         try:
-            usuario_cliente = Usuarios.objects.get(usuario=usuario)  # Usar la columna usuario
+            usuario_cliente = Usuarios.objects.get(usuario=usuario) 
         except Usuarios.DoesNotExist:
             return Response({'error': 'Usuario no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
         
-        # Create a new pet that's associated with a client
         data = request.data
+
+        # Verificar si se envía edad y no la fecha de nacimiento
+        edad = data.get('edad', None)
+        if edad:
+            try:
+                # Convertir la edad en fecha de nacimiento aproximada
+                edad = int(edad)
+                current_year = datetime.now().year
+                birth_year = current_year - edad
+                data['fecha_nacimiento'] = f"{birth_year}-01-01"  # Se asigna el 1 de enero por defecto
+            except ValueError:
+                return Response({'error': 'La edad debe ser un número entero.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Reemplazar el usuario_cliente por el objeto relacionado
         data['usuario_cliente'] = usuario_cliente.usuario  
         
+        # Serializar los datos y crear la mascota
         serializer = MascotaSerializer(data=data)
         if serializer.is_valid():
             serializer.save()  
