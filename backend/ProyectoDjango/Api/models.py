@@ -105,7 +105,7 @@ class Citas(models.Model):
 
 
 class Clinicas(models.Model):
-    clinica_id = models.FloatField(primary_key=True, db_comment='Este campo es la llave primaria de la tabla. Almacena un identificador ·nico para cada clÝnica. Este valor debe ser ·nico y permite distinguir cada clÝnica de manera clara.')
+    clinica_id = models.AutoField(primary_key=True, db_comment='Este campo es la llave primaria de la tabla. Almacena un identificador ·nico para cada clÝnica. Este valor debe ser ·nico y permite distinguir cada clÝnica de manera clara.')
     nombre = models.CharField(max_length=50, db_comment='Este campo almacena el nombre de la clÝnica (por ejemplo, "Veterinaria San Francisco"). Es fundamental para identificar la clÝnica y facilitar su b·squeda.')
     direccion = models.CharField(max_length=50, blank=True, null=True, db_comment='Este campo almacena la direcci¾n fÝsica de la clÝnica (por ejemplo, "Calle 123, San JosÚ"). Es importante para que los clientes puedan localizar la clÝnica.')
     telefono = models.CharField(max_length=20, blank=True, null=True, db_comment='Este campo almacena el n·mero de telÚfono de la clÝnica. Permite a los clientes comunicarse con la clÝnica para realizar consultas o agendar citas.')

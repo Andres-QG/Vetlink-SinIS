@@ -179,7 +179,7 @@ const AddClinicaModal = ({ open, onClose, onSubmit }) => {
         <TextField
           fullWidth
           label="Dueño"
-          name="dueño"
+          name="usuario"
           value={formData.usuario}
           onChange={handleChange}
           sx={{ mb: 2 }}

@@ -48,6 +48,7 @@ function Owner() {
 
             const response = await axios.get(
                 "http://localhost:8000/api/consult-clinics/",
+                params
             );
             const data = response.data;
             setClinicas(data.results);
@@ -69,7 +70,7 @@ function Owner() {
     const handleAddClinic = async (clientData) => {
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/add-client/",
+        "http://localhost:8000/api/add-clinic/",
         clientData
       );
       setSnackbarMessage("Clínica agregada exitosamente.");

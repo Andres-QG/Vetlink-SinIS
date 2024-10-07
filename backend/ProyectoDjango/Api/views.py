@@ -11,7 +11,7 @@ from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 from django.db import transaction
 from .models import Usuarios, Mascotas, Clinicas
-from .serializers import MascotaSerializer
+from .serializers import *
 import random
 from datetime import datetime
 
@@ -269,6 +269,48 @@ def add_client(request):
 
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@transaction.atomic
+def add_clinic(request):
+    try:
+        clinica = request.data.get('clinica')
+        dueno = request.data.get('usuario')
+        telefono = request.data.get('telefono')
+        direccion = request.data.get('direccion')
+
+        print(dueno, telefono, clinica, direccion)
+
+        # Check if clinic with same name already exists
+        if Clinicas.objects.filter(nombre=clinica).exists():
+            return Response({'error': 'Ya hay una clinica con este nombre.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Prepare data for the serializer
+        data = {
+            'nombre': clinica,
+            'telefono': telefono,
+            'direccion': direccion,
+            'usuario_propietario': dueno
+        }
+        
+        print("Before serial")
+        # Validate with the serializer
+        nuevaClinica = ClinicasSerializer(data=data)
+
+        print("After serial")
+
+        if nuevaClinica.is_valid():
+            print("Vali ")
+            nuevaClinica.save()  # Save if valid
+            return Response({'message': 'Clinica agregada con éxito'}, status=status.HTTP_201_CREATED)
+        else:
+            print("Invalido")
+            print(nuevaClinica.errors)
+            return Response({'errors': nuevaClinica.errors}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        print(e)
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(['PUT'])
 def update_client(request, usuario):

@@ -11,6 +11,7 @@ urlpatterns = [
     path('consult-client/', consult_client, name='consult_client'),
     path('consult-clinics/', consult_clinics, name='consult_clinics'),
     path('add-client/', add_client, name='add_client'),
+    path('add-clinic/', add_clinic, name='add_clinic'),
     path('update-client/<str:usuario>/', update_client, name='update_client'),
     path('delete-client/<str:usuario>/', delete_client, name='delete_client'),
     path('consult-mascotas/', consult_mascotas, name='consult_mascotas'),
