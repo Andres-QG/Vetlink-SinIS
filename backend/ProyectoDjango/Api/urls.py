@@ -8,6 +8,7 @@ urlpatterns = [
     path('reset-password/', reset_password, name='reset_password'),
     path('verify-code/', verify_code, name='verify_code'),
     path('check-new-pass/', check_new_pass, name='check_new_pass'),
+    path('get-owners/', get_owners, name='get_owners'),
     path('consult-clinics/', consult_clinics, name='consult_clinics'),
     path('add-clinic/', add_clinic, name='add_clinic'),
     path('delete-clinic/<int:clinica_id>/', delete_clinic, name='delete_clinic'),

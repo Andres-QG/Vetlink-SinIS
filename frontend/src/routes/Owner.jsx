@@ -8,7 +8,7 @@ import SearchBar from "../components/Consult/GeneralizedSearchBar";
 
 import { CircularProgress, Button, Modal } from "@mui/material";
 import { Add } from "@mui/icons-material";
-import AddClinicaModal from "../components/consultClinicas/AddClinicaModal";
+import AddClinicaModal from "../components/consultClinicas/AddClinicModal";
 
 function Owner() {
     const [clinicas, setClinicas] = useState([]);
@@ -48,7 +48,7 @@ function Owner() {
 
             const response = await axios.get(
                 "http://localhost:8000/api/consult-clinics/",
-                params
+                { params }
             );
             const data = response.data;
             setClinicas(data.results);
@@ -101,7 +101,7 @@ function Owner() {
     return (
         <>
             <Header />
-            <div className="flex-grow px-4 md:mt-6 md:mb-6 h-[80vh]">
+            <div className="flex-grow px-4 md:mt-6 md:mb-6 h-[90vh]">
                 <div className="flex flex-col items-center justify-between mb-4 space-y-4 md:flex-row md:space-y-0">
                     <h1 className="text-2xl font-semibold">Consultar Clínicas</h1>
                     <div className="flex flex-col w-full space-y-4 md:w-auto md:flex-row md:items-center md:space-y-0">
@@ -120,7 +120,10 @@ function Owner() {
                         >
                             Agregar Clínica
                         </Button>
-                        <SearchBar onSearch={handleSearch} />
+                        <SearchBar
+                            onSearch={handleSearch}
+                            columns={columns.map((col) => col.field)}
+                        />
                     </div>
                 </div>
 

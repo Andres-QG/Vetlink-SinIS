@@ -155,10 +155,23 @@ def get_user_role(request):
         return Response({'status':'error', 'message':'User not logged in'})
 
 @api_view(['GET'])
+def get_owners(request):
+    owners = Usuarios.objects.filter(rol_id=1)
+    serializer = NameUsuariosSerializer(owners, many=True)
+    if serializer:
+        return Response({'status':'success', 'message': 'Role acquired', 'owners': serializer.data})
+    else:
+        return Response({'status':'error', 'message':'User not logged in'})
+
+
+@api_view(['GET'])
 def consult_clinics(request):
     search = request.GET.get('search', '')
     column = request.GET.get('column', 'nombre')
     order = request.GET.get('order', 'asc')
+
+    if (column == "clinica"):
+        column = "nombre"
 
     try:
         clinicas = Clinicas.objects.all()
@@ -185,6 +198,7 @@ def consult_clinics(request):
 
         return paginator.get_paginated_response(serializer_data)
     except Exception as e:
+        print(e)
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -198,6 +212,8 @@ def add_clinic(request):
         telefono = request.data.get('telefono')
         direccion = request.data.get('direccion')
 
+        usuario = Usuarios.objects.get(nombre=dueno).usuario
+
         print(dueno, telefono, clinica, direccion)
 
         # Check if clinic with same name already exists
@@ -209,7 +225,7 @@ def add_clinic(request):
             'nombre': clinica,
             'telefono': telefono,
             'direccion': direccion,
-            'usuario_propietario': dueno
+            'usuario_propietario': usuario
         }
         
         print("Before serial")

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   Box,
@@ -8,6 +8,7 @@ import {
   IconButton,
   CircularProgress,
   InputAdornment,
+  MenuItem,
 } from "@mui/material";
 import {
   Close,
@@ -17,6 +18,7 @@ import {
   LocalHospital,
   AddLocation,
 } from "@mui/icons-material";
+import axios from "axios";
 
 const AddClinicaModal = ({ open, onClose, onSubmit }) => {
   const initialFormData = {
@@ -29,6 +31,21 @@ const AddClinicaModal = ({ open, onClose, onSubmit }) => {
   const [formData, setFormData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({}); // Estado para los errores de validación
+  const [owners, setOwners] = useState([]);
+
+  useEffect(() => {
+    const fetchOwners = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/api/get-owners/");
+        console.log(response.data.owners)
+        setOwners(response.data.owners);
+      } catch (error) {
+        console.error("Error fetching owners:", error);
+      }
+    };
+    fetchOwners();
+  }, []);
+
 
   // Función de validación de campos
   const validate = () => {
@@ -178,12 +195,15 @@ const AddClinicaModal = ({ open, onClose, onSubmit }) => {
         />
         <TextField
           fullWidth
+          select
           label="Dueño"
           name="usuario"
-          value={formData.usuario}
+          value={formData.usuario || ""}
           onChange={handleChange}
           sx={{ mb: 2 }}
           required
+          error={!!errors.usuario}
+          helperText={errors.usuario}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -191,7 +211,17 @@ const AddClinicaModal = ({ open, onClose, onSubmit }) => {
               </InputAdornment>
             ),
           }}
-        />
+        >
+          <MenuItem value="" disabled>
+            Selecciona un dueño
+          </MenuItem>
+          {owners.map((owner) => (
+            <MenuItem key={owner.usuario} value={owner.nombre} >
+              {owner.nombre}
+            </MenuItem>
+          ))}
+        </TextField>
+        
 
         {/* Botones de Agregar y Limpiar */}
         <Box sx={{ display: "flex", gap: 2, mt: 2 }}>

@@ -6,6 +6,11 @@ class UsuariosSerializer(serializers.ModelSerializer):
         model = Usuarios
         fields = '__all__'
 
+class NameUsuariosSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Usuarios
+        fields = ['usuario', 'nombre']
+
 class MascotaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mascotas

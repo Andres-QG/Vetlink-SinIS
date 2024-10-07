@@ -94,7 +94,7 @@ const SearchBar = ({ onSearch, columns = [] }) => {
                   </div>
                 </div>
               </div>
-              <div className="px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse">
+              <div className="px-4 py-3 bg-white sm:px-6 sm:flex sm:flex-row-reverse">
                 <button
                   type="button"
                   onClick={handleApplyFilters}

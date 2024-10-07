@@ -88,7 +88,7 @@ const GeneralTable = ({
     fetchData();
   };
 
-  return (
+   return (
     <>
       <TableContainer component={Paper}>
         {isMobile ? (
