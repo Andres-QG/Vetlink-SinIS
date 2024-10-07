@@ -16,13 +16,17 @@ const ConsultVets = () => {
   const [order, setOrder] = useState("asc");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [openModal, setOpenModal] = useState(false); // Estado para abrir/cerrar modal
-  const [snackbarMessage, setSnackbarMessage] = useState(""); // Estado para el mensaje de éxito/error
-  const [snackbarOpen, setSnackbarOpen] = useState(false); // Controla el estado del Snackbar
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // Controla si es éxito o error
+  const [openModal, setOpenModal] = useState(false);
+  const [clinics, setClinics] = useState([]);
+  const [specialties, setSpecialties] = useState([]);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   useEffect(() => {
     fetchVets();
+    fetchClinics();
+    fetchSpecialties();
   }, [searchTerm, searchColumn, order, page]);
 
   const fetchVets = async () => {
@@ -36,11 +40,10 @@ const ConsultVets = () => {
 
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/consult_vet/",
+        "http://localhost:8000/api/consult-vet/",
         { params }
       );
       const data = response.data;
-      console.log(data);
       setVets(data.results);
       setTotalPages(Math.ceil(data.count / 10));
     } catch (error) {
@@ -50,19 +53,38 @@ const ConsultVets = () => {
     }
   };
 
-  // Función para agregar un veterinario
+  const fetchClinics = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:8000/api/consult-clinics/"
+      );
+      setClinics(response.data.results);
+    } catch (error) {
+      console.error("Failed to fetch clinics:", error);
+    }
+  };
+
+  const fetchSpecialties = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:8000/api/consult-specialties/"
+      );
+      setSpecialties(response.data.results);
+    } catch (error) {
+      console.error("Failed to fetch specialties:", error);
+    }
+  };
+
   const handleAddVet = async (vetData) => {
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/add_vet/",
+        "http://localhost:8000/api/add-vet/",
         vetData
       );
-
       setSnackbarMessage("Veterinario agregado exitosamente.");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-      fetchVets(); // Refrescar la tabla al agregar veterinario
-      setOpenModal(false);
+      fetchVets();
     } catch (error) {
       console.error("Failed to add vet:", error);
       setSnackbarMessage("Error al agregar veterinario.");
@@ -87,7 +109,6 @@ const ConsultVets = () => {
     { field: "clinica", headerName: "Clinica" },
     { field: "especialidad", headerName: "Especialidad" },
     { field: "id", headerName: "" },
-    // Agrega más columnas según sea necesario
   ];
 
   const formatVetsData = (vets) => {
@@ -111,12 +132,12 @@ const ConsultVets = () => {
             <Button
               variant="contained"
               startIcon={<Add />}
-              onClick={() => setOpenModal(true)} // Abre el modal
+              onClick={() => setOpenModal(true)}
               sx={{
                 backgroundColor: "#00308F",
                 "&:hover": { backgroundColor: "#00246d" },
-                minWidth: "250px", // Aumenta el ancho mínimo
-                maxWidth: "300px", // Establece un ancho máximo
+                minWidth: "250px",
+                maxWidth: "300px",
                 marginBottom: { xs: "-4px", md: "0px" },
                 marginRight: { xs: "0px", md: "10px" },
                 width: { xs: "100%", md: "auto" },
@@ -150,14 +171,14 @@ const ConsultVets = () => {
       </div>
       <Footer />
 
-      {/* Modal para agregar veterinario */}
       <AddVetModal
         open={openModal}
         onClose={() => setOpenModal(false)}
         onSubmit={handleAddVet}
+        clinics={clinics}
+        specialties={specialties}
       />
 
-      {/* Snackbar para mostrar mensajes */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={4000}

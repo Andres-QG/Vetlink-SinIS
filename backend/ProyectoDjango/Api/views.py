@@ -11,8 +11,7 @@ from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 from django.db import transaction
 from .models import Usuarios, Mascotas, Clinicas
-from .serializers import MascotaSerializer
-from .serializers import UsuariosSerializer
+from .serializers import *
 import random
 from datetime import datetime
 
@@ -104,37 +103,28 @@ def check_new_pass(request):
     userResponse.save()
     return Response({'exists': True, 'status': 'success'}, status=status.HTTP_200_OK)
 
-@api_view(['GET'])
+
+@api_view(["GET"])
 def consult_clinics(request):
-    search = request.GET.get('search', '')
-    column = request.GET.get('column', 'nombre')
-    order = request.GET.get('order', 'asc')
+    search = request.GET.get("search", "")
+    column = request.GET.get("column", "nombre")
+    order = request.GET.get("order", "asc")
 
     try:
-        clinicas = Clinicas.objects.all()
+        clinics = Clinicas.objects.all()
         if search:
-            # Para otras columnas, utiliza el filtrado dinámico basado en kwargs
-            kwargs = {f'{column}__icontains': search}
-            clinicas = clinicas.filter(**kwargs)
+            kwargs = {f"{column}__icontains": search}
+            clinics = clinics.filter(**kwargs)
 
-        # Ordenamiento de resultados
-        clinicas = clinicas.order_by(f'-{column}' if order == 'desc' else column)
+        clinics = clinics.order_by(f"-{column}" if order == "desc" else column)
 
         paginator = CustomPagination()
-        result_page = paginator.paginate_queryset(clinicas, request)
-        serializer_data = [
-            {
-                "clinica": clinicas.nombre,
-                "direccion": clinicas.direccion,
-                "telefono": clinicas.telefono,
-                "dueño": clinicas.usuario_propietario.nombre,
-            }
-            for clinicas in result_page
-        ]
+        result_page = paginator.paginate_queryset(clinics, request)
+        serializer = ClinicasSerializer(result_page, many=True)
 
-        return paginator.get_paginated_response(serializer_data)
+        return paginator.get_paginated_response(serializer.data)
     except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])
@@ -493,5 +483,28 @@ def consult_vet(request):
         ]
 
         return paginator.get_paginated_response(serializer_data)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+def consult_specialties(request):
+    search = request.GET.get("search", "")
+    column = request.GET.get("column", "nombre")
+    order = request.GET.get("order", "asc")
+
+    try:
+        specialties = Especialidades.objects.all()
+        if search:
+            kwargs = {f"{column}__icontains": search}
+            specialties = specialties.filter(**kwargs)
+
+        specialties = specialties.order_by(f"-{column}" if order == "desc" else column)
+
+        paginator = CustomPagination()
+        result_page = paginator.paginate_queryset(specialties, request)
+        serializer = EspecialidadesSerializer(result_page, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
