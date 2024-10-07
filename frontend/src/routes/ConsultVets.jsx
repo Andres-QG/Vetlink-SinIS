@@ -6,7 +6,8 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import GeneralizedSearchBar from "../components/Consult/GeneralizedSearchBar";
 import AddVetModal from "../components/ConsultVets/AddVetModal";
-import GeneralTable from "../components/Consult/GeneralTable";
+import VetsTable from "../components/ConsultVets/VetsTable";
+import Swal from "sweetalert2";
 
 const ConsultVets = () => {
   const [vets, setVets] = useState([]);
@@ -81,7 +82,11 @@ const ConsultVets = () => {
         "http://localhost:8000/api/add-vet/",
         vetData
       );
-      setSnackbarMessage("Veterinario agregado exitosamente.");
+      Swal.fire({
+        title: "Exito",
+        text: "Veterinario agregado correctamente",
+        icon: "success",
+      });
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
       fetchVets();
@@ -156,7 +161,7 @@ const ConsultVets = () => {
             <CircularProgress />
           </div>
         ) : (
-          <GeneralTable
+          <VetsTable
             data={formattedVets}
             columns={columns}
             totalCount={totalPages * 10}

@@ -274,8 +274,8 @@ def add_vet(request):
         apellido2 = data.get("apellido2")
         telefono = data.get("telefono")
         clave = data.get("clave")
-        especialidad_id = data.get("especialidad_id")
-        clinica_id = data.get("clinica_id")
+        especialidad_id = data.get("especialidad")
+        clinica_id = data.get("clinica")
 
         # Verificar si ya existe un usuario con el mismo 'usuario'
         if Usuarios.objects.filter(usuario=usuario).exists():

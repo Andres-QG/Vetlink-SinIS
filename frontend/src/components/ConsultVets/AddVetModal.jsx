@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { Modal, Box, TextField, Button, MenuItem } from "@mui/material";
+import {
+  Modal,
+  Box,
+  TextField,
+  Button,
+  MenuItem,
+  Typography,
+} from "@mui/material";
 
 const AddVetModal = ({ open, onClose, onSubmit, clinics, specialties }) => {
   const initialFormData = {
@@ -20,7 +27,19 @@ const AddVetModal = ({ open, onClose, onSubmit, clinics, specialties }) => {
   const [errors, setErrors] = useState({});
 
   const validate = () => {
-    // Validación de campos
+    const newErrors = {};
+    if (!formData.usuario) newErrors.usuario = "Usuario es obligatorio";
+    if (!formData.cedula) newErrors.cedula = "Cédula es obligatoria";
+    if (!formData.correo) newErrors.correo = "Correo es obligatorio";
+    if (!formData.nombre) newErrors.nombre = "Nombre es obligatorio";
+    if (!formData.apellido1) newErrors.apellido1 = "Apellido 1 es obligatorio";
+    if (!formData.telefono) newErrors.telefono = "Teléfono es obligatorio";
+    if (!formData.clave) newErrors.clave = "Clave es obligatoria";
+    if (!formData.clinica) newErrors.clinica = "Clínica es obligatoria";
+    if (!formData.especialidad)
+      newErrors.especialidad = "Especialidad es obligatoria";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleChange = (e) => {
@@ -33,6 +52,7 @@ const AddVetModal = ({ open, onClose, onSubmit, clinics, specialties }) => {
       setLoading(true);
       await onSubmit(formData);
       setLoading(false);
+      onClose();
     }
   };
 
@@ -44,46 +64,58 @@ const AddVetModal = ({ open, onClose, onSubmit, clinics, specialties }) => {
   return (
     <Modal open={open} onClose={onClose}>
       <Box sx={{ ...modalStyle }}>
-        <h2>Agregar Veterinario</h2>
+        <Typography variant="h6" component="h2">
+          Agregar Veterinario
+        </Typography>
         <TextField
-          label="Usuario"
+          label="Usuario *"
           name="usuario"
           value={formData.usuario}
           onChange={handleChange}
           fullWidth
           margin="normal"
+          error={!!errors.usuario}
+          helperText={errors.usuario}
         />
         <TextField
-          label="Cédula"
+          label="Cédula *"
           name="cedula"
           value={formData.cedula}
           onChange={handleChange}
           fullWidth
           margin="normal"
+          error={!!errors.cedula}
+          helperText={errors.cedula}
         />
         <TextField
-          label="Correo"
+          label="Correo *"
           name="correo"
           value={formData.correo}
           onChange={handleChange}
           fullWidth
           margin="normal"
+          error={!!errors.correo}
+          helperText={errors.correo}
         />
         <TextField
-          label="Nombre"
+          label="Nombre *"
           name="nombre"
           value={formData.nombre}
           onChange={handleChange}
           fullWidth
           margin="normal"
+          error={!!errors.nombre}
+          helperText={errors.nombre}
         />
         <TextField
-          label="Apellido 1"
+          label="Apellido 1 *"
           name="apellido1"
           value={formData.apellido1}
           onChange={handleChange}
           fullWidth
           margin="normal"
+          error={!!errors.apellido1}
+          helperText={errors.apellido1}
         />
         <TextField
           label="Apellido 2"
@@ -94,30 +126,36 @@ const AddVetModal = ({ open, onClose, onSubmit, clinics, specialties }) => {
           margin="normal"
         />
         <TextField
-          label="Teléfono"
+          label="Teléfono *"
           name="telefono"
           value={formData.telefono}
           onChange={handleChange}
           fullWidth
           margin="normal"
+          error={!!errors.telefono}
+          helperText={errors.telefono}
         />
         <TextField
-          label="Clave"
+          label="Clave *"
           name="clave"
           type="password"
           value={formData.clave}
           onChange={handleChange}
           fullWidth
           margin="normal"
+          error={!!errors.clave}
+          helperText={errors.clave}
         />
         <TextField
           select
-          label="Clínica"
+          label="Clínica *"
           name="clinica"
           value={formData.clinica}
           onChange={handleChange}
           fullWidth
-          margin="normal">
+          margin="normal"
+          error={!!errors.clinica}
+          helperText={errors.clinica}>
           {clinics.map((clinic) => (
             <MenuItem key={clinic.clinica_id} value={clinic.clinica_id}>
               {clinic.nombre}
@@ -126,12 +164,14 @@ const AddVetModal = ({ open, onClose, onSubmit, clinics, specialties }) => {
         </TextField>
         <TextField
           select
-          label="Especialidad"
+          label="Especialidad *"
           name="especialidad"
           value={formData.especialidad}
           onChange={handleChange}
           fullWidth
-          margin="normal">
+          margin="normal"
+          error={!!errors.especialidad}
+          helperText={errors.especialidad}>
           {specialties.map((specialty) => (
             <MenuItem
               key={specialty.especialidad_id}
@@ -158,7 +198,10 @@ const modalStyle = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: 400,
+  width: "90%",
+  maxWidth: 600,
+  maxHeight: "90vh",
+  overflowY: "auto",
   bgcolor: "background.paper",
   boxShadow: 24,
   p: 4,
