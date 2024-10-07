@@ -15,8 +15,8 @@ import axios from "axios";
 const ModifyClientModal = ({
   open,
   onClose,
-  client,
-  fetchClients,
+  data,
+  fetchData,
   showSnackbar,
 }) => {
   const initialFormData = {
@@ -33,17 +33,17 @@ const ModifyClientModal = ({
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    if (client) {
+    if (data) {
       setFormData({
-        cedula: client.cedula || "",
-        correo: client.correo || "",
-        nombre: client.nombre || "",
-        apellido1: client.apellido1 || "",
-        apellido2: client.apellido2 || "",
-        telefono: client.telefono || "",
+        cedula: data.cedula || "",
+        correo: data.correo || "",
+        nombre: data.nombre || "",
+        apellido1: data.apellido1 || "",
+        apellido2: data.apellido2 || "",
+        telefono: data.telefono || "",
       });
     }
-  }, [client]);
+  }, [data]);
 
   const validate = () => {
     const newErrors = {};
@@ -88,14 +88,14 @@ const ModifyClientModal = ({
       setErrors({});
       try {
         await axios.put(
-          `http://localhost:8000/api/update-client/${client.usuario}/`,
+          `http://localhost:8000/api/update-client/${data.usuario}/`,
           formData
         );
 
-        await fetchClients(); // Refresca la lista de clientes
-        showSnackbar("Cliente modificado con éxito.", "success");
+        await fetchData();
+        showSnackbar("Datos modificados con éxito.", "success");
 
-        onClose(); // Cierra el modal después de guardar
+        onClose();
       } catch (error) {
         if (
           error.response &&
@@ -103,9 +103,9 @@ const ModifyClientModal = ({
         ) {
           setErrors({ correo: "El correo ya está en uso." });
         } else {
-          setErrors({ general: "Error al actualizar el cliente." });
+          setErrors({ general: "Error al actualizar los datos." });
         }
-        showSnackbar("Error al modificar el cliente.", "error");
+        showSnackbar("Error al modificar los datos.", "error");
       } finally {
         setLoading(false);
       }
@@ -151,7 +151,7 @@ const ModifyClientModal = ({
             paddingBottom: "10px",
           }}
         >
-          Modificar Cliente
+          Modificar Datos
         </Typography>
 
         {/* Campos de formulario */}

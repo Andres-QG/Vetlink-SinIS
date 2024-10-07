@@ -10,31 +10,25 @@ import {
 import { Close } from "@mui/icons-material";
 import axios from "axios";
 
-const DeleteClientModal = ({
-  open,
-  onClose,
-  data,
-  fetchData,
-  showSnackbar,
-}) => {
+const DeleteAdminModal = ({ open, onClose, data, fetchData, showSnackbar }) => {
   const [loading, setLoading] = useState(false);
 
   const handleDelete = async () => {
     setLoading(true);
     try {
-      // Llama a la API para eliminar el registro
+      // Llama a la API para eliminar el administrador
       await axios.delete(
-        `http://localhost:8000/api/delete-client/${data.usuario}/`
+        `http://localhost:8000/api/delete-admin/${data.usuario}/`
       );
 
       // Llama a fetchData para refrescar la lista y muestra el mensaje de éxito
       await fetchData();
-      showSnackbar("Registro eliminado con éxito.", "success");
+      showSnackbar("Administrador eliminado con éxito.", "success");
 
       onClose(); // Cierra el modal si la eliminación fue exitosa
     } catch (error) {
-      console.error("Error al eliminar el registro:", error);
-      showSnackbar("Error al eliminar el registro.", "error");
+      console.error("Error al eliminar el administrador:", error);
+      showSnackbar("Error al eliminar el administrador.", "error");
     } finally {
       setLoading(false);
     }
@@ -83,10 +77,16 @@ const DeleteClientModal = ({
           Confirmar Eliminación
         </Typography>
 
-        <Typography sx={{ mb: 3 }} textAlign="center">
-          ¿Estás seguro de que deseas eliminar el registro{" "}
-          <strong>{data.nombre}</strong>?
-        </Typography>
+        {data ? (
+          <Typography sx={{ mb: 3 }} textAlign="center">
+            ¿Estás seguro de que deseas eliminar al administrador{" "}
+            <strong>{data.nombre}</strong>?
+          </Typography>
+        ) : (
+          <Typography sx={{ mb: 3 }} textAlign="center">
+            No se encontró el administrador seleccionado.
+          </Typography>
+        )}
 
         <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
           <Button
@@ -115,4 +115,4 @@ const DeleteClientModal = ({
   );
 };
 
-export default DeleteClientModal;
+export default DeleteAdminModal;
