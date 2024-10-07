@@ -116,7 +116,7 @@ function Signup() {
       <div className=" bg-white flex w-full h-[93vh] sm:bg-[#274B92]">
         <div className="hidden w-6/12 h-full sm:flex flex-col py-40 items-center justify-center">
           <p className="text-5xl w-96 text-center text-white">
-            Estas cerca de tener acceso al
+            Estás cerca de tener acceso al
             <span className="text-blue-300"> mejor cuidado </span>
             para tu mascota
           </p>
