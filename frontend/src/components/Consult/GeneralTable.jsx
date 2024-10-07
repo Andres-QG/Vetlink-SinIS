@@ -27,6 +27,8 @@ const GeneralTable = ({
   onPageChange,
   deletionUrl,
   pkCol,
+  onDelete,
+  visualIdentifierCol,
   fetchData,
   onOpenModal,
 }) => {
@@ -67,29 +69,29 @@ const GeneralTable = ({
     handleCloseModal();
     if (!selectedItem) return;
 
-    console.log(selectedItem)
+    console.log(selectedItem);
 
     try {
       const url = `${deletionUrl}/${selectedItem[pkCol]}/`;
       const response = await axios.delete(url);
-      alert("Elemento eliminado correctamente");
+      onDelete("Elemento eliminado correctamente.", "success");
     } catch (error) {
       if (error.response) {
-        alert(
+        onDelete(
           `Error: ${error.response.status} - ${
             error.response.data.error || error.response.data.detail
           }`
         );
       } else if (error.request) {
-        alert("No se recibió respuesta del servidor. Verifica tu conexión.");
+        onDelete("No se recibió respuesta del servidor. Verifica tu conexión.");
       } else {
-        alert(`Error desconocido: ${error.message}`);
+        onDelete(`Error desconocido: ${error.message}`);
       }
     }
     fetchData();
   };
 
-   return (
+  return (
     <>
       <TableContainer component={Paper}>
         {isMobile ? (
@@ -187,7 +189,8 @@ const GeneralTable = ({
           style={{ width: 400, margin: "auto", marginTop: "10%" }}
         >
           <Typography variant="h6" component="h2">
-            ¿Estás seguro de que deseas eliminar este elemento?
+            ¿Estás seguro de que deseas eliminar{" a "}
+            {selectedItem?.[visualIdentifierCol]}?
           </Typography>
           <Typography sx={{ mt: 2 }}>
             Esta acción no se puede deshacer. El elemento será eliminado

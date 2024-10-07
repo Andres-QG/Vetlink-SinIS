@@ -6,12 +6,18 @@ import LandingPage from "./routes/LandingPage";
 import Services from "./routes/Services";
 import ConsultClients from "./routes/ConsultClients";
 import ConsultPets from "./routes/ConsultPets";
-import { PassReset, CheckCode, ChangePass, PassSuccess } from "./routes/PassReset";
+import {
+  PassReset,
+  CheckCode,
+  ChangePass,
+  PassSuccess,
+} from "./routes/PassReset";
 import Owner from "./routes/Owner";
 import Error from "./routes/Error";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Clients from "./components/Consult/Clients";
 import Signup from "./routes/Signup";
+import ConsultAdmins from "./routes/ConsultAdmins";
 
 function App() {
   return (
@@ -21,13 +27,13 @@ function App() {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup/>} />
+            <Route path="/signup" element={<Signup />} />
             <Route path="/reset" element={<PassReset />} />
             <Route
               path="/check-reset"
               element={
                 <ProtectedRoute requiredRole="reset">
-                  <CheckCode/>
+                  <CheckCode />
                 </ProtectedRoute>
               }
             />
@@ -49,6 +55,7 @@ function App() {
             />
             <Route path="/services" element={<Services />} />
             <Route path="/consultclients" element={<ConsultClients />} />
+            <Route path="/consultAdmins" element={<ConsultAdmins />} />
             <Route path="/error" element={<Error />} />
             <Route path="*" element={<Error />} />
             <Route path="/consultpets" element={<ConsultPets />} />
