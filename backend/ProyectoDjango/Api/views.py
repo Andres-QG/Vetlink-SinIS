@@ -103,39 +103,6 @@ def check_new_pass(request):
     userResponse.save()
     return Response({'exists': True, 'status': 'success'}, status=status.HTTP_200_OK)
 
-@api_view(['GET'])
-def consult_clinics(request):
-    search = request.GET.get('search', '')
-    column = request.GET.get('column', 'nombre')
-    order = request.GET.get('order', 'asc')
-
-    try:
-        clinicas = Clinicas.objects.all()
-        if search:
-            # Para otras columnas, utiliza el filtrado dinámico basado en kwargs
-            kwargs = {f'{column}__icontains': search}
-            clinicas = clinicas.filter(**kwargs)
-
-        # Ordenamiento de resultados
-        clinicas = clinicas.order_by(f'-{column}' if order == 'desc' else column)
-
-        paginator = CustomPagination()
-        result_page = paginator.paginate_queryset(clinicas, request)
-        serializer_data = [
-            {
-                "clinica": clinicas.nombre,
-                "direccion": clinicas.direccion,
-                "telefono": clinicas.telefono,
-                "dueño": clinicas.usuario_propietario.nombre,
-            }
-            for clinicas in result_page
-        ]
-
-        return paginator.get_paginated_response(serializer_data)
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
 @api_view(['POST'])
 def create_pet(request):
     try:
@@ -186,6 +153,95 @@ def get_user_role(request):
         return Response({'status':'success', 'message': 'Role acquired', 'role': role})
     else:
         return Response({'status':'error', 'message':'User not logged in'})
+
+@api_view(['GET'])
+def consult_clinics(request):
+    search = request.GET.get('search', '')
+    column = request.GET.get('column', 'nombre')
+    order = request.GET.get('order', 'asc')
+
+    try:
+        clinicas = Clinicas.objects.all()
+        if search:
+            # Para otras columnas, utiliza el filtrado dinámico basado en kwargs
+            kwargs = {f'{column}__icontains': search}
+            clinicas = clinicas.filter(**kwargs)
+
+        # Ordenamiento de resultados
+        clinicas = clinicas.order_by(f'-{column}' if order == 'desc' else column)
+
+        paginator = CustomPagination()
+        result_page = paginator.paginate_queryset(clinicas, request)
+        serializer_data = [
+            {
+                "clinica_id": clinicas.clinica_id,
+                "clinica": clinicas.nombre,
+                "direccion": clinicas.direccion,
+                "telefono": clinicas.telefono,
+                "dueño": clinicas.usuario_propietario.nombre,
+            }
+            for clinicas in result_page
+        ]
+
+        return paginator.get_paginated_response(serializer_data)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+@api_view(['POST'])
+@transaction.atomic
+def add_clinic(request):
+    try:
+        clinica = request.data.get('clinica')
+        dueno = request.data.get('usuario')
+        telefono = request.data.get('telefono')
+        direccion = request.data.get('direccion')
+
+        print(dueno, telefono, clinica, direccion)
+
+        # Check if clinic with same name already exists
+        if Clinicas.objects.filter(nombre=clinica).exists():
+            return Response({'error': 'Ya hay una clinica con este nombre.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Prepare data for the serializer
+        data = {
+            'nombre': clinica,
+            'telefono': telefono,
+            'direccion': direccion,
+            'usuario_propietario': dueno
+        }
+        
+        print("Before serial")
+        # Validate with the serializer
+        nuevaClinica = ClinicasSerializer(data=data)
+
+        print("After serial")
+
+        if nuevaClinica.is_valid():
+            print("Vali ")
+            nuevaClinica.save()  # Save if valid
+            return Response({'message': 'Clinica agregada con éxito'}, status=status.HTTP_201_CREATED)
+        else:
+            print("Invalido")
+            print(nuevaClinica.errors)
+            return Response({'errors': nuevaClinica.errors}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        print(e)
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['DELETE'])
+def delete_clinic(request, clinica_id):
+    try:
+        print(clinica_id)
+        clinica = Clinicas.objects.get(pk=clinica_id)
+        clinica.delete()
+        return Response({'message': 'Clinica jeliminada correctamente'}, status=status.HTTP_200_OK)
+    except Clinicas.DoesNotExist:
+        return Response({'error': 'Clinica no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
 def consult_client(request):
@@ -268,47 +324,6 @@ def add_client(request):
         return Response({'message': 'Cliente agregado con éxito'}, status=status.HTTP_201_CREATED)
 
     except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-@api_view(['POST'])
-@transaction.atomic
-def add_clinic(request):
-    try:
-        clinica = request.data.get('clinica')
-        dueno = request.data.get('usuario')
-        telefono = request.data.get('telefono')
-        direccion = request.data.get('direccion')
-
-        print(dueno, telefono, clinica, direccion)
-
-        # Check if clinic with same name already exists
-        if Clinicas.objects.filter(nombre=clinica).exists():
-            return Response({'error': 'Ya hay una clinica con este nombre.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Prepare data for the serializer
-        data = {
-            'nombre': clinica,
-            'telefono': telefono,
-            'direccion': direccion,
-            'usuario_propietario': dueno
-        }
-        
-        print("Before serial")
-        # Validate with the serializer
-        nuevaClinica = ClinicasSerializer(data=data)
-
-        print("After serial")
-
-        if nuevaClinica.is_valid():
-            print("Vali ")
-            nuevaClinica.save()  # Save if valid
-            return Response({'message': 'Clinica agregada con éxito'}, status=status.HTTP_201_CREATED)
-        else:
-            print("Invalido")
-            print(nuevaClinica.errors)
-            return Response({'errors': nuevaClinica.errors}, status=status.HTTP_400_BAD_REQUEST)
-    except Exception as e:
-        print(e)
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

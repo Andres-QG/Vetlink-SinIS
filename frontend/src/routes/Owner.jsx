@@ -135,6 +135,9 @@ function Owner() {
                         totalCount={totalCount}
                         rowsPerPage={rowsPerPage}
                         page={page}
+                        pkCol="clinica_id"
+                        deletionUrl="http://localhost:8000/api/delete-clinic"
+                        fetchData={fetchClinics}
                         onPageChange={setPage}>
                     </GeneralTable>
                 )}

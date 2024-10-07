@@ -66,6 +66,8 @@ const GeneralTable = ({
     handleCloseModal();
     if (!selectedItem) return;
 
+    console.log(selectedItem)
+
     try {
       const url = `${deletionUrl}/${selectedItem[pkCol]}/`;
       const response = await axios.delete(url);
@@ -134,14 +136,14 @@ const GeneralTable = ({
               </TableRow>
             </TableHead>
             <TableBody>
-              {data.map((item) => (
-                <TableRow key={`row-${item.id}`}>
-                  {columns.map((col, index) => (
-                    <TableCell key={`cell-${item.id}-${col.field}`}>
+              {data.map((item, index) => (
+                <TableRow key={item.id || `row-${index}`}>
+                  {columns.map((col) => (
+                    <TableCell key={`cell-${item.id || index}-${col.field}`}>
                       {item[col.field]}
                     </TableCell>
                   ))}
-                  <TableCell key={`actions-${item.id}`}>
+                  <TableCell key={`actions-${item.id || index}`}>
                     <IconButton onClick={() => console.log("Edit clicked")}>
                       <Edit />
                     </IconButton>
