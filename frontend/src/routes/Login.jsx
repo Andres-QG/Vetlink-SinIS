@@ -149,7 +149,7 @@ function Login() {
 
                                     {/* Registro */}
                                     <p className="pt-5 text-elemsec font-bold opacity-70">¿No tienes un usuario?</p>
-                                    <a href="registro" className="font-bold text-primary hover:underline">
+                                    <a href="signup" className="font-bold text-primary hover:underline">
                                         Regístrate
                                     </a>
                                 </div>
