@@ -41,6 +41,8 @@ function Signup() {
     clave: "",
   };
 
+  const navigate = useNavigate()
+
   const [formData, setFormData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -85,11 +87,21 @@ function Signup() {
   const handleSubmit = async () => {
     if (validate()) {
       setLoading(true);
-      const success = await onSubmit(formData);
-      setLoading(false);
-      if (success) {
-        setFormData(initialFormData);
+      console.log(formData)
+      try {
+        const response = await axios.post('http://localhost:8000/api/add-client/', formData, {
+          withCredentials: true
+        });
+        setLoading(false)
+        if(response.data.success === true) {
+          navigate('/')
+        }
       }
+      catch (error) {
+        console.log(error)
+        setLoading(false)
+      }
+      setLoading(false);
     }
   };
 

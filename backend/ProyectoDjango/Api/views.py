@@ -42,7 +42,6 @@ def check_user_exists(request):
     except:
         return Response({'exists': False, 'message': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
         
-
 @api_view(['POST'])
 def reset_password(request):
     email = request.data.get('email') # Obtiene el correo de la solicitud
@@ -337,9 +336,10 @@ def add_client(request):
             rol_id=4  # Rol para cliente
         )
         nuevo_cliente.save()
-        return Response({'message': 'Cliente agregado con éxito'}, status=status.HTTP_201_CREATED)
+        return Response({'message': 'Cliente agregado con éxito', 'success':True}, status=status.HTTP_201_CREATED)
 
     except Exception as e:
+        print(e)
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
