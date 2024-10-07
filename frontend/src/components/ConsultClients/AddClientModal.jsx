@@ -18,8 +18,9 @@ import {
   Badge,
   AccountCircle,
 } from "@mui/icons-material";
+import axios from "axios";
 
-const AddClientModal = ({ open, onClose, onSubmit }) => {
+const AddClientModal = ({ open, onClose, fetchClients, showSnackbar }) => {
   const initialFormData = {
     usuario: "",
     cedula: "",
@@ -33,38 +34,28 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
 
   const [formData, setFormData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({}); // Estado para los errores de validación
+  const [errors, setErrors] = useState({});
 
-  // Función de validación de campos
   const validate = () => {
     const newErrors = {};
 
-    // Validación de usuario
     if (!formData.usuario) {
       newErrors.usuario = "El usuario es requerido.";
     }
-
-    // Validación de cédula (9 dígitos exactos)
     const cedulaRegex = /^[0-9]{9}$/;
     if (!formData.cedula || !cedulaRegex.test(formData.cedula)) {
       newErrors.cedula = "La cédula debe tener 9 dígitos.";
     }
-
-    // Validación de correo
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.correo || !emailRegex.test(formData.correo)) {
       newErrors.correo = "El correo electrónico no es válido.";
     }
-
-    // Validación de contraseña (al menos 8 caracteres, una mayúscula, un número y un carácter especial)
     const passwordRegex =
       /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
     if (!formData.clave || !passwordRegex.test(formData.clave)) {
       newErrors.clave =
         "La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial.";
     }
-
-    // Validación de teléfono (8 dígitos exactos)
     const telefonoRegex = /^[0-9]{8}$/;
     if (!formData.telefono || !telefonoRegex.test(formData.telefono)) {
       newErrors.telefono = "El teléfono debe tener 8 dígitos.";
@@ -75,20 +66,28 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
   };
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async () => {
-    if (validate()) {
-      setLoading(true);
-      const success = await onSubmit(formData);
+    if (!validate()) return;
+
+    setLoading(true);
+    try {
+      await axios.post("http://localhost:8000/api/add-client/", formData);
+      showSnackbar("Cliente agregado exitosamente.", "success");
+      setFormData(initialFormData); // Limpiar el formulario
+      fetchClients(); // Refresca la lista de clientes
+      onClose(); // Cierra el modal al agregar correctamente
+    } catch (error) {
+      const backendError = error.response?.data?.error;
+      const message =
+        backendError === "El usuario o el correo ya están en uso."
+          ? backendError
+          : "Error al agregar cliente.";
+      showSnackbar(message, "error");
+    } finally {
       setLoading(false);
-      if (success) {
-        setFormData(initialFormData); // Limpiar los campos si se agrega correctamente
-      }
     }
   };
 
@@ -117,7 +116,6 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
           borderRadius: "10px",
         }}
       >
-        {/* Botón de cerrar modal (X) */}
         <IconButton
           onClick={onClose}
           sx={{ position: "absolute", top: 8, right: 8 }}
@@ -125,7 +123,6 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
           <Close />
         </IconButton>
 
-        {/* Header minimalista */}
         <Typography
           id="modal-title"
           variant="h6"
@@ -142,7 +139,6 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
           Agregar Cliente
         </Typography>
 
-        {/* Campos con iconos */}
         <TextField
           fullWidth
           label="Usuario"
@@ -285,7 +281,6 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
           }}
         />
 
-        {/* Botones de Agregar y Limpiar */}
         <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
           <Button
             variant="outlined"
@@ -295,10 +290,7 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
             sx={{
               borderColor: "#00308F",
               color: "#00308F",
-              "&:hover": {
-                color: "#00246d", // Cambia el texto al color de hover sin fondo
-                borderColor: "#00246d", // Cambia el borde al color de hover
-              },
+              "&:hover": { color: "#00246d", borderColor: "#00246d" },
             }}
           >
             Limpiar
@@ -311,9 +303,7 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
             startIcon={loading && <CircularProgress size={20} />}
             sx={{
               backgroundColor: "#00308F",
-              "&:hover": {
-                backgroundColor: "#00246d",
-              },
+              "&:hover": { backgroundColor: "#00246d" },
             }}
           >
             {loading ? "Agregando..." : "Agregar Cliente"}

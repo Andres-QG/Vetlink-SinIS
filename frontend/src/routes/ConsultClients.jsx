@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
-import { CircularProgress, Button, Box, Snackbar, Alert } from "@mui/material";
+import { CircularProgress, Button, Snackbar, Alert } from "@mui/material";
 import { Add } from "@mui/icons-material";
-import ConsultClientsTable from "../components/ConsultClients/ConsultClientsTable";
+import GeneralTable2 from "../components/Consult/GeneralTable2";
 import SearchBar from "../components/ConsultClients/SearchBar";
+import ModifyClientModal from "../components/ConsultClients/ModifyClientModal";
+import DeleteClientModal from "../components/ConsultClients/DeleteClientModal";
 import axios from "axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import AddClientModal from "../components/ConsultClients/AddClientModal"; // Modal para agregar cliente
+import AddClientModal from "../components/ConsultClients/AddClientModal";
 
 const ConsultClients = () => {
   const [clients, setClients] = useState([]);
@@ -16,10 +18,10 @@ const ConsultClients = () => {
   const [order, setOrder] = useState("asc");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [openModal, setOpenModal] = useState(false); // Estado para abrir/cerrar modal
-  const [snackbarMessage, setSnackbarMessage] = useState(""); // Estado para el mensaje de éxito/error
-  const [snackbarOpen, setSnackbarOpen] = useState(false); // Controla el estado del Snackbar
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // Controla si es éxito o error
+  const [openModal, setOpenModal] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   useEffect(() => {
     fetchClients();
@@ -49,39 +51,6 @@ const ConsultClients = () => {
     }
   };
 
-  // Función para agregar un cliente
-  const handleAddClient = async (clientData) => {
-    try {
-      const response = await axios.post(
-        "http://localhost:8000/api/add-client/",
-        clientData
-      );
-      setSnackbarMessage("Cliente agregado exitosamente.");
-      setSnackbarSeverity("success");
-      setSnackbarOpen(true);
-      fetchClients(); // Refrescar la tabla al agregar cliente
-      setOpenModal(false); // Cierra el modal al agregar exitosamente
-    } catch (error) {
-      // Aquí manejamos los errores del backend
-      if (error.response && error.response.data) {
-        const backendError = error.response.data.error;
-
-        // Verifica si el error es de usuario o correo duplicados
-        if (backendError === "El usuario o el correo ya están en uso.") {
-          setSnackbarMessage("El usuario o el correo ya están en uso.");
-        } else {
-          setSnackbarMessage(backendError || "Error al agregar cliente.");
-        }
-      } else {
-        setSnackbarMessage("Error de conexión al agregar cliente.");
-      }
-
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
-    }
-  };
-
-  // Función para mostrar el Snackbar desde ConsultClientsTable
   const showSnackbar = (message, severity) => {
     setSnackbarMessage(message);
     setSnackbarSeverity(severity);
@@ -95,6 +64,15 @@ const ConsultClients = () => {
     setPage(1);
   };
 
+  const columns = [
+    { field: "usuario", headerName: "Usuario" },
+    { field: "nombre", headerName: "Nombre" },
+    { field: "apellidos", headerName: "Apellido" },
+    { field: "cedula", headerName: "Cédula" },
+    { field: "telefono", headerName: "Teléfono" },
+    { field: "correo", headerName: "Correo" },
+  ];
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -105,7 +83,7 @@ const ConsultClients = () => {
             <Button
               variant="contained"
               startIcon={<Add />}
-              onClick={() => setOpenModal(true)} // Abre el modal
+              onClick={() => setOpenModal(true)}
               sx={{
                 backgroundColor: "#00308F",
                 "&:hover": { backgroundColor: "#00246d" },
@@ -126,26 +104,29 @@ const ConsultClients = () => {
             <CircularProgress />
           </div>
         ) : (
-          <ConsultClientsTable
-            clients={clients}
+          <GeneralTable2
+            data={clients}
+            columns={columns}
             page={page}
             setPage={setPage}
             totalPages={totalPages}
-            fetchClients={fetchClients} // Pasa la función para recargar la tabla
-            showSnackbar={showSnackbar} // Pasa la función para mostrar el snackbar
+            fetchData={fetchClients}
+            showSnackbar={showSnackbar}
+            EditModal={ModifyClientModal}
+            DeleteModal={DeleteClientModal}
+            keyField="usuario"
           />
         )}
       </div>
       <Footer />
 
-      {/* Modal para agregar cliente */}
       <AddClientModal
         open={openModal}
         onClose={() => setOpenModal(false)}
-        onSubmit={handleAddClient}
+        fetchClients={fetchClients}
+        showSnackbar={showSnackbar}
       />
 
-      {/* Snackbar para mostrar mensajes */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={4000}
