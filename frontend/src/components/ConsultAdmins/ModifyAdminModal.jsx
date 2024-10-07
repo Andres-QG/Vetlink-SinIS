@@ -9,15 +9,23 @@ import {
   CircularProgress,
   InputAdornment,
 } from "@mui/material";
-import { Close, Person, Email, Phone, Badge } from "@mui/icons-material";
+import {
+  Close,
+  Person,
+  Email,
+  Phone,
+  Badge,
+  Business,
+} from "@mui/icons-material";
 import axios from "axios";
 
-const ModifyClientModal = ({
+const ModifyAdminModal = ({
   open,
   onClose,
-  client,
-  fetchClients,
+  admin,
+  fetchAdmins,
   showSnackbar,
+  clinics, // Lista de clínicas
 }) => {
   const initialFormData = {
     cedula: "",
@@ -26,6 +34,7 @@ const ModifyClientModal = ({
     apellido1: "",
     apellido2: "",
     telefono: "",
+    clinica: "", // Nueva propiedad para la clínica
   };
 
   const [formData, setFormData] = useState(initialFormData);
@@ -33,17 +42,18 @@ const ModifyClientModal = ({
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    if (client) {
+    if (admin) {
       setFormData({
-        cedula: client.cedula || "",
-        correo: client.correo || "",
-        nombre: client.nombre || "",
-        apellido1: client.apellido1 || "",
-        apellido2: client.apellido2 || "",
-        telefono: client.telefono || "",
+        cedula: admin.cedula || "",
+        correo: admin.correo || "",
+        nombre: admin.nombre || "",
+        apellido1: admin.apellido1 || "",
+        apellido2: admin.apellido2 || "",
+        telefono: admin.telefono || "",
+        clinica: admin.clinica || "", // Cargar la clínica existente del administrador
       });
     }
-  }, [client]);
+  }, [admin]);
 
   const validate = () => {
     const newErrors = {};
@@ -71,6 +81,10 @@ const ModifyClientModal = ({
       newErrors.apellido1 = "El primer apellido es requerido.";
     }
 
+    if (!formData.clinica) {
+      newErrors.clinica = "La clínica es requerida.";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -88,12 +102,12 @@ const ModifyClientModal = ({
       setErrors({});
       try {
         await axios.put(
-          `http://localhost:8000/api/update-client/${client.usuario}/`,
+          `http://localhost:8000/api/update-admin/${admin.usuario}/`,
           formData
         );
 
-        await fetchClients(); // Refresca la lista de clientes
-        showSnackbar("Cliente modificado con éxito.", "success");
+        await fetchAdmins(); // Refresca la lista de administradores
+        showSnackbar("Administrador modificado con éxito.", "success");
 
         onClose(); // Cierra el modal después de guardar
       } catch (error) {
@@ -103,9 +117,9 @@ const ModifyClientModal = ({
         ) {
           setErrors({ correo: "El correo ya está en uso." });
         } else {
-          setErrors({ general: "Error al actualizar el cliente." });
+          setErrors({ general: "Error al actualizar el administrador." });
         }
-        showSnackbar("Error al modificar el cliente.", "error");
+        showSnackbar("Error al modificar el administrador.", "error");
       } finally {
         setLoading(false);
       }
@@ -151,7 +165,7 @@ const ModifyClientModal = ({
             paddingBottom: "10px",
           }}
         >
-          Modificar Cliente
+          Modificar Administrador
         </Typography>
 
         {/* Campos de formulario */}
@@ -263,6 +277,35 @@ const ModifyClientModal = ({
             ),
           }}
         />
+        <TextField
+          fullWidth
+          select
+          label="Clínica"
+          name="clinica"
+          value={formData.clinica}
+          onChange={handleChange}
+          sx={{ mb: 2 }}
+          required
+          error={!!errors.clinica}
+          helperText={errors.clinica}
+          SelectProps={{
+            native: true,
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Business />
+              </InputAdornment>
+            ),
+          }}
+        >
+          <option value="">Seleccione una clínica</option>
+          {clinics.map((clinic) => (
+            <option key={clinic.clinica_id} value={clinic.clinica_id}>
+              {clinic.nombre}
+            </option>
+          ))}
+        </TextField>
 
         <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
           <Button
@@ -297,4 +340,4 @@ const ModifyClientModal = ({
   );
 };
 
-export default ModifyClientModal;
+export default ModifyAdminModal;

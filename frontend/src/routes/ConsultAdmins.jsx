@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 import { CircularProgress, Button, Snackbar, Alert } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import GeneralTable2 from "../components/Consult/GeneralTable2";
-import SearchBar from "../components/ConsultClients/SearchBar";
-import ModifyAdminModal from "../components/ConsultClients/ModifyAdminModal";
-import DeleteAdminModal from "../components/ConsultClients/DeleteAdminModal";
+import SearchBar from "../components/Consult/GeneralizedSearchBar";
+import ModifyAdminModal from "../components/ConsultAdmins/ModifyAdminModal";
+import DeleteAdminModal from "../components/ConsultAdmins/DeleteAdminModal";
 import axios from "axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import AddAdminModal from "../components/ConsultClients/AddAdminModal";
+import AddAdminModal from "../components/ConsultAdmins/AddAdminModal";
 
 const ConsultAdmins = () => {
   const [admins, setAdmins] = useState([]);
@@ -18,7 +18,9 @@ const ConsultAdmins = () => {
   const [order, setOrder] = useState("asc");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [openModal, setOpenModal] = useState(false);
+  const [openAddModal, setOpenAddModal] = useState(false);
+  const [editAdmin, setEditAdmin] = useState(null);
+  const [deleteAdmin, setDeleteAdmin] = useState(null);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
@@ -71,7 +73,7 @@ const ConsultAdmins = () => {
     { field: "cedula", headerName: "Cédula" },
     { field: "telefono", headerName: "Teléfono" },
     { field: "correo", headerName: "Correo" },
-    { field: "clinica", headerName: "Clinica" },
+    { field: "clinica", headerName: "Clínica" },
   ];
 
   return (
@@ -84,11 +86,11 @@ const ConsultAdmins = () => {
             <Button
               variant="contained"
               startIcon={<Add />}
-              onClick={() => setOpenModal(true)}
+              onClick={() => setOpenAddModal(true)}
               sx={{
                 backgroundColor: "#00308F",
                 "&:hover": { backgroundColor: "#00246d" },
-                minWidth: "190px",
+                minWidth: "250px",
                 marginBottom: { xs: "-4px", md: "0px" },
                 marginRight: { xs: "0px", md: "10px" },
                 width: { xs: "100%", md: "auto" },
@@ -96,7 +98,10 @@ const ConsultAdmins = () => {
             >
               Agregar Administrador
             </Button>
-            <SearchBar onSearch={handleSearch} />
+            <SearchBar
+              onSearch={handleSearch}
+              columns={columns.map((col) => col.field)}
+            />
           </div>
         </div>
 
@@ -116,17 +121,39 @@ const ConsultAdmins = () => {
             EditModal={ModifyAdminModal}
             DeleteModal={DeleteAdminModal}
             keyField="usuario"
+            onEdit={setEditAdmin}
+            onDelete={setDeleteAdmin}
           />
         )}
       </div>
       <Footer />
 
       <AddAdminModal
-        open={openModal}
-        onClose={() => setOpenModal(false)}
+        open={openAddModal}
+        onClose={() => setOpenAddModal(false)}
         fetchClients={fetchAdmins}
         showSnackbar={showSnackbar}
       />
+
+      {editAdmin && (
+        <ModifyAdminModal
+          open={!!editAdmin}
+          onClose={() => setEditAdmin(null)}
+          admin={editAdmin}
+          fetchClients={fetchAdmins}
+          showSnackbar={showSnackbar}
+        />
+      )}
+
+      {deleteAdmin && (
+        <DeleteAdminModal
+          open={!!deleteAdmin}
+          onClose={() => setDeleteAdmin(null)}
+          admin={deleteAdmin}
+          fetchClients={fetchAdmins}
+          showSnackbar={showSnackbar}
+        />
+      )}
 
       <Snackbar
         open={snackbarOpen}

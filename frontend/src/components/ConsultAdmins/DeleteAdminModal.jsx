@@ -10,11 +10,11 @@ import {
 import { Close } from "@mui/icons-material";
 import axios from "axios";
 
-const DeleteClientModal = ({
+const DeleteAdminModal = ({
   open,
   onClose,
-  client,
-  fetchClients,
+  admin,
+  fetchAdmins,
   showSnackbar,
 }) => {
   const [loading, setLoading] = useState(false);
@@ -22,19 +22,19 @@ const DeleteClientModal = ({
   const handleDelete = async () => {
     setLoading(true);
     try {
-      // Llama a la API para eliminar el cliente
+      // Llama a la API para eliminar el administrador
       await axios.delete(
-        `http://localhost:8000/api/delete-client/${client.usuario}/`
+        `http://localhost:8000/api/delete-admin/${admin.usuario}/`
       );
 
-      // Llama a fetchClients para refrescar la lista y muestra el mensaje de éxito
-      await fetchClients();
-      showSnackbar("Cliente eliminado con éxito.", "success");
+      // Llama a fetchAdmins para refrescar la lista y muestra el mensaje de éxito
+      await fetchAdmins();
+      showSnackbar("Administrador eliminado con éxito.", "success");
 
       onClose(); // Cierra el modal si la eliminación fue exitosa
     } catch (error) {
-      console.error("Error al eliminar el cliente:", error);
-      showSnackbar("Error al eliminar el cliente.", "error");
+      console.error("Error al eliminar el administrador:", error);
+      showSnackbar("Error al eliminar el administrador.", "error");
     } finally {
       setLoading(false);
     }
@@ -84,8 +84,8 @@ const DeleteClientModal = ({
         </Typography>
 
         <Typography sx={{ mb: 3 }} textAlign="center">
-          ¿Estás seguro de que deseas eliminar al cliente{" "}
-          <strong>{client.nombre}</strong>?
+          ¿Estás seguro de que deseas eliminar al administrador{" "}
+          <strong>{admin.nombre}</strong>?
         </Typography>
 
         <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
@@ -115,4 +115,4 @@ const DeleteClientModal = ({
   );
 };
 
-export default DeleteClientModal;
+export default DeleteAdminModal;

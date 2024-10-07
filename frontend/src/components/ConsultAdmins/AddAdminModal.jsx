@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   Box,
@@ -8,6 +8,7 @@ import {
   IconButton,
   CircularProgress,
   InputAdornment,
+  MenuItem,
 } from "@mui/material";
 import {
   Close,
@@ -17,10 +18,11 @@ import {
   VpnKey,
   Badge,
   AccountCircle,
+  Business,
 } from "@mui/icons-material";
 import axios from "axios";
 
-const AddClientModal = ({ open, onClose, fetchClients, showSnackbar }) => {
+const AddAdminModal = ({ open, onClose, fetchAdmins, showSnackbar }) => {
   const initialFormData = {
     usuario: "",
     cedula: "",
@@ -30,11 +32,28 @@ const AddClientModal = ({ open, onClose, fetchClients, showSnackbar }) => {
     apellido2: "",
     telefono: "",
     clave: "",
+    clinica: "",
   };
 
   const [formData, setFormData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [clinics, setClinics] = useState([]); // State para almacenar las clínicas disponibles
+
+  useEffect(() => {
+    // Cargar las clínicas al montar el componente
+    const fetchClinics = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:8000/api/consult-clinics/"
+        );
+        setClinics(response.data.results);
+      } catch (error) {
+        console.error("Error fetching clinics:", error);
+      }
+    };
+    fetchClinics();
+  }, []);
 
   const validate = () => {
     const newErrors = {};
@@ -60,6 +79,9 @@ const AddClientModal = ({ open, onClose, fetchClients, showSnackbar }) => {
     if (!formData.telefono || !telefonoRegex.test(formData.telefono)) {
       newErrors.telefono = "El teléfono debe tener 8 dígitos.";
     }
+    if (!formData.clinica) {
+      newErrors.clinica = "La clínica es requerida.";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -74,17 +96,17 @@ const AddClientModal = ({ open, onClose, fetchClients, showSnackbar }) => {
 
     setLoading(true);
     try {
-      await axios.post("http://localhost:8000/api/add-client/", formData);
-      showSnackbar("Cliente agregado exitosamente.", "success");
+      await axios.post("http://localhost:8000/api/add-admin/", formData);
+      showSnackbar("Administrador agregado exitosamente.", "success");
       setFormData(initialFormData); // Limpiar el formulario
-      fetchClients(); // Refresca la lista de clientes
+      fetchAdmins(); // Refresca la lista de administradores
       onClose(); // Cierra el modal al agregar correctamente
     } catch (error) {
       const backendError = error.response?.data?.error;
       const message =
         backendError === "El usuario o el correo ya están en uso."
           ? backendError
-          : "Error al agregar cliente.";
+          : "Error al agregar administrador.";
       showSnackbar(message, "error");
     } finally {
       setLoading(false);
@@ -136,7 +158,7 @@ const AddClientModal = ({ open, onClose, fetchClients, showSnackbar }) => {
             paddingBottom: "10px",
           }}
         >
-          Agregar Cliente
+          Agregar Administrador
         </Typography>
 
         <TextField
@@ -280,6 +302,31 @@ const AddClientModal = ({ open, onClose, fetchClients, showSnackbar }) => {
             ),
           }}
         />
+        <TextField
+          fullWidth
+          select
+          label="Clínica"
+          name="clinica"
+          value={formData.clinica}
+          onChange={handleChange}
+          sx={{ mb: 2 }}
+          required
+          error={!!errors.clinica}
+          helperText={errors.clinica}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Business />
+              </InputAdornment>
+            ),
+          }}
+        >
+          {clinics.map((clinic) => (
+            <MenuItem key={clinic.clinica_id} value={clinic.clinica_id}>
+              {clinic.nombre}
+            </MenuItem>
+          ))}
+        </TextField>
 
         <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
           <Button
@@ -306,7 +353,7 @@ const AddClientModal = ({ open, onClose, fetchClients, showSnackbar }) => {
               "&:hover": { backgroundColor: "#00246d" },
             }}
           >
-            {loading ? "Agregando..." : "Agregar Cliente"}
+            {loading ? "Agregando..." : "Agregar Administrador"}
           </Button>
         </Box>
       </Box>
@@ -314,4 +361,4 @@ const AddClientModal = ({ open, onClose, fetchClients, showSnackbar }) => {
   );
 };
 
-export default AddClientModal;
+export default AddAdminModal;
