@@ -28,6 +28,7 @@ const GeneralTable = ({
   deletionUrl,
   pkCol,
   fetchData,
+  onOpenModal,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -144,7 +145,7 @@ const GeneralTable = ({
                     </TableCell>
                   ))}
                   <TableCell key={`actions-${item.id || index}`}>
-                    <IconButton onClick={() => console.log("Edit clicked")}>
+                    <IconButton onClick={() => {onOpenModal(item, item.dueño)}}>
                       <Edit />
                     </IconButton>
                     <IconButton onClick={() => handleOpenModal(item)}>

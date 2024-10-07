@@ -11,6 +11,7 @@ urlpatterns = [
     path('get-owners/', get_owners, name='get_owners'),
     path('consult-clinics/', consult_clinics, name='consult_clinics'),
     path('add-clinic/', add_clinic, name='add_clinic'),
+    path('update-clinic/<str:clinica>/', update_clinic, name='update_clinic'),
     path('delete-clinic/<int:clinica_id>/', delete_clinic, name='delete_clinic'),
     path('consult-client/', consult_client, name='consult_client'),
     path('add-client/', add_client, name='add_client'),

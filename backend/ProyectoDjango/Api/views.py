@@ -245,6 +245,40 @@ def add_clinic(request):
         print(e)
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(['PUT'])
+def update_clinic(request, clinica):
+    try:
+        print(clinica)
+        clin = Clinicas.objects.get(nombre=clinica)  # Buscar clinica por el nombre
+
+        # No permitimos modificar la llave primaria (usuario)
+        correo = request.data.get('correo')
+        nombre = request.data.get('nombre')
+        apellido1 = request.data.get('apellido1')
+        apellido2 = request.data.get('apellido2')
+        telefono = request.data.get('telefono')
+
+        # Verificar si el correo ya está en uso por otro usuario
+        if Clinicas.objects.filter(nombre=clinica).exclude(nombre=clinica).exists():
+            return Response({'error': 'La clinica ya existe.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Actualizar los datos del usuario
+        clin.nombre="Nose"
+        clin.direccion= correo
+        clin.telefono = telefono
+        clin.usuario_propietario = clinica.dueño
+        clin.save()
+
+        return Response({'message': 'Usuario actualizado con éxito.'}, status=status.HTTP_200_OK)
+
+    except Usuarios.DoesNotExist:
+        return Response({'error': 'Usuario no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        # Imprimir el error exacto en el servidor
+        print(f"Error actualizando usuario: {str(e)}")
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+
 
 @api_view(['DELETE'])
 def delete_clinic(request, clinica_id):

@@ -8,7 +8,8 @@ import SearchBar from "../components/Consult/GeneralizedSearchBar";
 
 import { CircularProgress, Button, Modal } from "@mui/material";
 import { Add } from "@mui/icons-material";
-import AddClinicaModal from "../components/consultClinicas/AddClinicModal";
+import AddClinicaModal from "../components/consultClinics/AddClinicModal";
+import ModifyClinicModal from "../components/consultClinics/ModifyClinicModal";
 
 function Owner() {
     const [clinicas, setClinicas] = useState([]);
@@ -20,6 +21,8 @@ function Owner() {
     const [order, setOrder] = useState("asc");
     const rowsPerPage = 10;
     const [open, setOpen] = useState(false);
+    const [openMod, setOpenMod] = useState(false);
+    const [selectedClinic, setSelectedClinic] = useState(null);
     const [snackbarMessage, setSnackbarMessage] = useState(""); // Estado para el mensaje de éxito/error
     const [snackbarOpen, setSnackbarOpen] = useState(false); // Controla el estado del Snackbar
     const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // Controla si es éxito o error
@@ -76,14 +79,14 @@ function Owner() {
       setSnackbarMessage("Clínica agregada exitosamente.");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-      fetchClinics(); // Refrescar la tabla al agregar cliente
+      fetchClinics(); // Refrescar la tabla al agregar la clinica
       setOpen(false); // Cierra el modal al agregar exitosamente
     } catch (error) {
       // Aquí manejamos los errores del backend
       if (error.response && error.response.data) {
         const backendError = error.response.data.error;
 
-        // Verifica si el error es de usuario o correo duplicados
+        // Verifica si la clinica ya existe
         if (backendError === "La clinica ya existe") {
           setSnackbarMessage("La clinica ya existe");
         } else {
@@ -97,6 +100,11 @@ function Owner() {
       setSnackbarOpen(true);
     }
   };
+
+    const handleOpenModal = (clinic, usuario) => {
+        setSelectedClinic(clinic);  
+        setOpenMod(true);
+    };
 
     return (
         <>
@@ -141,6 +149,8 @@ function Owner() {
                         pkCol="clinica_id"
                         deletionUrl="http://localhost:8000/api/delete-clinic"
                         fetchData={fetchClinics}
+                        onOpenModal={handleOpenModal}
+                        modifyClinic={handleOpenModal}
                         onPageChange={setPage}>
                     </GeneralTable>
                 )}
@@ -150,6 +160,13 @@ function Owner() {
                 onClose={() => setOpen(false)}
                 onSubmit={handleAddClinic}
             />
+
+            <ModifyClinicModal
+                open={openMod}
+                onClose={() => setOpenMod(false)}
+                selectedClinic={selectedClinic}
+            />
+            
             <Footer />
         </>
     )
