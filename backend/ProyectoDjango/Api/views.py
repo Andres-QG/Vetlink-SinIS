@@ -332,6 +332,17 @@ def log_out(request):
         return Response({'status':'failed', 'message':'Couldn\' log out'})
     
 
+@api_view(['DELETE'])
+def delete_pet(request, mascota_id):
+    try:
+        mascota = Mascotas.objects.get(pk=mascota_id)
+        mascota.delete()
+        return Response({'message': 'Mascota eliminada correctamente'}, status=status.HTTP_200_OK)
+    except Mascotas.DoesNotExist:
+        return Response({'error': 'Mascota no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(['GET'])
 def consult_mascotas(request):

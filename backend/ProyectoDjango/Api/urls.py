@@ -15,4 +15,5 @@ urlpatterns = [
     path('delete-client/<str:usuario>/', delete_client, name='delete_client'),
     path('consult-mascotas/', consult_mascotas, name='consult_mascotas'),
     path('create-pet/', create_pet, name='create_pet'),
+    path('delete-pet/<int:mascota_id>/', delete_pet, name='delete_pet')
 ]
