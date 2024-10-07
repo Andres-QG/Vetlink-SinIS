@@ -9,8 +9,11 @@ import feature1 from "../assets/img/feature1.jpg";
 import feature2 from "../assets/img/feature2.jpg";
 import feature3 from "../assets/img/feature3.jpg";
 import whoAreWe from "../assets/img/who_are_we.jpg";
+import { useNavigate } from "react-router-dom";
 
 function LandingPage() {
+  const navigate = useNavigate()
+
   const faqs = [
     {
       title: "¿Qué información se almacena sobre mi mascota en este sistema?",
@@ -79,6 +82,7 @@ function LandingPage() {
               <a
                 href="#"
                 className="bg-brand text-bgsecondary py-2 lg:py-3 xl:py-4 px-4 lg:px-8 xl:px-10 rounded-lg text-lg lg:text-xl xl:text-2xl font-semibold hover:bg-teal-600"
+                onClick={() => navigate('/signup')}
               >
                 Regístrate ahora
               </a>

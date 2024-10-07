@@ -113,14 +113,14 @@ function Signup() {
   return (
     <>
       <Header />
-      <div className="flex w-full h-[93vh] bg-[#274B92]">
-        <div className="w-6/12 h-full flex flex-col py-40 items-center justify-center">
+      <div className=" bg-white flex w-full h-[93vh] sm:bg-[#274B92]">
+        <div className="hidden w-6/12 h-full sm:flex flex-col py-40 items-center justify-center">
           <p className="text-5xl w-96 text-center text-white">
             Estas cerca de tener acceso al
             <span className="text-blue-300"> mejor cuidado </span>
             para tu mascota
           </p>
-          <img className='w-80 py-20' src="./src/assets/icons/big_logo3.png" alt="" />
+          <img className='w-80 py-20' src="./src/assets/icons/big_logo.png" alt="" />
         </div>
         <div className="max-w-5xl bg-white h-full ml-auto rounded-l-3xl flex items-center justify-center">
          <div className="mx-auto flex justify-center">

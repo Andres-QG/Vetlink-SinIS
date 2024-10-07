@@ -64,7 +64,7 @@ function Header() {
       { text: "Servicios", href: "services" },
       { text: "Contacto", href: "#" },
       { text: "Iniciar Sesión", href: "login" },
-      { text: "Registrarme", href: "#" },
+      { text: "Registrarme", href: "signup" },
     ]; 
 
     if (loading) {
@@ -131,7 +131,9 @@ function Header() {
               >
                 Iniciar sesión
               </Button>
-              <Button className="border-primary bg-primary text-bgsecondary hover:text-bgprimary hover:border-primary hover:scale-105 transition-all duration-300">
+              <Button 
+                className="border-primary bg-primary text-bgsecondary hover:text-bgprimary hover:border-primary hover:scale-105 transition-all duration-300"
+                onClick={() => handleClick("signup")}>
                 Registrarme
               </Button>
             </div>
