@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { CircularProgress, Button, Snackbar, Alert } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import GeneralTable2 from "../components/Consult/GeneralTable2";
-import SearchBar from "../components/ConsultClients/SearchBar";
+import SearchBar from "../components/Consult/GeneralizedSearchBar";
 import ModifyClientModal from "../components/ConsultClients/ModifyClientModal";
 import DeleteClientModal from "../components/ConsultClients/DeleteClientModal";
 import axios from "axios";
@@ -95,7 +95,10 @@ const ConsultClients = () => {
             >
               Agregar Cliente
             </Button>
-            <SearchBar onSearch={handleSearch} />
+            <SearchBar
+              onSearch={handleSearch}
+              columns={columns.map((col) => col.field)}
+            />
           </div>
         </div>
 

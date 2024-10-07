@@ -13,8 +13,8 @@ import axios from "axios";
 const DeleteClientModal = ({
   open,
   onClose,
-  client,
-  fetchClients,
+  data,
+  fetchData,
   showSnackbar,
 }) => {
   const [loading, setLoading] = useState(false);
@@ -22,19 +22,19 @@ const DeleteClientModal = ({
   const handleDelete = async () => {
     setLoading(true);
     try {
-      // Llama a la API para eliminar el cliente
+      // Llama a la API para eliminar el registro
       await axios.delete(
-        `http://localhost:8000/api/delete-client/${client.usuario}/`
+        `http://localhost:8000/api/delete-client/${data.usuario}/`
       );
 
-      // Llama a fetchClients para refrescar la lista y muestra el mensaje de éxito
-      await fetchClients();
-      showSnackbar("Cliente eliminado con éxito.", "success");
+      // Llama a fetchData para refrescar la lista y muestra el mensaje de éxito
+      await fetchData();
+      showSnackbar("Registro eliminado con éxito.", "success");
 
       onClose(); // Cierra el modal si la eliminación fue exitosa
     } catch (error) {
-      console.error("Error al eliminar el cliente:", error);
-      showSnackbar("Error al eliminar el cliente.", "error");
+      console.error("Error al eliminar el registro:", error);
+      showSnackbar("Error al eliminar el registro.", "error");
     } finally {
       setLoading(false);
     }
@@ -84,8 +84,8 @@ const DeleteClientModal = ({
         </Typography>
 
         <Typography sx={{ mb: 3 }} textAlign="center">
-          ¿Estás seguro de que deseas eliminar al cliente{" "}
-          <strong>{client.nombre}</strong>?
+          ¿Estás seguro de que deseas eliminar el registro{" "}
+          <strong>{data.nombre}</strong>?
         </Typography>
 
         <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
