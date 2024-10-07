@@ -151,8 +151,6 @@ const GeneralTable2 = ({
             <TableBody>
               {data.map((item) => (
                 <TableRow key={item[keyField]}>
-                  {" "}
-                  {/* Usa keyField aquí */}
                   {columns.map((col) => (
                     <TableCell key={col.field}>{item[col.field]}</TableCell>
                   ))}
@@ -208,8 +206,8 @@ const GeneralTable2 = ({
         <EditModal
           open={openEditModal}
           onClose={handleCloseEditModal}
-          client={selectedItem}
-          fetchClients={fetchData}
+          data={selectedItem} // Pasamos data como prop generalizado
+          fetchData={fetchData}
           showSnackbar={showSnackbar}
         />
       )}
@@ -218,8 +216,8 @@ const GeneralTable2 = ({
         <DeleteModal
           open={openDeleteModal}
           onClose={handleCloseDeleteModal}
-          client={selectedItem}
-          fetchClients={fetchData}
+          data={selectedItem} // Pasamos data como prop generalizado
+          fetchData={fetchData}
           showSnackbar={showSnackbar}
         />
       )}

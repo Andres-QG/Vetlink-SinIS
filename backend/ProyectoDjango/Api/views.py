@@ -112,28 +112,28 @@ def consult_clinics(request):
     try:
         clinicas = Clinicas.objects.all()
         if search:
-            # Para otras columnas, utiliza el filtrado dinámico basado en kwargs
             kwargs = {f'{column}__icontains': search}
             clinicas = clinicas.filter(**kwargs)
 
-        # Ordenamiento de resultados
         clinicas = clinicas.order_by(f'-{column}' if order == 'desc' else column)
 
         paginator = CustomPagination()
         result_page = paginator.paginate_queryset(clinicas, request)
         serializer_data = [
             {
-                "clinica": clinicas.nombre,
-                "direccion": clinicas.direccion,
-                "telefono": clinicas.telefono,
-                "dueño": clinicas.usuario_propietario.nombre,
+                "clinica_id": clinica.clinica_id,  # Ajusta para enviar el ID
+                "nombre": clinica.nombre,
+                "direccion": clinica.direccion,
+                "telefono": clinica.telefono,
+                "dueño": clinica.usuario_propietario.nombre,
             }
-            for clinicas in result_page
+            for clinica in result_page
         ]
 
         return paginator.get_paginated_response(serializer_data)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 
 @api_view(['POST'])
@@ -417,6 +417,7 @@ def consult_admin(request):
                 "telefono": usuario.telefono,
                 "correo": usuario.correo,
                 "clinica": usuario.clinica.nombre if usuario.clinica else None,
+                "clinica_id": usuario.clinica.clinica_id if usuario.clinica else None
             }
             for usuario in result_page
         ]

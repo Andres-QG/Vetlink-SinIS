@@ -18,9 +18,7 @@ const ConsultAdmins = () => {
   const [order, setOrder] = useState("asc");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [openAddModal, setOpenAddModal] = useState(false);
-  const [editAdmin, setEditAdmin] = useState(null);
-  const [deleteAdmin, setDeleteAdmin] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
@@ -86,7 +84,7 @@ const ConsultAdmins = () => {
             <Button
               variant="contained"
               startIcon={<Add />}
-              onClick={() => setOpenAddModal(true)}
+              onClick={() => setOpenModal(true)}
               sx={{
                 backgroundColor: "#00308F",
                 "&:hover": { backgroundColor: "#00246d" },
@@ -121,39 +119,17 @@ const ConsultAdmins = () => {
             EditModal={ModifyAdminModal}
             DeleteModal={DeleteAdminModal}
             keyField="usuario"
-            onEdit={setEditAdmin}
-            onDelete={setDeleteAdmin}
           />
         )}
       </div>
       <Footer />
 
       <AddAdminModal
-        open={openAddModal}
-        onClose={() => setOpenAddModal(false)}
-        fetchClients={fetchAdmins}
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        fetchData={fetchAdmins} // Cambiado a fetchData
         showSnackbar={showSnackbar}
       />
-
-      {editAdmin && (
-        <ModifyAdminModal
-          open={!!editAdmin}
-          onClose={() => setEditAdmin(null)}
-          admin={editAdmin}
-          fetchClients={fetchAdmins}
-          showSnackbar={showSnackbar}
-        />
-      )}
-
-      {deleteAdmin && (
-        <DeleteAdminModal
-          open={!!deleteAdmin}
-          onClose={() => setDeleteAdmin(null)}
-          admin={deleteAdmin}
-          fetchClients={fetchAdmins}
-          showSnackbar={showSnackbar}
-        />
-      )}
 
       <Snackbar
         open={snackbarOpen}

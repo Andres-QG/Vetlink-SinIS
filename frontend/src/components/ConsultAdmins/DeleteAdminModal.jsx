@@ -10,13 +10,7 @@ import {
 import { Close } from "@mui/icons-material";
 import axios from "axios";
 
-const DeleteAdminModal = ({
-  open,
-  onClose,
-  admin,
-  fetchAdmins,
-  showSnackbar,
-}) => {
+const DeleteAdminModal = ({ open, onClose, data, fetchData, showSnackbar }) => {
   const [loading, setLoading] = useState(false);
 
   const handleDelete = async () => {
@@ -24,11 +18,11 @@ const DeleteAdminModal = ({
     try {
       // Llama a la API para eliminar el administrador
       await axios.delete(
-        `http://localhost:8000/api/delete-admin/${admin.usuario}/`
+        `http://localhost:8000/api/delete-admin/${data.usuario}/`
       );
 
-      // Llama a fetchAdmins para refrescar la lista y muestra el mensaje de éxito
-      await fetchAdmins();
+      // Llama a fetchData para refrescar la lista y muestra el mensaje de éxito
+      await fetchData();
       showSnackbar("Administrador eliminado con éxito.", "success");
 
       onClose(); // Cierra el modal si la eliminación fue exitosa
@@ -83,10 +77,16 @@ const DeleteAdminModal = ({
           Confirmar Eliminación
         </Typography>
 
-        <Typography sx={{ mb: 3 }} textAlign="center">
-          ¿Estás seguro de que deseas eliminar al administrador{" "}
-          <strong>{admin.nombre}</strong>?
-        </Typography>
+        {data ? (
+          <Typography sx={{ mb: 3 }} textAlign="center">
+            ¿Estás seguro de que deseas eliminar al administrador{" "}
+            <strong>{data.nombre}</strong>?
+          </Typography>
+        ) : (
+          <Typography sx={{ mb: 3 }} textAlign="center">
+            No se encontró el administrador seleccionado.
+          </Typography>
+        )}
 
         <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
           <Button

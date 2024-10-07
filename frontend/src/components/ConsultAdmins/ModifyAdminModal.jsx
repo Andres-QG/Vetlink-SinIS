@@ -8,6 +8,8 @@ import {
   IconButton,
   CircularProgress,
   InputAdornment,
+  MenuItem,
+  Grid,
 } from "@mui/material";
 import {
   Close,
@@ -19,14 +21,7 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 
-const ModifyAdminModal = ({
-  open,
-  onClose,
-  admin,
-  fetchAdmins,
-  showSnackbar,
-  clinics, // Lista de clínicas
-}) => {
+const ModifyAdminModal = ({ open, onClose, data, fetchData, showSnackbar }) => {
   const initialFormData = {
     cedula: "",
     correo: "",
@@ -34,57 +29,72 @@ const ModifyAdminModal = ({
     apellido1: "",
     apellido2: "",
     telefono: "",
-    clinica: "", // Nueva propiedad para la clínica
+    clinica: "",
   };
 
   const [formData, setFormData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [clinics, setClinics] = useState([]);
+
+  // Fetch clinics only once on component mount to avoid re-fetching every time modal opens
+  useEffect(() => {
+    const fetchClinics = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:8000/api/consult-clinics/"
+        );
+        if (response.data.results) {
+          setClinics(response.data.results);
+        } else {
+          console.error("No clinics found in the response");
+        }
+      } catch (error) {
+        console.error("Error fetching clinics:", error);
+        showSnackbar("Error al cargar las clínicas.", "error");
+      }
+    };
+
+    fetchClinics();
+  }, [showSnackbar]);
 
   useEffect(() => {
-    if (admin) {
+    if (data) {
       setFormData({
-        cedula: admin.cedula || "",
-        correo: admin.correo || "",
-        nombre: admin.nombre || "",
-        apellido1: admin.apellido1 || "",
-        apellido2: admin.apellido2 || "",
-        telefono: admin.telefono || "",
-        clinica: admin.clinica || "", // Cargar la clínica existente del administrador
+        cedula: data.cedula || "",
+        correo: data.correo || "",
+        nombre: data.nombre || "",
+        apellido1: data.apellido1 || "",
+        apellido2: data.apellido2 || "",
+        telefono: data.telefono || "",
+        clinica: data.clinica_id || "", // Make sure to use `clinica_id` here
       });
     }
-  }, [admin]);
+  }, [data]);
 
   const validate = () => {
     const newErrors = {};
-
-    const cedulaRegex = /^[0-9]{9}$/;
-    if (!formData.cedula || !cedulaRegex.test(formData.cedula)) {
+    if (!formData.cedula || !/^[0-9]{9}$/.test(formData.cedula)) {
       newErrors.cedula = "La cédula debe tener 9 dígitos.";
     }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!formData.correo || !emailRegex.test(formData.correo)) {
+    if (
+      !formData.correo ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.correo)
+    ) {
       newErrors.correo = "El correo electrónico no es válido.";
     }
-
-    const telefonoRegex = /^[0-9]{8}$/;
-    if (!formData.telefono || !telefonoRegex.test(formData.telefono)) {
+    if (!formData.telefono || !/^[0-9]{8}$/.test(formData.telefono)) {
       newErrors.telefono = "El teléfono debe tener 8 dígitos.";
     }
-
     if (!formData.nombre) {
       newErrors.nombre = "El nombre es requerido.";
     }
-
     if (!formData.apellido1) {
       newErrors.apellido1 = "El primer apellido es requerido.";
     }
-
     if (!formData.clinica) {
       newErrors.clinica = "La clínica es requerida.";
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -97,32 +107,24 @@ const ModifyAdminModal = ({
   };
 
   const handleSubmit = async () => {
-    if (validate()) {
-      setLoading(true);
-      setErrors({});
-      try {
-        await axios.put(
-          `http://localhost:8000/api/update-admin/${admin.usuario}/`,
-          formData
-        );
-
-        await fetchAdmins(); // Refresca la lista de administradores
-        showSnackbar("Administrador modificado con éxito.", "success");
-
-        onClose(); // Cierra el modal después de guardar
-      } catch (error) {
-        if (
-          error.response &&
-          error.response.data.error === "El correo ya está en uso."
-        ) {
-          setErrors({ correo: "El correo ya está en uso." });
-        } else {
-          setErrors({ general: "Error al actualizar el administrador." });
-        }
-        showSnackbar("Error al modificar el administrador.", "error");
-      } finally {
-        setLoading(false);
-      }
+    if (!validate()) return;
+    setLoading(true);
+    try {
+      await axios.put(
+        `http://localhost:8000/api/update-admin/${data.usuario}/`,
+        formData
+      );
+      showSnackbar("Administrador modificado con éxito.", "success");
+      fetchData();
+      onClose();
+    } catch (error) {
+      const backendError = error.response?.data?.error;
+      showSnackbar(
+        backendError || "Error al actualizar el administrador.",
+        "error"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -139,7 +141,7 @@ const ModifyAdminModal = ({
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: { xs: "90%", sm: "80%", md: 450 },
+          width: { xs: "90%", sm: "80%", md: 600 },
           bgcolor: "background.paper",
           p: 4,
           borderRadius: "10px",
@@ -152,7 +154,6 @@ const ModifyAdminModal = ({
         >
           <Close />
         </IconButton>
-
         <Typography
           variant="h6"
           component="h2"
@@ -168,144 +169,148 @@ const ModifyAdminModal = ({
           Modificar Administrador
         </Typography>
 
-        {/* Campos de formulario */}
-        <TextField
-          fullWidth
-          label="Cédula"
-          name="cedula"
-          value={formData.cedula}
-          onChange={handleChange}
-          sx={{ mb: 2 }}
-          required
-          error={!!errors.cedula}
-          helperText={errors.cedula}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Badge />
-              </InputAdornment>
-            ),
-          }}
-        />
-        <TextField
-          fullWidth
-          label="Correo"
-          name="correo"
-          value={formData.correo}
-          onChange={handleChange}
-          sx={{ mb: 2 }}
-          required
-          error={!!errors.correo}
-          helperText={errors.correo}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Email />
-              </InputAdornment>
-            ),
-          }}
-        />
-        <TextField
-          fullWidth
-          label="Nombre"
-          name="nombre"
-          value={formData.nombre}
-          onChange={handleChange}
-          sx={{ mb: 2 }}
-          required
-          error={!!errors.nombre}
-          helperText={errors.nombre}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Person />
-              </InputAdornment>
-            ),
-          }}
-        />
-        <TextField
-          fullWidth
-          label="Apellido 1"
-          name="apellido1"
-          value={formData.apellido1}
-          onChange={handleChange}
-          sx={{ mb: 2 }}
-          required
-          error={!!errors.apellido1}
-          helperText={errors.apellido1}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Person />
-              </InputAdornment>
-            ),
-          }}
-        />
-        <TextField
-          fullWidth
-          label="Apellido 2"
-          name="apellido2"
-          value={formData.apellido2}
-          onChange={handleChange}
-          sx={{ mb: 2 }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Person />
-              </InputAdornment>
-            ),
-          }}
-        />
-        <TextField
-          fullWidth
-          label="Teléfono"
-          name="telefono"
-          value={formData.telefono}
-          onChange={handleChange}
-          sx={{ mb: 2 }}
-          required
-          error={!!errors.telefono}
-          helperText={errors.telefono}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Phone />
-                <Box component="span" sx={{ ml: 1 }}>
-                  +506
-                </Box>
-              </InputAdornment>
-            ),
-          }}
-        />
-        <TextField
-          fullWidth
-          select
-          label="Clínica"
-          name="clinica"
-          value={formData.clinica}
-          onChange={handleChange}
-          sx={{ mb: 2 }}
-          required
-          error={!!errors.clinica}
-          helperText={errors.clinica}
-          SelectProps={{
-            native: true,
-          }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Business />
-              </InputAdornment>
-            ),
-          }}
-        >
-          <option value="">Seleccione una clínica</option>
-          {clinics.map((clinic) => (
-            <option key={clinic.clinica_id} value={clinic.clinica_id}>
-              {clinic.nombre}
-            </option>
-          ))}
-        </TextField>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Cédula"
+              name="cedula"
+              value={formData.cedula}
+              onChange={handleChange}
+              required
+              error={!!errors.cedula}
+              helperText={errors.cedula}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Badge />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Correo"
+              name="correo"
+              value={formData.correo}
+              onChange={handleChange}
+              required
+              error={!!errors.correo}
+              helperText={errors.correo}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Email />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Nombre"
+              name="nombre"
+              value={formData.nombre}
+              onChange={handleChange}
+              required
+              error={!!errors.nombre}
+              helperText={errors.nombre}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Person />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Apellido 1"
+              name="apellido1"
+              value={formData.apellido1}
+              onChange={handleChange}
+              required
+              error={!!errors.apellido1}
+              helperText={errors.apellido1}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Person />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Apellido 2"
+              name="apellido2"
+              value={formData.apellido2}
+              onChange={handleChange}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Person />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Teléfono"
+              name="telefono"
+              value={formData.telefono}
+              onChange={handleChange}
+              required
+              error={!!errors.telefono}
+              helperText={errors.telefono}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Phone />
+                    <Box component="span" sx={{ ml: 1 }}>
+                      +506
+                    </Box>
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              select
+              label="Clínica"
+              name="clinica"
+              value={formData.clinica}
+              onChange={handleChange}
+              required
+              error={!!errors.clinica}
+              helperText={errors.clinica}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Business />
+                  </InputAdornment>
+                ),
+              }}
+            >
+              {clinics.map((clinic) => (
+                <MenuItem key={clinic.clinica_id} value={clinic.clinica_id}>
+                  {clinic.nombre}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+        </Grid>
 
         <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
           <Button
