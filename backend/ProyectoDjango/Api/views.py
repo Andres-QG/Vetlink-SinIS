@@ -41,7 +41,7 @@ def check_user_exists(request):
 
     except:
         return Response({'exists': False, 'message': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
-        
+
 
 @api_view(['POST'])
 def reset_password(request):
@@ -52,7 +52,7 @@ def reset_password(request):
     try:
         userResponse = Usuarios.objects.get(correo=email) # Revisa que exista un usuario que tenga ese correo asociado
         verification_code = random.randint(100000, 999999) # Genera un número aleatorio de 6 dígitos
-        
+
         send_mail(
             'Código de reinicio de contraseña', #Asunto
             f'Tu código para reiniciar la contraseña es {verification_code}.', # Cuerpo
@@ -62,13 +62,13 @@ def reset_password(request):
         )
         request.session['reset_code'] = verification_code # Guarda el código en la sesión
         request.session['email'] = email
-        
+
         if userResponse.correo == email:
             return Response({'exists': True, 'message': f'Email authenticated.', 'rol': 5}, status=status.HTTP_200_OK)
     except Usuarios.DoesNotExist:
         return Response({'exists': False, 'message': 'Failed to verify email.'}, status=status.HTTP_404_NOT_FOUND)
 
-    
+
 @api_view(['POST'])
 def verify_code(request):
     values_str = int(''.join(request.data.get('values'))) # Casteo a int de los valores digitados por el usuario
@@ -221,13 +221,67 @@ def add_client(request):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@api_view(["POST"])
+@transaction.atomic
+def add_vet(request):
+    try:
+        data = request.data
+        usuario = data.get("usuario")
+        cedula = data.get("cedula")
+        correo = data.get("correo")
+        nombre = data.get("nombre")
+        apellido1 = data.get("apellido1")
+        apellido2 = data.get("apellido2")
+        telefono = data.get("telefono")
+        clave = data.get("clave")
+        especialidad_id = data.get("especialidad_id")
+        clinica_id = data.get("clinica_id")
+
+        # Verificar si ya existe un usuario con el mismo 'usuario'
+        if Usuarios.objects.filter(usuario=usuario).exists():
+            return Response(
+                {"error": "El usuario ya está en uso."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Verificar si ya existe un usuario con el mismo 'correo'
+        if Usuarios.objects.filter(correo=correo).exists():
+            return Response(
+                {"error": "El correo ya está en uso."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        hashed_password = make_password(clave)  # Hashear la contraseña
+
+        nuevo_veterinario = Usuarios(
+            usuario=usuario,
+            cedula=cedula,
+            nombre=nombre,
+            apellido1=apellido1,
+            apellido2=apellido2,
+            telefono=telefono,
+            correo=correo,
+            clave=hashed_password,
+            rol_id=3,  # Rol para veterinario
+            especialidad_id=especialidad_id,
+            clinica_id=clinica_id,
+        )
+        nuevo_veterinario.save()
+        return Response(
+            {"message": "Veterinario agregado con éxito"},
+            status=status.HTTP_201_CREATED,
+        )
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 @api_view(['POST'])
 def log_out(request):
     if logout(request):
         return Response({'status':'success', 'message':'User logged out succesfully'})
     else:
         return Response({'status':'failed', 'message':'Couldn\' log out'})
-    
 
 
 @api_view(['GET'])
@@ -261,13 +315,61 @@ def consult_mascotas(request):
 
 @api_view(["GET"])
 def consult_vet(request):
+    search = request.GET.get("search", "")
+    column = request.GET.get("column", "usuario")
+    order = request.GET.get("order", "asc")
+
     try:
-        users = Usuarios.objects.filter(rol=3)
-        serializer = UsuariosSerializer(users, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        usuarios_clientes = Usuarios.objects.filter(rol=3).select_related(
+            "especialidad", "clinica"
+        )
+        if search:
+            if column == "apellidos":
+                # Si la columna de búsqueda es 'apellidos', filtra por 'apellido1' y 'apellido2'
+                usuarios_clientes = usuarios_clientes.filter(
+                    Q(apellido1__icontains=search) | Q(apellido2__icontains=search)
+                )
+            else:
+                # Para otras columnas, utiliza el filtrado dinámico basado en kwargs
+                kwargs = {f"{column}__icontains": search}
+                usuarios_clientes = usuarios_clientes.filter(**kwargs)
+
+        # Ordenación de resultados
+        if column == "apellidos":
+            # Si se ordena por 'apellidos', se ordena por 'apellido1' y luego por 'apellido2'
+            usuarios_clientes = usuarios_clientes.order_by(
+                f"-apellido1",
+                "-apellido2" if order == "desc" else "apellido1",
+                "apellido2",
+            )
+        else:
+            usuarios_clientes = usuarios_clientes.order_by(
+                f"-{column}" if order == "desc" else column
+            )
+
+        paginator = CustomPagination()
+        result_page = paginator.paginate_queryset(usuarios_clientes, request)
+        serializer_data = [
+            {
+                "usuario": usuario.usuario,
+                "cedula": usuario.cedula,
+                "nombre": usuario.nombre,
+                "apellidos": f"{usuario.apellido1} {usuario.apellido2}",
+                "telefono": usuario.telefono,
+                "correo": usuario.correo,
+                "especialidad": (
+                    usuario.especialidad.especialidad_id
+                    if usuario.especialidad
+                    else None
+                ),
+                "clinica": usuario.clinica.clinica_id if usuario.clinica else None,
+            }
+            for usuario in result_page
+        ]
+
+        return paginator.get_paginated_response(serializer_data)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 @api_view(["POST"])
 def create_user(request):
@@ -279,22 +381,3 @@ def create_user(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-"""
-curl -X POST http://127.0.0.1:8000/create-user/ \
--H "Content-Type: application/json" \
--d '{
-    "usuario": "nuevo_usuario",
-    "rol": 3,
-    "clave": "123456",
-    "cedula": "123456789",
-    "nombre": "prueba",
-    "telefono": "0987654321",
-    "correo": "prueba.subida@correo.com"
-    "clinica" : 1,
-    "especialidad" : 1
-    
-    
-}'
-"""

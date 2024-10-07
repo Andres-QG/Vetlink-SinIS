@@ -5,8 +5,14 @@ import Login from "./routes/Login";
 import LandingPage from "./routes/LandingPage";
 import Services from "./routes/Services";
 import ConsultClients from "./routes/ConsultClients";
+import ConsultVets from "./routes/ConsultVets";
 import ConsultPets from "./routes/ConsultPets";
-import { PassReset, CheckCode, ChangePass, PassSuccess } from "./routes/PassReset";
+import {
+  PassReset,
+  CheckCode,
+  ChangePass,
+  PassSuccess,
+} from "./routes/PassReset";
 import Owner from "./routes/Owner";
 import Error from "./routes/Error";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -25,7 +31,7 @@ function App() {
               path="/check-reset"
               element={
                 <ProtectedRoute requiredRole="reset">
-                  <CheckCode/>
+                  <CheckCode />
                 </ProtectedRoute>
               }
             />
@@ -51,6 +57,8 @@ function App() {
             <Route path="*" element={<Error />} />
             <Route path="/consultpets" element={<ConsultPets />} />
             <Route path="/clients" element={<Clients />} />
+            <Route path="/consultvets" element={<ConsultVets />} />
+
             <Route
               path="/owner"
               element={

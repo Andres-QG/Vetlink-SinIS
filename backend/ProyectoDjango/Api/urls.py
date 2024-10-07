@@ -12,4 +12,6 @@ urlpatterns = [
     path("add-client/", add_client, name="add_client"),
     path("consult-mascotas/", consult_mascotas, name="consult_mascotas"),
     path("create-pet/", create_pet, name="create_pet"),
+    path("consult_vet/", consult_vet, name="consult_vet"),
+    path("add-vet/", add_vet, name="add_vet"),
 ]
