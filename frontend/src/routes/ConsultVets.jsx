@@ -4,10 +4,9 @@ import { Button, CircularProgress, Snackbar, Alert } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import SearchBar from "../components/ConsultVets/SearchBar";
-import ConsultVetsTable from "../components/ConsultVets/ConsultVetsTable";
+import GeneralizedSearchBar from "../components/Consult/GeneralizedSearchBar";
 import AddVetModal from "../components/ConsultVets/AddVetModal";
-import ConsultClientsTable from "../components/ConsultClients/ConsultClientsTable";
+import GeneralTable from "../components/Consult/GeneralTable";
 
 const ConsultVets = () => {
   const [vets, setVets] = useState([]);
@@ -41,7 +40,7 @@ const ConsultVets = () => {
         { params }
       );
       const data = response.data;
-      // console.log(data);
+      console.log(data);
       setVets(data.results);
       setTotalPages(Math.ceil(data.count / 10));
     } catch (error) {
@@ -58,6 +57,7 @@ const ConsultVets = () => {
         "http://localhost:8000/api/add_vet/",
         vetData
       );
+
       setSnackbarMessage("Veterinario agregado exitosamente.");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
@@ -78,6 +78,29 @@ const ConsultVets = () => {
     setPage(1);
   };
 
+  const columns = [
+    { field: "usuario", headerName: "Usuario" },
+    { field: "nombre", headerName: "Nombre" },
+    { field: "apellidos", headerName: "Apellidos" },
+    { field: "correo", headerName: "Email" },
+    { field: "telefono", headerName: "Teléfono" },
+    { field: "clinica", headerName: "Clinica" },
+    { field: "especialidad", headerName: "Especialidad" },
+    { field: "id", headerName: "" },
+    // Agrega más columnas según sea necesario
+  ];
+
+  const formatVetsData = (vets) => {
+    return vets.map((vet) => ({
+      ...vet,
+      apellidos: `${vet.apellido1} ${vet.apellido2}`,
+      clinica: vet.clinica ? vet.clinica.nombre : "",
+      especialidad: vet.especialidad ? vet.especialidad.nombre : "",
+    }));
+  };
+
+  const formattedVets = formatVetsData(vets);
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -92,14 +115,18 @@ const ConsultVets = () => {
               sx={{
                 backgroundColor: "#00308F",
                 "&:hover": { backgroundColor: "#00246d" },
-                minWidth: "190px",
+                minWidth: "250px", // Aumenta el ancho mínimo
+                maxWidth: "300px", // Establece un ancho máximo
                 marginBottom: { xs: "-4px", md: "0px" },
                 marginRight: { xs: "0px", md: "10px" },
                 width: { xs: "100%", md: "auto" },
               }}>
               Agregar Veterinario
             </Button>
-            <SearchBar onSearch={handleSearch} />
+            <GeneralizedSearchBar
+              onSearch={handleSearch}
+              columns={columns.map((col) => col.field)}
+            />
           </div>
         </div>
 
@@ -108,11 +135,16 @@ const ConsultVets = () => {
             <CircularProgress />
           </div>
         ) : (
-          <ConsultClientsTable
-            clients={vets}
+          <GeneralTable
+            data={formattedVets}
+            columns={columns}
+            totalCount={totalPages * 10}
             page={page}
-            setPage={setPage}
-            totalPages={totalPages}
+            rowsPerPage={10}
+            onPageChange={setPage}
+            deletionUrl="http://localhost:8000/api/delete_vet"
+            pkCol="id"
+            fetchData={fetchVets}
           />
         )}
       </div>

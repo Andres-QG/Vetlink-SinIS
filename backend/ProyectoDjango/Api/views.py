@@ -365,7 +365,7 @@ def update_client(request, usuario):
         # Imprimir el error exacto en el servidor
         print(f"Error actualizando usuario: {str(e)}")
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
 @api_view(['DELETE'])
 def delete_client(request, usuario):
     try:
@@ -376,7 +376,6 @@ def delete_client(request, usuario):
         return Response({'error': 'Usuario no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 
 @api_view(['POST'])
@@ -441,6 +440,7 @@ def consult_mascotas(request):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 @api_view(["GET"])
 def consult_vet(request):
     search = request.GET.get("search", "")
@@ -448,64 +448,50 @@ def consult_vet(request):
     order = request.GET.get("order", "asc")
 
     try:
-        usuarios_clientes = Usuarios.objects.filter(rol=3).select_related(
+        usuarios_veterinarios = Usuarios.objects.filter(rol=3).select_related(
             "especialidad", "clinica"
         )
         if search:
-            if column == "apellidos":
-                # Si la columna de búsqueda es 'apellidos', filtra por 'apellido1' y 'apellido2'
-                usuarios_clientes = usuarios_clientes.filter(
-                    Q(apellido1__icontains=search) | Q(apellido2__icontains=search)
-                )
-            else:
-                # Para otras columnas, utiliza el filtrado dinámico basado en kwargs
-                kwargs = {f"{column}__icontains": search}
-                usuarios_clientes = usuarios_clientes.filter(**kwargs)
+            kwargs = {f"{column}__icontains": search}
+            usuarios_veterinarios = usuarios_veterinarios.filter(**kwargs)
 
         # Ordenación de resultados
-        if column == "apellidos":
-            # Si se ordena por 'apellidos', se ordena por 'apellido1' y luego por 'apellido2'
-            usuarios_clientes = usuarios_clientes.order_by(
-                f"-apellido1",
-                "-apellido2" if order == "desc" else "apellido1",
-                "apellido2",
-            )
-        else:
-            usuarios_clientes = usuarios_clientes.order_by(
-                f"-{column}" if order == "desc" else column
-            )
+        usuarios_veterinarios = usuarios_veterinarios.order_by(
+            f"-{column}" if order == "desc" else column
+        )
 
         paginator = CustomPagination()
-        result_page = paginator.paginate_queryset(usuarios_clientes, request)
+        result_page = paginator.paginate_queryset(usuarios_veterinarios, request)
         serializer_data = [
             {
                 "usuario": usuario.usuario,
                 "cedula": usuario.cedula,
                 "nombre": usuario.nombre,
-                "apellidos": f"{usuario.apellido1} {usuario.apellido2}",
+                "apellido1": usuario.apellido1,
+                "apellido2": usuario.apellido2,
                 "telefono": usuario.telefono,
                 "correo": usuario.correo,
                 "especialidad": (
-                    usuario.especialidad.especialidad_id
+                    {
+                        "id": usuario.especialidad.especialidad_id,
+                        "nombre": usuario.especialidad.nombre,
+                        "descripcion": usuario.especialidad.descripcion,
+                    }
                     if usuario.especialidad
                     else None
                 ),
-                "clinica": usuario.clinica.clinica_id if usuario.clinica else None,
+                "clinica": (
+                    {
+                        "id": usuario.clinica.clinica_id,
+                        "nombre": usuario.clinica.nombre,
+                    }
+                    if usuario.clinica
+                    else None
+                ),
             }
             for usuario in result_page
         ]
 
         return paginator.get_paginated_response(serializer_data)
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-@api_view(["POST"])
-def create_user(request):
-    try:
-        serializer = UsuariosSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
