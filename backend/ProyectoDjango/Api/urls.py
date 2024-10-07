@@ -9,9 +9,13 @@ urlpatterns = [
     path("verify-code/", verify_code, name="verify_code"),
     path("check-new-pass/", check_new_pass, name="check_new_pass"),
     path("consult-client/", consult_client, name="consult_client"),
+    path("consult-clinics/", consult_clinics, name="consult_clinics"),
     path("add-client/", add_client, name="add_client"),
+    path("update-client/<str:usuario>/", update_client, name="update_client"),
+    path("delete-client/<str:usuario>/", delete_client, name="delete_client"),
     path("consult-mascotas/", consult_mascotas, name="consult_mascotas"),
     path("create-pet/", create_pet, name="create_pet"),
     path("consult_vet/", consult_vet, name="consult_vet"),
     path("add-vet/", add_vet, name="add_vet"),
+    path("delete-pet/<int:mascota_id>/", delete_pet, name="delete_pet"),
 ]

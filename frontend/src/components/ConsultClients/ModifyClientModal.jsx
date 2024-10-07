@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   Box,
@@ -9,65 +9,66 @@ import {
   CircularProgress,
   InputAdornment,
 } from "@mui/material";
-import {
-  Close,
-  Person,
-  Email,
-  Phone,
-  VpnKey,
-  Badge,
-  AccountCircle,
-} from "@mui/icons-material";
+import { Close, Person, Email, Phone, Badge } from "@mui/icons-material";
+import axios from "axios";
 
-const AddClientModal = ({ open, onClose, onSubmit }) => {
+const ModifyClientModal = ({
+  open,
+  onClose,
+  client,
+  fetchClients,
+  showSnackbar,
+}) => {
   const initialFormData = {
-    usuario: "",
     cedula: "",
     correo: "",
     nombre: "",
     apellido1: "",
     apellido2: "",
     telefono: "",
-    clave: "",
   };
 
   const [formData, setFormData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({}); // Estado para los errores de validación
+  const [errors, setErrors] = useState({});
 
-  // Función de validación de campos
+  useEffect(() => {
+    if (client) {
+      setFormData({
+        cedula: client.cedula || "",
+        correo: client.correo || "",
+        nombre: client.nombre || "",
+        apellido1: client.apellido1 || "",
+        apellido2: client.apellido2 || "",
+        telefono: client.telefono || "",
+      });
+    }
+  }, [client]);
+
   const validate = () => {
     const newErrors = {};
 
-    // Validación de usuario
-    if (!formData.usuario) {
-      newErrors.usuario = "El usuario es requerido.";
-    }
-
-    // Validación de cédula (9 dígitos exactos)
     const cedulaRegex = /^[0-9]{9}$/;
     if (!formData.cedula || !cedulaRegex.test(formData.cedula)) {
       newErrors.cedula = "La cédula debe tener 9 dígitos.";
     }
 
-    // Validación de correo
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.correo || !emailRegex.test(formData.correo)) {
       newErrors.correo = "El correo electrónico no es válido.";
     }
 
-    // Validación de contraseña (al menos 8 caracteres, una mayúscula, un número y un carácter especial)
-    const passwordRegex =
-      /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
-    if (!formData.clave || !passwordRegex.test(formData.clave)) {
-      newErrors.clave =
-        "La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial.";
-    }
-
-    // Validación de teléfono (8 dígitos exactos)
     const telefonoRegex = /^[0-9]{8}$/;
     if (!formData.telefono || !telefonoRegex.test(formData.telefono)) {
       newErrors.telefono = "El teléfono debe tener 8 dígitos.";
+    }
+
+    if (!formData.nombre) {
+      newErrors.nombre = "El nombre es requerido.";
+    }
+
+    if (!formData.apellido1) {
+      newErrors.apellido1 = "El primer apellido es requerido.";
     }
 
     setErrors(newErrors);
@@ -84,10 +85,29 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
   const handleSubmit = async () => {
     if (validate()) {
       setLoading(true);
-      const success = await onSubmit(formData);
-      setLoading(false);
-      if (success) {
-        setFormData(initialFormData); // Limpiar los campos si se agrega correctamente
+      setErrors({});
+      try {
+        await axios.put(
+          `http://localhost:8000/api/update-client/${client.usuario}/`,
+          formData
+        );
+
+        await fetchClients(); // Refresca la lista de clientes
+        showSnackbar("Cliente modificado con éxito.", "success");
+
+        onClose(); // Cierra el modal después de guardar
+      } catch (error) {
+        if (
+          error.response &&
+          error.response.data.error === "El correo ya está en uso."
+        ) {
+          setErrors({ correo: "El correo ya está en uso." });
+        } else {
+          setErrors({ general: "Error al actualizar el cliente." });
+        }
+        showSnackbar("Error al modificar el cliente.", "error");
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -98,12 +118,7 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
   };
 
   return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      aria-labelledby="modal-title"
-      aria-describedby="modal-description"
-    >
+    <Modal open={open} onClose={onClose}>
       <Box
         sx={{
           position: "absolute",
@@ -112,12 +127,11 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
           transform: "translate(-50%, -50%)",
           width: { xs: "90%", sm: "80%", md: 450 },
           bgcolor: "background.paper",
-          boxShadow: 24,
           p: 4,
           borderRadius: "10px",
+          boxShadow: 24,
         }}
       >
-        {/* Botón de cerrar modal (X) */}
         <IconButton
           onClick={onClose}
           sx={{ position: "absolute", top: 8, right: 8 }}
@@ -125,9 +139,7 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
           <Close />
         </IconButton>
 
-        {/* Header minimalista */}
         <Typography
-          id="modal-title"
           variant="h6"
           component="h2"
           sx={{
@@ -139,28 +151,10 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
             paddingBottom: "10px",
           }}
         >
-          Agregar Cliente
+          Modificar Cliente
         </Typography>
 
-        {/* Campos con iconos */}
-        <TextField
-          fullWidth
-          label="Usuario"
-          name="usuario"
-          value={formData.usuario}
-          onChange={handleChange}
-          sx={{ mb: 2 }}
-          required
-          error={!!errors.usuario}
-          helperText={errors.usuario}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <AccountCircle />
-              </InputAdornment>
-            ),
-          }}
-        />
+        {/* Campos de formulario */}
         <TextField
           fullWidth
           label="Cédula"
@@ -205,6 +199,8 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
           onChange={handleChange}
           sx={{ mb: 2 }}
           required
+          error={!!errors.nombre}
+          helperText={errors.nombre}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -221,6 +217,8 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
           onChange={handleChange}
           sx={{ mb: 2 }}
           required
+          error={!!errors.apellido1}
+          helperText={errors.apellido1}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -265,27 +263,7 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
             ),
           }}
         />
-        <TextField
-          fullWidth
-          label="Contraseña"
-          type="password"
-          name="clave"
-          value={formData.clave}
-          onChange={handleChange}
-          sx={{ mb: 2 }}
-          required
-          error={!!errors.clave}
-          helperText={errors.clave}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <VpnKey />
-              </InputAdornment>
-            ),
-          }}
-        />
 
-        {/* Botones de Agregar y Limpiar */}
         <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
           <Button
             variant="outlined"
@@ -295,10 +273,7 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
             sx={{
               borderColor: "#00308F",
               color: "#00308F",
-              "&:hover": {
-                color: "#00246d", // Cambia el texto al color de hover sin fondo
-                borderColor: "#00246d", // Cambia el borde al color de hover
-              },
+              "&:hover": { color: "#00246d", borderColor: "#00246d" },
             }}
           >
             Limpiar
@@ -311,12 +286,10 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
             startIcon={loading && <CircularProgress size={20} />}
             sx={{
               backgroundColor: "#00308F",
-              "&:hover": {
-                backgroundColor: "#00246d",
-              },
+              "&:hover": { backgroundColor: "#00246d" },
             }}
           >
-            {loading ? "Agregando..." : "Agregar Cliente"}
+            {loading ? "Guardando..." : "Guardar Cambios"}
           </Button>
         </Box>
       </Box>
@@ -324,4 +297,4 @@ const AddClientModal = ({ open, onClose, onSubmit }) => {
   );
 };
 
-export default AddClientModal;
+export default ModifyClientModal;

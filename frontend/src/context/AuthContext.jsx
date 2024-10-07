@@ -4,22 +4,26 @@ import axios from 'axios';
 export const AuthContext = createContext();
 
 function AuthProvider({ children }) {
-    const [role, setRole] = useState(0);
+    const [role, setRole] = useState(undefined);
+
+    console.log("Context: "+role)
 
     const fetchUserRole = async () => {
-        try {
-            console.log("Creando solicitud")
-            const response = await axios.get('http://localhost:8000/api/get-user-role/', {
-                withCredentials: true,
-            });
-            if (response.data.role) {
-                setRole(response.data.role)
-            } else {
-                setRole(0)
+        if (role !== 5) {
+            try {
+                console.log("Creando solicitud")
+                const response = await axios.get('http://localhost:8000/api/get-user-role/', {
+                    withCredentials: true,
+                });
+                if (response.data.role) {
+                    setRole(response.data.role)
+                } else {
+                    setRole(undefined)
+                }
+                console.log(response)
+            } catch (error) {
+                setRole(undefined)
             }
-            console.log(response)
-        } catch (error) {
-            setRole(0)
         }
     };
 

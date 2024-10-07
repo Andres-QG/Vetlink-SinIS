@@ -1,221 +1,128 @@
 import { useState, useEffect } from "react";
-import {
-  TextField,
-  Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  IconButton,
-  Modal,
-  CircularProgress,
-  MenuItem,
-  Select,
-  InputLabel,
-  FormControl,
-  Pagination,
-  Box,
-} from "@mui/material";
-import { Add, Edit, Delete } from "@mui/icons-material";
+import { CircularProgress, Button, Modal } from "@mui/material";
+import { Add } from "@mui/icons-material";
+import GeneralTable from "../components/Consult/GeneralTable";
+import SearchBar from "../components/Consult/GeneralizedSearchBar";
 import CreatePet from "./CreatePet";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import axios from "axios";
 
 const ConsultPets = () => {
   const [pets, setPets] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchColumn, setSearchColumn] = useState("nombre"); // Columna para la búsqueda
-  const [order, setOrder] = useState("asc"); // Orden ascendente o descendente
-  const [open, setOpen] = useState(false); // Para el modal "Agregar Mascota"
-  const [page, setPage] = useState(1); // Página actual
-  const [totalPages, setTotalPages] = useState(1); // Total de páginas
-  const itemsPerPage = 10; // Número de elementos por página
+  const [searchColumn, setSearchColumn] = useState("nombre");
+  const [order, setOrder] = useState("asc");
+  const rowsPerPage = 10;
+  const [open, setOpen] = useState(false);
+
+  const columns = [
+    { field: "usuario_cliente", headerName: "Dueño" },
+    { field: "nombre", headerName: "Nombre" },
+    { field: "fecha_nacimiento", headerName: "Fecha de nacimiento" },
+    { field: "especie", headerName: "Especie" },
+    { field: "raza", headerName: "Raza" },
+    { field: "sexo", headerName: "Sexo" },
+  ];
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  // Obtener las mascotas del backend con paginación y búsqueda
+  useEffect(() => {
+    fetchPets();
+  }, [page, searchTerm, searchColumn, order]);
+
   const fetchPets = async () => {
     setLoading(true);
     try {
-      // Si la columna seleccionada es "edad", ordenamos por "fecha_nacimiento"
-      const columnToSend =
-        searchColumn === "edad" ? "fecha_nacimiento" : searchColumn;
+      const params = {
+        page,
+        search: searchTerm,
+        column: searchColumn,
+        order,
+        page_size: rowsPerPage,
+      };
 
-      const response = await fetch(
-        `http://localhost:8000/api/consult-mascotas/?search=${searchTerm}&column=${columnToSend}&order=${order}&page=${page}`
+      const response = await axios.get(
+        "http://localhost:8000/api/consult-mascotas/",
+        { params }
       );
-      const data = await response.json();
+      const data = response.data;
       setPets(data.results);
-      setTotalPages(Math.ceil(data.count / itemsPerPage)); // número total de páginas
-      setLoading(false);
+      setTotalCount(data.count);
     } catch (error) {
-      console.error("Error al consultar las mascotas:", error);
+      console.error("Failed to fetch pets:", error);
+    } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchPets();
-  }, [searchTerm, searchColumn, order, page]);
-
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
+  const handleSearch = (term, column, sortOrder) => {
+    setSearchTerm(term);
+    setSearchColumn(column);
+    setOrder(sortOrder);
     setPage(1);
   };
 
-  const handleChangePage = (event, value) => {
-    setPage(value);
-  };
-
-  const calculateAge = (birthDate) => {
-    const birth = new Date(birthDate);
-    const today = new Date();
-    let age = today.getFullYear() - birth.getFullYear();
-    const monthDiff = today.getMonth() - birth.getMonth();
-
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birth.getDate())
-    ) {
-      age--;
-    }
-    return age;
-  };
-
-  // Cambiar el orden de la columna
-  const toggleOrder = () => {
-    setOrder(order === "asc" ? "desc" : "asc");
-  };
-
   return (
-    <div className="p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-semibold">Consultar Mascotas</h1>
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={handleOpen}
-          sx={{
-            backgroundColor: "#00308F",
-            color: "#fff",
-            "&:hover": {
-              backgroundColor: "#00246d",
-            },
-          }}
-        >
-          Agregar Mascota
-        </Button>
-      </div>
-
-      {/* Búsqueda */}
-      <div className="flex gap-4 mb-4">
-        <TextField
-          label={`Buscar por ${searchColumn}`}
-          variant="outlined"
-          sx={{ flex: 1 }}
-          value={searchTerm}
-          onChange={handleSearch}
-        />
-
-        <FormControl variant="outlined">
-          <InputLabel>Columna</InputLabel>
-          <Select
-            value={searchColumn}
-            onChange={(e) => setSearchColumn(e.target.value)}
-            label="Columna"
-            sx={{ flex: 2 }}
-          >
-            <MenuItem value="nombre">Nombre</MenuItem>
-            <MenuItem value="especie">Especie</MenuItem>
-            <MenuItem value="raza">Raza</MenuItem>
-            <MenuItem value="sexo">Sexo</MenuItem>
-            <MenuItem value="edad">Edad</MenuItem>
-            <MenuItem value="usuario_cliente">Dueño</MenuItem>{" "}
-          </Select>
-        </FormControl>
-
-        <Button
-          variant="contained"
-          onClick={toggleOrder}
-          sx={{ marginLeft: "10px" }}
-        >
-          {order === "asc" ? "Ascendente" : "Descendente"}
-        </Button>
-      </div>
-
-      {/* Círculo de carga */}
-      {loading ? (
-        <div className="flex items-center justify-center">
-          <CircularProgress />
-        </div>
-      ) : (
-        <>
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Nombre</TableCell>
-                  <TableCell>Especie</TableCell>
-                  <TableCell>Raza</TableCell>
-                  <TableCell>Sexo</TableCell>
-                  <TableCell>Edad</TableCell>
-                  <TableCell>Dueño</TableCell> {/* Se añade la columna dueño */}
-                  <TableCell>Acciones</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {pets.length > 0 ? (
-                  pets.map((pet) => (
-                    <TableRow key={pet.mascota_id}>
-                      <TableCell>{pet.nombre}</TableCell>
-                      <TableCell>{pet.especie}</TableCell>
-                      <TableCell>{pet.raza}</TableCell>
-                      <TableCell>{pet.sexo}</TableCell>
-                      <TableCell>
-                        {calculateAge(pet.fecha_nacimiento)}
-                      </TableCell>
-                      <TableCell>{pet.usuario_cliente}</TableCell>{" "}
-                      <TableCell>
-                        <IconButton>
-                          <Edit />
-                        </IconButton>
-                        <IconButton>
-                          <Delete />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={7} align="center">
-                      No se encontraron mascotas
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-
-          <Box display="flex" justifyContent="center" marginY={2}>
-            <Pagination
-              count={totalPages}
-              page={page}
-              onChange={handleChangePage}
-              color="primary"
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <div className="flex-grow p-4">
+        <div className="flex flex-col items-center justify-between mb-4 space-y-4 md:flex-row md:space-y-0">
+          <h1 className="text-2xl font-semibold">Consultar Mascotas</h1>
+          <div className="flex flex-col w-full space-y-4 md:w-auto md:flex-row md:items-center md:space-y-0">
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              onClick={() => {
+                handleOpen();
+              }}
+              sx={{
+                backgroundColor: "#00308F",
+                "&:hover": { backgroundColor: "#00246d" },
+                minWidth: "190px",
+                marginBottom: { xs: "-4px", md: "0px" },
+                marginRight: { xs: "0px", md: "10px" },
+                width: { xs: "100%", md: "auto" },
+                fontSize: "0.85rem",
+              }}
+            >
+              Agregar Mascota
+            </Button>
+            <SearchBar
+              onSearch={handleSearch}
+              columns={columns.map((col) => col.field)}
             />
-          </Box>
-        </>
-      )}
-
-      {/* Modal para agregar mascota */}
-      <Modal open={open} onClose={handleClose}>
-        <div className="absolute p-6 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg top-1/2 left-1/2">
-          <CreatePet handleClose={handleClose} />
+          </div>
         </div>
-      </Modal>
+        {loading ? (
+          <div className="flex items-center justify-center">
+            <CircularProgress />
+          </div>
+        ) : (
+          <GeneralTable
+            data={pets}
+            columns={columns}
+            totalCount={totalCount}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={setPage}
+            deletionUrl="http://localhost:8000/api/delete-pet"
+            pkCol="mascota_id"
+            fetchData={fetchPets}
+          />
+        )}
+        {/*Modal agregar*/}
+        <Modal open={open} onClose={handleClose}>
+          <div className="absolute p-6 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg top-1/2 left-1/2">
+            <CreatePet handleClose={handleClose} />
+          </div>
+        </Modal>
+      </div>
+      <Footer />
     </div>
   );
 };
