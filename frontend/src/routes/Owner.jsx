@@ -163,6 +163,7 @@ function Owner() {
             <ModifyClinicModal
                 open={openMod}
                 onClose={() => setOpenMod(false)}
+                onSuccess={fetchClinics}
                 selectedClinic={selectedClinic}
             />
             

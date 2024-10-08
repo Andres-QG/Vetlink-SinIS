@@ -20,7 +20,7 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 
-const ModifyClinicModal = ({ open, onClose, selectedClinic = undefined}) => {
+const ModifyClinicModal = ({ open, onClose, onSuccess, selectedClinic = undefined}) => {
   const initialFormData = {
     clinica: selectedClinic?.clinica || "",
     direccion: selectedClinic?.direccion || "",
@@ -104,21 +104,19 @@ const ModifyClinicModal = ({ open, onClose, selectedClinic = undefined}) => {
   const handleSubmit = async () => {
     if (validate()) {
       setLoading(true);
+      console.log(formData)
       try {
         const response = await axios.put(
           `http://localhost:8000/api/update-clinic/${formData.clinica}/`,
           formData
         );
-        fetchClinics(); // Refrescar la tabla al modificar la clinica
         setOpen(false); // Cierra el modal al modificar exitosamente
       } catch (error) {
         console.log(error)
       }
-
       setLoading(false);
-      if (success) {
-        setFormData(initialFormData); // Limpiar los campos si se agrega correctamente
-      }
+      onSuccess()
+      onClose()
     }
   };
 

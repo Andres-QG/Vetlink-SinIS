@@ -65,6 +65,8 @@ const GeneralTable = ({
     setSelectedItem(null);
   };
 
+    
+
   const handleDelete = async () => {
     handleCloseModal();
     if (!selectedItem) return;
@@ -110,7 +112,7 @@ const GeneralTable = ({
                 </div>
               ))}
               <div>
-                <IconButton onClick={() => console.log("Edit clicked")}>
+                <IconButton onClick={() => {onModModal(item)}}>
                   <Edit />
                 </IconButton>
                 <IconButton onClick={() => handleOpenModal(item)}>
