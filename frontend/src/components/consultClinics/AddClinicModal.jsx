@@ -45,6 +45,11 @@ const AddClinicaModal = ({ open, onClose, onSuccess }) => {
     fetchOwners();
   }, []);
 
+  const handleClose = () => {
+    setErrors([])
+    onClose()
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
 
@@ -58,8 +63,7 @@ const AddClinicaModal = ({ open, onClose, onSuccess }) => {
         formData
       );
       onSuccess("Clínica agregada correctamente", "success")
-      onClose()
-      console.log(response)
+      handleClose()
       return true;
     } catch (error) {
       console.log("Entro al catch")
@@ -68,6 +72,7 @@ const AddClinicaModal = ({ open, onClose, onSuccess }) => {
             "Datos inválidos. Revise los campos e intente nuevamente.",
             "error"
       );
+      handleClose()
       return false;
     }
   };
@@ -130,7 +135,7 @@ const AddClinicaModal = ({ open, onClose, onSuccess }) => {
       >
         {/* Botón de cerrar modal (X) */}
         <IconButton
-          onClick={onClose}
+          onClick={handleClose}
           sx={{ position: "absolute", top: 8, right: 8 }}
         >
           <Close />
@@ -242,41 +247,41 @@ const AddClinicaModal = ({ open, onClose, onSuccess }) => {
             ))}
           </TextField>
           {/* Botones de Agregar y Limpiar */}
-          <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-            <Button
-              variant="outlined"
-              onClick={handleClear}
-              fullWidth
-              disabled={loading}
-              sx={{
-                borderColor: "#00308F",
-                color: "#00308F",
-                "&:hover": {
-                  color: "#00246d", // Cambia el texto al color de hover sin fondo
-                  borderColor: "#00246d", // Cambia el borde al color de hover
-                },
-              }}
-            >
-              Limpiar
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleSubmit}
-              type="submit"
-              fullWidth
-              disabled={loading}
-              startIcon={loading && <CircularProgress size={20} />}
-              sx={{
-                backgroundColor: "#00308F",
-                "&:hover": {
-                  backgroundColor: "#00246d",
-                },
-              }}
-            >
-              {loading ? "Agregando..." : "Agregar Clinica"}
-            </Button>
-          </Box>
         </form>
+        <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+          <Button
+            variant="outlined"
+            onClick={handleClear}
+            fullWidth
+            disabled={loading}
+            sx={{
+              borderColor: "#00308F",
+              color: "#00308F",
+              "&:hover": {
+                color: "#00246d", // Cambia el texto al color de hover sin fondo
+                borderColor: "#00246d", // Cambia el borde al color de hover
+              },
+            }}
+          >
+            Limpiar
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            fullWidth
+            disabled={loading}
+            startIcon={loading && <CircularProgress size={20} />}
+            sx={{
+              minWidth: "160px",
+              backgroundColor: "#00308F",
+              "&:hover": {
+                backgroundColor: "#00246d",
+              },
+            }}
+          >
+            {loading ? "Agregando..." : "Agregar Clinica"}
+          </Button>
+        </Box>
       </Box>
     </Modal >
   );

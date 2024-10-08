@@ -80,19 +80,23 @@ function Owner() {
         setAlert({ open: false, message: "", severity: "" });
     };
 
-    const handleAdd = (message, severity) => {
-        setAlert({ open: true, message, severity });
-        fetchClinics();
+    const handleClose = () => {
+        setOpen(false)
     };
 
-    const handleModification = (message, severity) => {
+    const handleAdd = async (message, severity) => {
         setAlert({ open: true, message, severity });
-        fetchClinics();
+        await fetchClinics();
     };
 
-    const handleDelete = (message, severity) => {
+    const handleModification = async (message, severity) => {
         setAlert({ open: true, message, severity });
-        fetchClinics();
+        await fetchClinics();
+    };
+
+    const handleDelete = async (message, severity) => {
+        setAlert({ open: true, message, severity });
+        await fetchClinics();
     };
 
     return (
