@@ -20,9 +20,6 @@ function Dropdown({ items }) {
     setIsOpen(!isOpen);
   };
 
-  console.log(isOpen)
-  console.log(items)
-
   return (
     <div className="hidden lg:block min-w-[105px]">
       <div className="relative group">

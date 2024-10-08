@@ -11,7 +11,7 @@ import Dropdown from "./Dropdown";
 function Header() {
   const navigate = useNavigate();
   const isActive = document.cookie.includes('true');
-  const { role, fetchUserRole, setRole } = useContext(AuthContext);
+  const { role } = useContext(AuthContext);
 
 
   const [burger_class, setBurgerClass] = useState("burger-bar unclicked");
@@ -76,9 +76,6 @@ function Header() {
 
   const additionalItems = items.filter(item => item.role.includes(role));
   menuItems.splice(3, 0, ...additionalItems);
-
-  console.log(menuItems)
-  console.log(isActive)
 
   if (loading) {
     return <Loading text={loadText} />
