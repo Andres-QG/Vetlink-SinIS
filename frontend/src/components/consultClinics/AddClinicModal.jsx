@@ -52,6 +52,7 @@ const AddClinicaModal = ({ open, onClose, onSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setLoading(true)
 
     if (!validate()) return 
 
@@ -66,12 +67,11 @@ const AddClinicaModal = ({ open, onClose, onSuccess }) => {
       handleClose()
       return true;
     } catch (error) {
-      console.log("Entro al catch")
-      console.log(error)
       onSuccess(
             "Datos inválidos. Revise los campos e intente nuevamente.",
             "error"
       );
+      setLoading(false)
       handleClose()
       return false;
     }
