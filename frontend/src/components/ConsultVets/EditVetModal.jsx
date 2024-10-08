@@ -4,10 +4,11 @@ import {
   Box,
   Typography,
   TextField,
-  Button,
   MenuItem,
+  Button,
 } from "@mui/material";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 const EditVetModal = ({
   open,
@@ -17,7 +18,7 @@ const EditVetModal = ({
   specialties,
   fetchVets,
 }) => {
-  const [formData, setFormData] = useState({
+  const initialFormData = {
     usuario: "",
     cedula: "",
     correo: "",
@@ -28,11 +29,14 @@ const EditVetModal = ({
     clave: "",
     clinica: "",
     especialidad: "",
-  });
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
+  const [originalData, setOriginalData] = useState(initialFormData);
 
   useEffect(() => {
     if (vet) {
-      setFormData({
+      const vetData = {
         usuario: vet.usuario,
         cedula: vet.cedula,
         correo: vet.correo,
@@ -41,9 +45,11 @@ const EditVetModal = ({
         apellido2: vet.apellido2,
         telefono: vet.telefono,
         clave: "",
-        clinica: vet.clinica ? vet.clinica.id : "",
-        especialidad: vet.especialidad ? vet.especialidad.id : "",
-      });
+        clinica: vet.clinica,
+        especialidad: vet.especialidad,
+      };
+      setFormData(vetData);
+      setOriginalData(vetData);
     }
   }, [vet]);
 
@@ -55,15 +61,52 @@ const EditVetModal = ({
   };
 
   const handleSubmit = async () => {
+    const updatedData = {};
+
+    // Only update fields that have changed
+    Object.keys(formData).forEach((key) => {
+      if (formData[key] !== originalData[key]) {
+        updatedData[key] = formData[key];
+      }
+    });
+
+    // Ensure all required fields are included
+    const requiredFields = [
+      "usuario",
+      "cedula",
+      "correo",
+      "nombre",
+      "apellido1",
+    ];
+    requiredFields.forEach((field) => {
+      if (!updatedData[field]) {
+        updatedData[field] = originalData[field];
+      }
+    });
+
+    // Handle clave and especialidad separately
+    if (!updatedData.clave) {
+      updatedData.clave = originalData.clave;
+    }
+    if (!updatedData.especialidad) {
+      updatedData.especialidad = originalData.especialidad;
+    }
+
     try {
       await axios.put(
         `http://localhost:8000/api/update-vet/${formData.usuario}/`,
-        formData
+        updatedData
       );
+      setSnackbarMessage("Veterinario agregado exitosamente.");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
       fetchVets();
       onClose();
     } catch (error) {
-      console.error("Failed to update vet:", error);
+      console.error(
+        "Failed to update vet:",
+        error.response ? error.response.data : error.message
+      );
     }
   };
 
@@ -148,7 +191,7 @@ const EditVetModal = ({
           fullWidth
           margin="normal">
           {clinics.map((clinic) => (
-            <MenuItem key={clinic.id} value={clinic.id}>
+            <MenuItem key={clinic.clinica_id} value={clinic.clinica_id}>
               {clinic.nombre}
             </MenuItem>
           ))}
@@ -162,7 +205,9 @@ const EditVetModal = ({
           fullWidth
           margin="normal">
           {specialties.map((specialty) => (
-            <MenuItem key={specialty.id} value={specialty.id}>
+            <MenuItem
+              key={specialty.especialidad_id}
+              value={specialty.especialidad_id}>
               {specialty.nombre}
             </MenuItem>
           ))}
