@@ -3,7 +3,7 @@ import { AuthContext } from '../context/AuthContext';
 import Error from '../routes/Error';
 import Loading from './Loading';
 
-function ProtectedRoute ({children, requiredRole}) {
+function ProtectedRoute ({children, requiredRoles}) {
     const { role, fetchUserRole } = useContext(AuthContext);
     const [loading, setLoading] = useState(true);
 
@@ -16,25 +16,18 @@ function ProtectedRoute ({children, requiredRole}) {
         verifyRole();
     }, [fetchUserRole]);
 
-    const redirectItems = new Map([
-        [undefined, 'ntlog'],
-        [1, 'owner'],
-        [2, 'admin'],
-        [3, 'vet'],
-        [4, 'clnt'],
-        [5, 'reset'],
-    ]);
-
     if (loading) {
         return <Loading text={"Verificando permisos"}/>
     }
-       
+
     console.log("Protect: " + role)
-    if (redirectItems.get(role) !== requiredRole) {
+    console.log(requiredRoles)
+    if (!requiredRoles?.includes(role)) {
         document.cookie = "active=false; path=/;";
         return <Error />;
     }
+
     return children;
 };
 
-export default ProtectedRoute
+export default ProtectedRoute;

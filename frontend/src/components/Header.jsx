@@ -22,8 +22,10 @@ function Header() {
 
   const items = [
     { text: "Consultar clínicas", href: "/owner", role: [1, 2] },
-    { text: "Consultar clientes", href: "/consultclients", role: [1] },
+    { text: "Consultar clientes", href: "/consultclients", role: [1,2] },
+    { text: "Consultar mascotas", href: "/consultpets", role: [1,2,3] },
     { text: "Consultar veterinarios", href: "/consultvets", role: [1] },
+    { text: "Consultar administradores", href: "/consultAdmins", role: [1] },
   ];
 
   const updateMenu = () => {
@@ -74,6 +76,9 @@ function Header() {
 
   const additionalItems = items.filter(item => item.role.includes(role));
   menuItems.splice(3, 0, ...additionalItems);
+
+  console.log(menuItems)
+  console.log(isActive)
 
   if (loading) {
     return <Loading text={loadText} />
