@@ -9,11 +9,14 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TableFooter,
   Paper,
   Modal,
   Box,
   Typography,
   Button,
+  Card,
+  CardContent,
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 
@@ -105,37 +108,62 @@ const GeneralTable = ({
 
   return (
     <>
-      <TableContainer component={Paper}>
-        {isMobile ? (
-          data.map((item) => (
-            <div
-              key={item.id}
-              style={{
-                border: "1px solid #ddd",
-                marginBottom: "10px",
-                padding: "10px",
-              }}
+      {isMobile ? (
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {data.map((item) => (
+            <Card
+              key={item.id} // Usa keyField para el valor de la clave
+              variant="outlined"
+              sx={{ padding: 1 }}
             >
-              {columns.map((col) => (
-                <div key={col.field} style={{ marginBottom: "5px" }}>
-                  <strong>{col.headerName} :</strong> {item[col.field]}
-                </div>
-              ))}
-              <div>
-                <IconButton
-                  onClick={() => {
-                    handleOpenModModal(item);
+              <CardContent>
+                {columns.map((col) => (
+                  <Typography variant="body2" key={col.field}>
+                    <strong>{col.headerName}:</strong> {item[col.field]}
+                  </Typography>
+                ))}
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "flex-start",
+                    gap: 1,
+                    mt: 2,
                   }}
                 >
-                  <Edit />
-                </IconButton>
-                <IconButton onClick={() => handleOpenModal(item)}>
-                  <Delete />
-                </IconButton>
-              </div>
-            </div>
-          ))
-        ) : (
+                  <Button
+                    onClick={() => handleOpenModModal(item)}
+                    startIcon={<Edit />}
+                  >
+                    Modificar
+                  </Button>
+                  <Button
+                    onClick={() => handleOpenModal(item)}
+                    startIcon={<Delete />}
+                    color="error"
+                  >
+                    Eliminar
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          ))}
+          <TablePagination
+            component="div"
+            count={totalCount}
+            rowsPerPage={rowsPerPage}
+            page={page - 1}
+            onPageChange={(event, newPage) => onPageChange(newPage + 1)}
+            labelDisplayedRows={({ from, to, count }) =>
+              `${from}-${to} de ${count !== -1 ? count : `más de ${to}`}`
+            }
+            rowsPerPageOptions={[]}
+            showFirstButton={true}
+            showLastButton={true}
+            getItemAriaLabel={getItemAriaLabel}
+          />
+        </Box>
+      ) : (
+        <TableContainer component={Paper}>
           <Table>
             <TableHead>
               <TableRow>
@@ -180,28 +208,42 @@ const GeneralTable = ({
                 </TableRow>
               )}
             </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length + 1}
+                  sx={{
+                    borderBottom: "none",
+                    padding: "8px 0",
+                  }}
+                >
+                  <TablePagination
+                    component="div"
+                    count={totalCount}
+                    rowsPerPage={rowsPerPage}
+                    page={page - 1}
+                    onPageChange={(event, newPage) => onPageChange(newPage + 1)}
+                    labelDisplayedRows={({ from, to, count }) =>
+                      `${from}-${to} de ${
+                        count !== -1 ? count : `más de ${to}`
+                      }`
+                    }
+                    rowsPerPageOptions={[]}
+                    showFirstButton={true}
+                    showLastButton={true}
+                    getItemAriaLabel={getItemAriaLabel}
+                  />
+                </TableCell>
+              </TableRow>
+            </TableFooter>
           </Table>
-        )}
-      </TableContainer>
+        </TableContainer>
+      )}
 
-      <TablePagination
-        component="div"
-        count={totalCount}
-        rowsPerPage={rowsPerPage}
-        page={page - 1}
-        onPageChange={(event, newPage) => onPageChange(newPage + 1)}
-        labelDisplayedRows={({ from, to, count }) =>
-          `${from}-${to} de ${count !== -1 ? count : `más de ${to}`}`
-        }
-        rowsPerPageOptions={[]}
-        showFirstButton={true}
-        showLastButton={true}
-        getItemAriaLabel={getItemAriaLabel}
-      />
       {/*Modal de confirmación de eliminación*/}
       <Modal open={openModal} onClose={handleCloseModal}>
         <Box
-          className="bg-white p-6 rounded-lg shadow-lg"
+          className="p-6 bg-white rounded-lg shadow-lg"
           style={{ width: 400, margin: "auto", marginTop: "10%" }}
         >
           <Typography variant="h6" component="h2">
