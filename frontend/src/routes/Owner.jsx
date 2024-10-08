@@ -101,7 +101,7 @@ function Owner() {
     }
   };
 
-    const handleOpenModal = (clinic, usuario) => {
+    const handleOpenModal = (clinic) => {
         setSelectedClinic(clinic);  
         setOpenMod(true);
     };
@@ -149,8 +149,7 @@ function Owner() {
                         pkCol="clinica_id"
                         deletionUrl="http://localhost:8000/api/delete-clinic"
                         fetchData={fetchClinics}
-                        onOpenModal={handleOpenModal}
-                        modifyClinic={handleOpenModal}
+                        onModModal={handleOpenModal}
                         onPageChange={setPage}>
                     </GeneralTable>
                 )}

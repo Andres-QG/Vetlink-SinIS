@@ -11,7 +11,6 @@ function AuthProvider({ children }) {
     const fetchUserRole = async () => {
         if (role !== 5) {
             try {
-                console.log("Creando solicitud")
                 const response = await axios.get('http://localhost:8000/api/get-user-role/', {
                     withCredentials: true,
                 });
@@ -20,7 +19,6 @@ function AuthProvider({ children }) {
                 } else {
                     setRole(undefined)
                 }
-                console.log(response)
             } catch (error) {
                 setRole(undefined)
             }

@@ -141,6 +141,7 @@ const ConsultPets = () => {
             onPageChange={setPage}
             deletionUrl="http://localhost:8000/api/delete-pet"
             pkCol="mascota_id"
+            onModModal={() => {}}
             onDelete={handleDelete}
             visualIdentifierCol="nombre"
             fetchData={fetchPets}

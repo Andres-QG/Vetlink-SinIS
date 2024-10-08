@@ -20,12 +20,12 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 
-const ModifyClinicModal = ({ open, onClose, selectedClinic}) => {
+const ModifyClinicModal = ({ open, onClose, selectedClinic = undefined}) => {
   const initialFormData = {
-    clinica: selectedClinic.clinica || "",
-    direccion: selectedClinic.direccion || "",
-    telefono: selectedClinic.telefono || "",
-    usuario: selectedClinic.dueño || "",
+    clinica: selectedClinic?.clinica || "",
+    direccion: selectedClinic?.direccion || "",
+    telefono: selectedClinic?.telefono || "",
+    usuario: selectedClinic?.dueño || "",
   };
  
 
@@ -38,7 +38,6 @@ const ModifyClinicModal = ({ open, onClose, selectedClinic}) => {
     const fetchOwners = async () => {
       try {
         const response = await axios.get("http://localhost:8000/api/get-owners/");
-        console.log(response.data.owners)
         setOwners(response.data.owners);
       } catch (error) {
         console.error("Error fetching owners:", error);
@@ -89,7 +88,6 @@ const ModifyClinicModal = ({ open, onClose, selectedClinic}) => {
       formData.usuario = owner.usuario
     }
   }
-  console.log(formData)
 
   const handleClose = () => {
     onClose()
@@ -130,170 +128,173 @@ const ModifyClinicModal = ({ open, onClose, selectedClinic}) => {
   };
 
   return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      aria-labelledby="modal-title"
-      aria-describedby="modal-description"
-    >
-      <Box
-        sx={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: { xs: "90%", sm: "80%", md: 450 },
-          bgcolor: "background.paper",
-          boxShadow: 24,
-          p: 4,
-          borderRadius: "10px",
-        }}
-      >
-        {/* Botón de cerrar modal (X) */}
-        <IconButton
-          onClick={handleClose}
-          sx={{ position: "absolute", top: 8, right: 8 }}
+    <>
+      {selectedClinic !== undefined ? (
+        <Modal
+          open={open}
+          onClose={onClose}
+          aria-labelledby="modal-title"
+          aria-describedby="modal-description"
         >
-          <Close />
-        </IconButton>
-
-        {/* Header minimalista */}
-        <Typography
-          id="modal-title"
-          variant="h6"
-          component="h2"
-          sx={{
-            textAlign: "center",
-            marginBottom: "20px",
-            fontWeight: "bold",
-            color: "#333",
-            borderBottom: "1px solid #ddd",
-            paddingBottom: "10px",
-          }}
-        >
-          Modificar Clinica
-        </Typography>
-
-        {/* Campos con iconos */}
-        <TextField
-          fullWidth
-          label="Clinica"
-          name="clinica"
-          value={formData.clinica}
-          onChange={handleChange}
-          sx={{ mb: 2 }}
-          required
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <LocalHospital />
-              </InputAdornment>
-            ),
-          }}
-        />
-        <TextField
-          fullWidth
-          label="Direccion"
-          name="direccion"
-          value={formData.direccion}
-          onChange={handleChange}
-          sx={{ mb: 2 }}
-          required
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <AddLocation/>
-              </InputAdornment>
-            ),
-          }}
-        />
-        <TextField
-          fullWidth
-          label="Teléfono"
-          name="telefono"
-          value={formData.telefono}
-          onChange={handleChange}
-          sx={{ mb: 2 }}
-          required
-          error={!!errors.telefono}
-          helperText={errors.telefono}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Phone />
-                <Box component="span" sx={{ ml: 1 }}>
-                  +506
-                </Box>
-              </InputAdornment>
-            ),
-          }}
-        />
-        <TextField
-          fullWidth
-          select
-          label="Dueño"
-          name="usuario"
-          value={formData.usuario || ""}
-          onChange={handleChange}
-          sx={{ mb: 2 }}
-          required
-          error={!!errors.usuario}
-          helperText={errors.usuario}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Person />
-              </InputAdornment>
-            ),
-          }}
-        >
-          <MenuItem value="" disabled>
-            Selecciona un dueño
-          </MenuItem>
-          {owners.map((owner) => (
-            <MenuItem key={owner.usuario} value={owner.usuario}>
-              {owner.nombre}
-            </MenuItem>
-          ))}
-        </TextField>
-
-        {/* Botones de Agregar y Limpiar */}
-        <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-          <Button
-            variant="contained"
-            onClick={handleSubmit}
-            fullWidth
-            disabled={loading}
-            startIcon={loading && <CircularProgress size={20} />}
+          <Box
             sx={{
-              backgroundColor: "#00308F",
-              "&:hover": {
-                backgroundColor: "#00246d",
-              },
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: { xs: "90%", sm: "80%", md: 450 },
+              bgcolor: "background.paper",
+              boxShadow: 24,
+              p: 4,
+              borderRadius: "10px",
             }}
           >
-            {loading ? "Modificando..." : "Modificar Clinica"}
-          </Button>
-          <Button
-            variant="outlined"
-            onClick={handleClear}
-            fullWidth
-            disabled={loading}
-            sx={{
-              borderColor: "#00308F",
-              color: "#00308F",
-              "&:hover": {
-                color: "#00246d", // Cambia el texto al color de hover sin fondo
-                borderColor: "#00246d", // Cambia el borde al color de hover
-              },
-            }}
-          >
-            Limpiar
-          </Button>
-        </Box>
-      </Box>
-    </Modal>
+            {/* Close Modal Button */}
+            <IconButton
+              onClick={handleClose}
+              sx={{ position: "absolute", top: 8, right: 8 }}
+            >
+              <Close />
+            </IconButton>
+
+            {/* Modal Header */}
+            <Typography
+              id="modal-title"
+              variant="h6"
+              component="h2"
+              sx={{
+                textAlign: "center",
+                marginBottom: "20px",
+                fontWeight: "bold",
+                color: "#333",
+                borderBottom: "1px solid #ddd",
+                paddingBottom: "10px",
+              }}
+            >
+              Modificar Clinica
+            </Typography>
+
+            {/* Clinic Form Fields */}
+            <TextField
+              fullWidth
+              label="Clinica"
+              name="clinica"
+              value={formData.clinica}
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+              required
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LocalHospital />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <TextField
+              fullWidth
+              label="Direccion"
+              name="direccion"
+              value={formData.direccion}
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+              required
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <AddLocation />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <TextField
+              fullWidth
+              label="Teléfono"
+              name="telefono"
+              value={formData.telefono}
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+              required
+              error={!!errors.telefono}
+              helperText={errors.telefono}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Phone />
+                    <Box component="span" sx={{ ml: 1 }}>
+                      +506
+                    </Box>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <TextField
+              fullWidth
+              select
+              label="Dueño"
+              name="usuario"
+              value={formData.usuario || ""}
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+              required
+              error={!!errors.usuario}
+              helperText={errors.usuario}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Person />
+                  </InputAdornment>
+                ),
+              }}
+            >
+              <MenuItem value="" disabled>
+                Selecciona un dueño
+              </MenuItem>
+              {owners.map((owner) => (
+                <MenuItem key={owner.usuario} value={owner.usuario}>
+                  {owner.nombre}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            {/* Action Buttons */}
+            <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+              <Button
+                variant="contained"
+                onClick={handleSubmit}
+                fullWidth
+                disabled={loading}
+                startIcon={loading && <CircularProgress size={20} />}
+                sx={{
+                  backgroundColor: "#00308F",
+                  "&:hover": { backgroundColor: "#00246d" },
+                }}
+              >
+                {loading ? "Modificando..." : "Modificar Clinica"}
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={handleClear}
+                fullWidth
+                disabled={loading}
+                sx={{
+                  borderColor: "#00308F",
+                  color: "#00308F",
+                  "&:hover": {
+                    color: "#00246d",
+                    borderColor: "#00246d",
+                  },
+                }}
+              >
+                Limpiar
+              </Button>
+            </Box>
+          </Box>
+        </Modal>
+      ) : null}
+    </>
   );
+
 };
 
 export default ModifyClinicModal;

@@ -30,7 +30,7 @@ const GeneralTable = ({
   onDelete,
   visualIdentifierCol,
   fetchData,
-  onOpenModal,
+  onModModal,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -147,7 +147,7 @@ const GeneralTable = ({
                     </TableCell>
                   ))}
                   <TableCell key={`actions-${item.id || index}`}>
-                    <IconButton onClick={() => {onOpenModal(item, item.dueño)}}>
+                    <IconButton onClick={() => {onModModal(item)}}>
                       <Edit />
                     </IconButton>
                     <IconButton onClick={() => handleOpenModal(item)}>

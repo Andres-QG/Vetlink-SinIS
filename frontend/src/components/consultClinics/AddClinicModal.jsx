@@ -37,7 +37,6 @@ const AddClinicaModal = ({ open, onClose, onSubmit }) => {
     const fetchOwners = async () => {
       try {
         const response = await axios.get("http://localhost:8000/api/get-owners/");
-        console.log(response.data.owners)
         setOwners(response.data.owners);
       } catch (error) {
         console.error("Error fetching owners:", error);
