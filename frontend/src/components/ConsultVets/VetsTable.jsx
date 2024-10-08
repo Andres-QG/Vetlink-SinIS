@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Table,
   TableBody,
@@ -59,13 +60,15 @@ const VetsTable = ({
     setSelectedItem(null);
   };
 
+  console.log(selectedItem);
+
   const handleDelete = async () => {
     handleCloseModal();
     if (!selectedItem) return;
 
     try {
       await axios.delete(
-        `http://localhost:8000/api/delete_vet/${selectedItem.id}/`
+        `http://localhost:8000/api/delete-client/${selectedItem.usuario}/`
       );
       fetchData();
     } catch (error) {

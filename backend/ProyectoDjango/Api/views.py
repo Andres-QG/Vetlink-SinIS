@@ -945,18 +945,60 @@ def consult_specialties(request):
 
 
 @api_view(["PUT"])
-@transaction.atomic
 def update_vet(request, usuario):
     try:
         vet = Usuarios.objects.get(usuario=usuario)
-        serializer = UsuariosSerializer(vet, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        correo = request.data.get("correo")
+        nombre = request.data.get("nombre")
+        apellido1 = request.data.get("apellido1")
+        apellido2 = request.data.get("apellido2")
+        telefono = request.data.get("telefono")
+        cedula = request.data.get("cedula")
+        clinica_id = request.data.get("clinica")
+        especialidad_id = request.data.get("especialidad")
+
+        if Usuarios.objects.filter(correo=correo).exclude(usuario=usuario).exists():
+            return Response(
+                {"error": "El correo ya está en uso."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        print(especialidad_id)
+        try:
+            clinica = Clinicas.objects.get(pk=clinica_id)
+        except Clinicas.DoesNotExist:
+            return Response(
+                {"error": "Clínica no encontrada."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        try:
+            especialidad = Especialidades.objects.get(pk=especialidad_id)
+            print(especialidad)
+        except Especialidades.DoesNotExist:
+            return Response(
+                {"error": "Especialidad no encontrada."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Actualizar los datos del veterinario
+        vet.cedula = cedula
+        vet.correo = correo
+        vet.nombre = nombre
+        vet.apellido1 = apellido1
+        vet.apellido2 = apellido2
+        vet.telefono = telefono
+        vet.clinica = clinica
+        vet.especialidad = especialidad
+        vet.save()
+
+        return Response(
+            {"message": "Veterinario actualizado con éxito."},
+            status=status.HTTP_200_OK,
+        )
+
     except Usuarios.DoesNotExist:
         return Response(
-            {"error": "Veterinario no encontrado"}, status=status.HTTP_404_NOT_FOUND
+            {"error": "Veterinario no encontrado."}, status=status.HTTP_404_NOT_FOUND
         )
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

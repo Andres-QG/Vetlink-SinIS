@@ -6,8 +6,11 @@ import {
   TextField,
   MenuItem,
   Button,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import axios from "axios";
+import PropTypes from "prop-types";
 
 const EditVetModal = ({
   open,
@@ -18,20 +21,22 @@ const EditVetModal = ({
   fetchVets,
 }) => {
   const initialFormData = {
-    usuario: "",
-    cedula: "",
-    correo: "",
-    nombre: "",
-    apellido1: "",
-    apellido2: "",
-    telefono: "",
-    clave: "",
-    clinica: "",
-    especialidad: "",
+    usuario: vet?.usuario || "",
+    cedula: vet?.cedula || "",
+    correo: vet?.correo || "",
+    nombre: vet?.nombre || "",
+    apellido1: vet?.apellido1 || "",
+    apellido2: vet?.apellido2 || "",
+    telefono: vet?.telefono || "",
+    clinica: vet?.clinica || "",
+    especialidad: vet?.especialidad || "",
   };
 
   const [formData, setFormData] = useState(initialFormData);
   const [originalData, setOriginalData] = useState(initialFormData);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   useEffect(() => {
     if (vet) {
@@ -43,7 +48,6 @@ const EditVetModal = ({
         apellido1: vet.apellido1,
         apellido2: vet.apellido2,
         telefono: vet.telefono,
-        clave: "",
         clinica: vet.clinica,
         especialidad: vet.especialidad,
       };
@@ -51,6 +55,25 @@ const EditVetModal = ({
       setOriginalData(vetData);
     }
   }, [vet]);
+
+  useEffect(() => {
+    if (vet) {
+      const updatedVet = { ...vet };
+
+      const clinic = clinics.find((c) => c.clinica === vet.clinica);
+      if (clinic) {
+        updatedVet.clinica = clinic.clinica_id;
+      }
+
+      const specialty = specialties.find((s) => s.nombre === vet.especialidad);
+      if (specialty) {
+        updatedVet.especialidad = specialty.especialidad_id;
+      }
+
+      setFormData(updatedVet);
+      setOriginalData(updatedVet);
+    }
+  }, [clinics, specialties, vet]);
 
   const handleChange = (e) => {
     setFormData({
@@ -76,6 +99,9 @@ const EditVetModal = ({
       "correo",
       "nombre",
       "apellido1",
+      "especialidad",
+      "clinica",
+      "telefono",
     ];
     requiredFields.forEach((field) => {
       if (!updatedData[field]) {
@@ -83,30 +109,31 @@ const EditVetModal = ({
       }
     });
 
-    // Handle clave and especialidad separately
-    if (!updatedData.clave) {
-      updatedData.clave = originalData.clave;
-    }
-    if (!updatedData.especialidad) {
-      updatedData.especialidad = originalData.especialidad;
-    }
-
     try {
+      console.log(updatedData);
       await axios.put(
         `http://localhost:8000/api/update-vet/${formData.usuario}/`,
         updatedData
       );
-      setSnackbarMessage("Veterinario agregado exitosamente.");
+      setSnackbarMessage("Veterinario actualizado exitosamente.");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
       fetchVets();
       onClose();
     } catch (error) {
-      console.error(
-        "Failed to update vet:",
-        error.response ? error.response.data : error.message
+      const errorMessage = error.response ? error.response.data : error.message;
+      setSnackbarMessage(
+        typeof errorMessage === "string"
+          ? errorMessage
+          : JSON.stringify(errorMessage)
       );
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
   };
 
   return (
@@ -173,26 +200,16 @@ const EditVetModal = ({
           margin="normal"
         />
         <TextField
-          label="Clave"
-          name="clave"
-          type="password"
-          value={formData.clave}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
           select
           label="Clínica"
           name="clinica"
           value={formData.clinica}
           onChange={handleChange}
           fullWidth
-          margin="normal"
-        >
+          margin="normal">
           {clinics.map((clinic) => (
             <MenuItem key={clinic.clinica_id} value={clinic.clinica_id}>
-              {clinic.nombre}
+              {clinic.clinica}
             </MenuItem>
           ))}
         </TextField>
@@ -203,13 +220,11 @@ const EditVetModal = ({
           value={formData.especialidad}
           onChange={handleChange}
           fullWidth
-          margin="normal"
-        >
+          margin="normal">
           {specialties.map((specialty) => (
             <MenuItem
               key={specialty.especialidad_id}
-              value={specialty.especialidad_id}
-            >
+              value={specialty.especialidad_id}>
               {specialty.nombre}
             </MenuItem>
           ))}
@@ -222,6 +237,17 @@ const EditVetModal = ({
             Guardar
           </Button>
         </Box>
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={6000}
+          onClose={handleSnackbarClose}>
+          <Alert
+            onClose={handleSnackbarClose}
+            severity={snackbarSeverity}
+            sx={{ width: "100%" }}>
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
       </Box>
     </Modal>
   );
@@ -239,6 +265,15 @@ const modalStyle = {
   bgcolor: "background.paper",
   boxShadow: 24,
   p: 4,
+};
+
+EditVetModal.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  vet: PropTypes.object.isRequired,
+  clinics: PropTypes.array.isRequired,
+  specialties: PropTypes.array.isRequired,
+  fetchVets: PropTypes.func.isRequired,
 };
 
 export default EditVetModal;

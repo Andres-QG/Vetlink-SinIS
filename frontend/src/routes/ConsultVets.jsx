@@ -57,11 +57,17 @@ const ConsultVets = () => {
   };
 
   const fetchClinics = async () => {
+    let allClinics = [];
+    let nextPage = "http://localhost:8000/api/consult-clinics/";
     try {
-      const response = await axios.get(
-        "http://localhost:8000/api/consult-clinics/"
-      );
-      setClinics(response.data.results);
+      while (nextPage) {
+        const response = await axios.get(nextPage);
+        const data = response.data;
+        allClinics = allClinics.concat(data.results);
+
+        nextPage = data.next;
+      }
+      setClinics(allClinics);
     } catch (error) {
       console.error("Failed to fetch clinics:", error);
     }

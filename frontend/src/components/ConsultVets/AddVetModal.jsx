@@ -21,7 +21,7 @@ const AddVetModal = ({ open, onClose, onSubmit, clinics, specialties }) => {
     clinica: "",
     especialidad: "",
   };
-
+  console.log(clinics);
   const [formData, setFormData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -158,7 +158,7 @@ const AddVetModal = ({ open, onClose, onSubmit, clinics, specialties }) => {
           helperText={errors.clinica}>
           {clinics.map((clinic) => (
             <MenuItem key={clinic.clinica_id} value={clinic.clinica_id}>
-              {clinic.nombre}
+              {clinic.clinica}
             </MenuItem>
           ))}
         </TextField>
