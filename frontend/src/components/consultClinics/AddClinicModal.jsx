@@ -46,6 +46,7 @@ const AddClinicaModal = ({ open, onClose, onSuccess }) => {
   }, []);
 
   const handleClose = () => {
+    setLoading(false);
     setErrors([])
     onClose()
   }
@@ -54,16 +55,18 @@ const AddClinicaModal = ({ open, onClose, onSuccess }) => {
     e.preventDefault()
     setLoading(true)
 
-    if (!validate()) return 
+    if (!validate()) {
+      setLoading(false)
+      return 
+    }
 
     try {
-      console.log("Entro al try")
-      console.log(formData)
       const response = await axios.post(
         "http://localhost:8000/api/add-clinic/",
         formData
       );
       onSuccess("Clínica agregada correctamente", "success")
+      setLoading(false)
       handleClose()
       return true;
     } catch (error) {
