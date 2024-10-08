@@ -20,12 +20,12 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 
-const ModifyClinicModal = ({ open, onClose, onSuccess, selectedClinic = undefined}) => {
+const ModifyClinicModal = ({ onSuccess, handleOpen, handleClose, selectedItem = undefined}) => {
   const initialFormData = {
-    clinica: selectedClinic?.clinica || "",
-    direccion: selectedClinic?.direccion || "",
-    telefono: selectedClinic?.telefono || "",
-    usuario: selectedClinic?.dueño || "",
+    clinica: selectedItem?.clinica || "",
+    direccion: selectedItem?.direccion || "",
+    telefono: selectedItem?.telefono || "",
+    usuario: selectedItem?.dueño || "",
   };
  
 
@@ -47,15 +47,15 @@ const ModifyClinicModal = ({ open, onClose, onSuccess, selectedClinic = undefine
   }, []);
 
   useEffect(() => {
-    if (selectedClinic) {
+    if (selectedItem) {
       setFormData({
-        clinica: selectedClinic.clinica || "",
-        direccion: selectedClinic.direccion || "",
-        telefono: selectedClinic.telefono || "",
-        usuario: selectedClinic.dueño || "",
+        clinica: selectedItem.clinica || "",
+        direccion: selectedItem.direccion || "",
+        telefono: selectedItem.telefono || "",
+        usuario: selectedItem.dueño || "",
       });
     }
-  }, [selectedClinic]);
+  }, [selectedItem]);
   
 
   // Función de validación de campos
@@ -89,11 +89,6 @@ const ModifyClinicModal = ({ open, onClose, onSuccess, selectedClinic = undefine
     }
   }
 
-  const handleClose = () => {
-    onClose()
-    setErrors([])
-  }
-
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -110,12 +105,12 @@ const ModifyClinicModal = ({ open, onClose, onSuccess, selectedClinic = undefine
           `http://localhost:8000/api/update-clinic/${formData.clinica}/`,
           formData
         );
+        onSuccess("Clínica modificada", "success")
       } catch (error) {
-        console.log(error)
+        onSuccess("No se pudo modificar la clínica", "error")
       }
       setLoading(false);
-      onSuccess()
-      onClose()
+      handleClose()
     }
   };
 
@@ -124,12 +119,13 @@ const ModifyClinicModal = ({ open, onClose, onSuccess, selectedClinic = undefine
     setErrors({});
   };
 
+
   return (
     <>
-      {selectedClinic !== undefined ? (
+      {selectedItem !== undefined ? (
         <Modal
-          open={open}
-          onClose={onClose}
+          open={handleOpen}
+          onClose={handleClose}
           aria-labelledby="modal-title"
           aria-describedby="modal-description"
         >
