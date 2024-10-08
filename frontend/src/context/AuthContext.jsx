@@ -6,8 +6,6 @@ export const AuthContext = createContext();
 function AuthProvider({ children }) {
     const [role, setRole] = useState(undefined);
 
-    console.log("Context: "+role)
-
     const fetchUserRole = async () => {
         if (role !== 5) {
             try {
@@ -27,7 +25,7 @@ function AuthProvider({ children }) {
 
     return (
         <AuthContext.Provider value={{ role, setRole, fetchUserRole }}>
-            {children} 
+            {children}
         </AuthContext.Provider>
     );
 } export default AuthProvider;

@@ -5,16 +5,25 @@ import { AuthContext } from '../context/AuthContext';
 import axios from 'axios';
 import Button from "./Button";
 import Loading from '../components/Loading';
+import Dropdown from "./Dropdown";
+
 
 function Header() {
   const navigate = useNavigate();
-  const isActive = document.cookie.includes('active=true');
+  const isActive = document.cookie.includes('true');
+  const { role, fetchUserRole, setRole } = useContext(AuthContext);
+
 
   const [burger_class, setBurgerClass] = useState("burger-bar unclicked");
   const [menu_class, setMenuClass] = useState("menu_hidden");
   const [isMenuClicked, setIsMenuClicked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadText, setLoadText] = useState("Cerrando sesión");
+
+  const items = [
+    { text: "Consultar clínicas", href: "/owner", role: [1, 2] },
+    { text: "Consultar clientes", href: "/consultclients", role: [1] },
+  ];
 
   const updateMenu = () => {
     setBurgerClass(
@@ -28,25 +37,33 @@ function Header() {
     navigate(`/${route}`);
   };
 
-  async function logOut () {
+  async function logOut() {
     try {
       setLoadText("Cerrando sesión")
       setLoading(true)
       await axios.post('http://localhost:8000/api/log-out/', {}, { withCredentials: true });
-      document.cookie = "active=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      document.cookie = "active=false;path=/;";
       setLoading(false)
       navigate("/login");
     } catch (error) {
       console.error('Error logging out:', error);
     }
   }
- 
-  const menuItems = isActive 
+
+  console.log(role)
+
+  useEffect(() => {
+    if (!isActive && !document.cookie.includes('false')) {
+      logOut();
+    }
+  }, [document.cookie]);
+
+  const menuItems = isActive
     ? [
       { text: "Sobre nosotros", href: "/" },
       { text: "Servicios", href: "services" },
       { text: "Contacto", href: "#" },
-      { text: "Cerrar Sesión", onClick: logOut},
+      { text: "Cerrar Sesión", onClick: logOut },
     ]
     : [
       { text: "Sobre nosotros", href: "/" },
@@ -54,11 +71,16 @@ function Header() {
       { text: "Contacto", href: "#" },
       { text: "Iniciar Sesión", href: "login" },
       { text: "Registrarme", href: "signup" },
-    ]; 
+    ];
 
-    if (loading) {
-      return <Loading text={loadText}/>
-    } 
+  const additionalItems = items.filter(item => item.role.includes(role));
+  menuItems.splice(3, 0, ...additionalItems);
+
+  console.log(menuItems)
+
+  if (loading) {
+    return <Loading text={loadText} />
+  }
 
   return (
     <>
@@ -108,6 +130,11 @@ function Header() {
                   <span className="absolute block w-0 h-0.5 bg-primary bottom-0 left-0 group-hover:w-full transition-all duration-300"></span>
                 </a>
               </li>
+              {isActive ?
+                <li>
+                  <Dropdown items={items}/>
+                </li> : null
+              }
             </ul>
           </nav>
           {!isActive ? (
@@ -127,14 +154,17 @@ function Header() {
               </Button>
             </div>
           ) : (
-            <Button
+            <>
+              <Button
                 className="hidden lg:flex border-primary bg-primary text-bgsecondary hover:text-bgprimary hover:border-primary hover:scale-105 transition-all duration-300"
                 onClick={logOut}
-            >
-              Cerrar Sesión
-            </Button>
+              >
+                Cerrar Sesión
+              </Button>
+            </>
           )
           }
+          
           <div
             className="burger-menu flex flex-col space-y-1 lg:hidden cursor-pointer  "
             onClick={updateMenu}

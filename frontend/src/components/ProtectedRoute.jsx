@@ -2,7 +2,6 @@ import { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import Error from '../routes/Error';
 import Loading from './Loading';
-import { useNavigate } from 'react-router-dom';
 
 function ProtectedRoute ({children, requiredRole}) {
     const { role, fetchUserRole } = useContext(AuthContext);
@@ -14,10 +13,8 @@ function ProtectedRoute ({children, requiredRole}) {
             await fetchUserRole();
             setLoading(false);
         };
-
         verifyRole();
     }, [fetchUserRole]);
-
 
     const redirectItems = new Map([
         [undefined, 'ntlog'],
@@ -32,9 +29,12 @@ function ProtectedRoute ({children, requiredRole}) {
         return <Loading text={"Verificando permisos"}/>
     }
        
-    console.log("Protect: "+role)
-
-    return redirectItems.get(role) === requiredRole ? children : <Error/>;
+    console.log("Protect: " + role)
+    if (redirectItems.get(role) !== requiredRole) {
+        document.cookie = "active=false; path=/;";
+        return <Error />;
+    }
+    return children;
 };
 
 export default ProtectedRoute
