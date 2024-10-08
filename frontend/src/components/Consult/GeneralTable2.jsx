@@ -87,7 +87,7 @@ const GeneralTable2 = ({
                 <Box
                   sx={{
                     display: "flex",
-                    justifyContent: "flex-end",
+                    justifyContent: "flex-start",
                     gap: 1,
                     mt: 2,
                   }}
@@ -122,13 +122,6 @@ const GeneralTable2 = ({
             showFirstButton
             showLastButton
             getItemAriaLabel={getItemAriaLabel}
-            sx={{
-              ".MuiTablePagination-toolbar": {
-                justifyContent: "flex-start",
-                flexWrap: "wrap",
-                minWidth: "300px",
-              },
-            }}
           />
         </Box>
       ) : (
