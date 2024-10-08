@@ -104,37 +104,6 @@ def check_new_pass(request):
     userResponse.save()
     return Response({'exists': True, 'status': 'success'}, status=status.HTTP_200_OK)
 
-@api_view(['GET'])
-def consult_clinics(request):
-    search = request.GET.get('search', '')
-    column = request.GET.get('column', 'nombre')
-    order = request.GET.get('order', 'asc')
-
-    try:
-        clinicas = Clinicas.objects.all()
-        if search:
-            kwargs = {f'{column}__icontains': search}
-            clinicas = clinicas.filter(**kwargs)
-
-        clinicas = clinicas.order_by(f'-{column}' if order == 'desc' else column)
-
-        paginator = CustomPagination()
-        result_page = paginator.paginate_queryset(clinicas, request)
-        serializer_data = [
-            {
-                "clinica_id": clinica.clinica_id,  # Ajusta para enviar el ID
-                "nombre": clinica.nombre,
-                "direccion": clinica.direccion,
-                "telefono": clinica.telefono,
-                "dueño": clinica.usuario_propietario.nombre,
-            }
-            for clinica in result_page
-        ]
-
-        return paginator.get_paginated_response(serializer_data)
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 
 @api_view(['POST'])

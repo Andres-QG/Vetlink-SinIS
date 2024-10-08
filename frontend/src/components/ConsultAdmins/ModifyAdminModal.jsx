@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Modal,
   Box,
@@ -34,28 +34,32 @@ const ModifyAdminModal = ({ open, onClose, data, fetchData, showSnackbar }) => {
 
   const [formData, setFormData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
+  const [miniLoad, setMiniLoad] = useState(true);
   const [errors, setErrors] = useState({});
   const [clinics, setClinics] = useState([]);
 
-  // Fetch clinics only once on component mount to avoid re-fetching every time modal opens
   useEffect(() => {
-    const fetchClinics = async () => {
+    const fetchAllClinics = async () => {
+      setMiniLoad(true);
+      let allClinics = [];
+      let nextPage = "http://localhost:8000/api/consult-clinics/";
       try {
-        const response = await axios.get(
-          "http://localhost:8000/api/consult-clinics/"
-        );
-        if (response.data.results) {
-          setClinics(response.data.results);
-        } else {
-          console.error("No clinics found in the response");
+        while (nextPage) {
+          const response = await axios.get(nextPage);
+          const data = response.data;
+          allClinics = allClinics.concat(data.results);
+
+          nextPage = data.next;
         }
+        setClinics(allClinics);
       } catch (error) {
-        console.error("Error fetching clinics:", error);
         showSnackbar("Error al cargar las clínicas.", "error");
+      } finally {
+        setMiniLoad(false);
       }
     };
 
-    fetchClinics();
+    fetchAllClinics();
   }, [showSnackbar]);
 
   useEffect(() => {
@@ -67,7 +71,7 @@ const ModifyAdminModal = ({ open, onClose, data, fetchData, showSnackbar }) => {
         apellido1: data.apellido1 || "",
         apellido2: data.apellido2 || "",
         telefono: data.telefono || "",
-        clinica: data.clinica_id || "", // Make sure to use `clinica_id` here
+        clinica: data.clinica_id || "",
       });
     }
   }, [data]);
@@ -301,11 +305,16 @@ const ModifyAdminModal = ({ open, onClose, data, fetchData, showSnackbar }) => {
                     <Business />
                   </InputAdornment>
                 ),
+                endAdornment: miniLoad && (
+                  <InputAdornment position="end">
+                    <CircularProgress size={20} />{" "}
+                  </InputAdornment>
+                ),
               }}
             >
               {clinics.map((clinic) => (
                 <MenuItem key={clinic.clinica_id} value={clinic.clinica_id}>
-                  {clinic.nombre}
+                  {clinic.clinica}
                 </MenuItem>
               ))}
             </TextField>
