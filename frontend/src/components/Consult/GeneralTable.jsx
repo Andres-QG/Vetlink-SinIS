@@ -103,9 +103,6 @@ const GeneralTable = ({
     setSelectedItem(null);
   };
 
-  console.log(openModModal)
-  console.log(selectedItem)
-
   return (
     <>
       <TableContainer component={Paper}>

@@ -51,8 +51,6 @@ function Header() {
     }
   }
 
-  console.log(role)
-
   useEffect(() => {
     if (!isActive && !document.cookie.includes('false')) {
       logOut();
@@ -76,8 +74,6 @@ function Header() {
 
   const additionalItems = items.filter(item => item.role.includes(role));
   menuItems.splice(3, 0, ...additionalItems);
-
-  console.log(menuItems)
 
   if (loading) {
     return <Loading text={loadText} />

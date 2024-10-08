@@ -27,7 +27,6 @@ const ModifyClinicModal = ({ onSuccess, handleOpen, handleClose, selectedItem = 
     telefono: selectedItem?.telefono || "",
     usuario: selectedItem?.dueño || "",
   };
- 
 
   const [formData, setFormData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
@@ -56,7 +55,6 @@ const ModifyClinicModal = ({ onSuccess, handleOpen, handleClose, selectedItem = 
       });
     }
   }, [selectedItem]);
-  
 
   // Función de validación de campos
   const validate = () => {
@@ -253,19 +251,6 @@ const ModifyClinicModal = ({ onSuccess, handleOpen, handleClose, selectedItem = 
             {/* Action Buttons */}
             <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
               <Button
-                variant="contained"
-                onClick={handleSubmit}
-                fullWidth
-                disabled={loading}
-                startIcon={loading && <CircularProgress size={20} />}
-                sx={{
-                  backgroundColor: "#00308F",
-                  "&:hover": { backgroundColor: "#00246d" },
-                }}
-              >
-                {loading ? "Modificando..." : "Modificar Clinica"}
-              </Button>
-              <Button
                 variant="outlined"
                 onClick={handleClear}
                 fullWidth
@@ -281,6 +266,20 @@ const ModifyClinicModal = ({ onSuccess, handleOpen, handleClose, selectedItem = 
               >
                 Limpiar
               </Button>
+              <Button
+                variant="contained"
+                onClick={handleSubmit}
+                fullWidth
+                disabled={loading}
+                startIcon={loading && <CircularProgress size={20} />}
+                sx={{
+                  backgroundColor: "#00308F",
+                  "&:hover": { backgroundColor: "#00246d" },
+                }}
+              >
+                {loading ? "Modificando..." : "Modificar Clinica"}
+              </Button>
+              
             </Box>
           </Box>
         </Modal>
