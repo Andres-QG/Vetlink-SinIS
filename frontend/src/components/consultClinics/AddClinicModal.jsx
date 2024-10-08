@@ -20,7 +20,7 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 
-const AddClinicaModal = ({ open, onClose, onSubmit }) => {
+const AddClinicaModal = ({ open, onClose, onSuccess }) => {
   const initialFormData = {
     clinica: "",
     direccion: "",
@@ -45,6 +45,40 @@ const AddClinicaModal = ({ open, onClose, onSubmit }) => {
     fetchOwners();
   }, []);
 
+  const handleClose = () => {
+    setLoading(false);
+    setErrors([])
+    onClose()
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+
+    if (!validate()) {
+      setLoading(false)
+      return 
+    }
+
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/api/add-clinic/",
+        formData
+      );
+      onSuccess("Clínica agregada correctamente", "success")
+      setLoading(false)
+      handleClose()
+      return true;
+    } catch (error) {
+      onSuccess(
+            "Datos inválidos. Revise los campos e intente nuevamente.",
+            "error"
+      );
+      setLoading(false)
+      handleClose()
+      return false;
+    }
+  };
 
   // Función de validación de campos
   const validate = () => {
@@ -77,17 +111,6 @@ const AddClinicaModal = ({ open, onClose, onSubmit }) => {
     });
   };
 
-  const handleSubmit = async () => {
-    if (validate()) {
-      setLoading(true);
-      const success = await onSubmit(formData);
-      setLoading(false);
-      if (success) {
-        setFormData(initialFormData); // Limpiar los campos si se agrega correctamente
-      }
-    }
-  };
-
   const handleClear = () => {
     setFormData(initialFormData);
     setErrors({});
@@ -115,130 +138,120 @@ const AddClinicaModal = ({ open, onClose, onSubmit }) => {
       >
         {/* Botón de cerrar modal (X) */}
         <IconButton
-          onClick={onClose}
+          onClick={handleClose}
           sx={{ position: "absolute", top: 8, right: 8 }}
         >
           <Close />
         </IconButton>
 
-        {/* Header minimalista */}
-        <Typography
-          id="modal-title"
-          variant="h6"
-          component="h2"
-          sx={{
-            textAlign: "center",
-            marginBottom: "20px",
-            fontWeight: "bold",
-            color: "#333",
-            borderBottom: "1px solid #ddd",
-            paddingBottom: "10px",
-          }}
-        >
-          Agregar Clinica
-        </Typography>
+        <form onSubmit={handleSubmit} className="w-full flex flex-col items-center">
 
-        {/* Campos con iconos */}
-        <TextField
-          fullWidth
-          label="Clinica"
-          name="clinica"
-          value={formData.clinica}
-          onChange={handleChange}
-          sx={{ mb: 2 }}
-          required
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <LocalHospital />
-              </InputAdornment>
-            ),
-          }}
-        />
-        <TextField
-          fullWidth
-          label="Direccion"
-          name="direccion"
-          value={formData.direccion}
-          onChange={handleChange}
-          sx={{ mb: 2 }}
-          required
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <AddLocation/>
-              </InputAdornment>
-            ),
-          }}
-        />
-        <TextField
-          fullWidth
-          label="Teléfono"
-          name="telefono"
-          value={formData.telefono}
-          onChange={handleChange}
-          sx={{ mb: 2 }}
-          required
-          error={!!errors.telefono}
-          helperText={errors.telefono}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Phone />
-                <Box component="span" sx={{ ml: 1 }}>
-                  +506
-                </Box>
-              </InputAdornment>
-            ),
-          }}
-        />
-        <TextField
-          fullWidth
-          select
-          label="Dueño"
-          name="usuario"
-          value={formData.usuario || ""}
-          onChange={handleChange}
-          sx={{ mb: 2 }}
-          required
-          error={!!errors.usuario}
-          helperText={errors.usuario}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Person />
-              </InputAdornment>
-            ),
-          }}
-        >
-          <MenuItem value="" disabled>
-            Selecciona un dueño
-          </MenuItem>
-          {owners.map((owner) => (
-            <MenuItem key={owner.usuario} value={owner.nombre} >
-              {owner.nombre}
-            </MenuItem>
-          ))}
-        </TextField>
-        
-
-        {/* Botones de Agregar y Limpiar */}
-        <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-          <Button
-            variant="contained"
-            onClick={handleSubmit}
-            fullWidth
-            disabled={loading}
-            startIcon={loading && <CircularProgress size={20} />}
+          {/* Header minimalista */}
+          <Typography
+            id="modal-title"
+            variant="h6"
+            component="h2"
             sx={{
-              backgroundColor: "#00308F",
-              "&:hover": {
-                backgroundColor: "#00246d",
-              },
+              textAlign: "center",
+              marginBottom: "20px",
+              fontWeight: "bold",
+              color: "#333",
+              borderBottom: "1px solid #ddd",
+              paddingBottom: "10px",
             }}
           >
-            {loading ? "Agregando..." : "Agregar Clinica"}
-          </Button>
+            Agregar Clinica
+          </Typography>
+
+          {/* Campos con iconos */}
+          <TextField
+            fullWidth
+            label="Clinica"
+            name="clinica"
+            value={formData.clinica}
+            onChange={handleChange}
+            error={!!errors.clinica}
+            helperText={errors.clinica}
+            sx={{ mb: 2 }}
+            required
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <LocalHospital />
+                </InputAdornment>
+              ),
+            }}
+          />
+          <TextField
+            fullWidth
+            label="Direccion"
+            name="direccion"
+            value={formData.direccion}
+            onChange={handleChange}
+            sx={{ mb: 2 }}
+            error={!!errors.direccion}
+            helperText={errors.direccion}
+            required
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <AddLocation />
+                </InputAdornment>
+              ),
+            }}
+          />
+          <TextField
+            fullWidth
+            label="Teléfono"
+            name="telefono"
+            value={formData.telefono}
+            onChange={handleChange}
+            sx={{ mb: 2 }}
+            required
+            error={!!errors.telefono}
+            helperText={errors.telefono}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Phone />
+                  <Box component="span" sx={{ ml: 1 }}>
+                    +506
+                  </Box>
+                </InputAdornment>
+              ),
+            }}
+          />
+          <TextField
+            fullWidth
+            select
+            label="Dueño"
+            name="usuario"
+            value={formData.usuario || ""}
+            onChange={handleChange}
+            sx={{ mb: 2 }}
+            required
+            error={!!errors.usuario}
+            helperText={errors.usuario}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Person />
+                </InputAdornment>
+              ),
+            }}
+          >
+            <MenuItem value="" disabled>
+              Selecciona un dueño
+            </MenuItem>
+            {owners.map((owner) => (
+              <MenuItem key={owner.usuario} value={owner.nombre} >
+                {owner.nombre}
+              </MenuItem>
+            ))}
+          </TextField>
+          {/* Botones de Agregar y Limpiar */}
+        </form>
+        <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
           <Button
             variant="outlined"
             onClick={handleClear}
@@ -255,9 +268,25 @@ const AddClinicaModal = ({ open, onClose, onSubmit }) => {
           >
             Limpiar
           </Button>
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            fullWidth
+            disabled={loading}
+            startIcon={loading && <CircularProgress size={20} />}
+            sx={{
+              minWidth: "160px",
+              backgroundColor: "#00308F",
+              "&:hover": {
+                backgroundColor: "#00246d",
+              },
+            }}
+          >
+            {loading ? "Agregando..." : "Agregar Clinica"}
+          </Button>
         </Box>
       </Box>
-    </Modal>
+    </Modal >
   );
 };
 

@@ -6,7 +6,7 @@ import Footer from "../components/Footer";
 import GeneralTable from "../components/Consult/GeneralTable";
 import SearchBar from "../components/Consult/GeneralizedSearchBar";
 
-import { CircularProgress, Button, Modal } from "@mui/material";
+import { CircularProgress, Button, Alert, Stack } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import AddClinicaModal from "../components/consultClinics/AddClinicModal";
 import ModifyClinicModal from "../components/consultClinics/ModifyClinicModal";
@@ -21,11 +21,6 @@ function Owner() {
     const [order, setOrder] = useState("asc");
     const rowsPerPage = 10;
     const [open, setOpen] = useState(false);
-    const [openMod, setOpenMod] = useState(false);
-    const [selectedClinic, setSelectedClinic] = useState(null);
-    const [snackbarMessage, setSnackbarMessage] = useState(""); // Estado para el mensaje de éxito/error
-    const [snackbarOpen, setSnackbarOpen] = useState(false); // Controla el estado del Snackbar
-    const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // Controla si es éxito o error
 
     const columns = [
         { field: "clinica", headerName: "Clinica" },
@@ -33,6 +28,12 @@ function Owner() {
         { field: "telefono", headerName: "Telefono" },
         { field: "dueño", headerName: "Dueño" },
     ];
+
+    const [alert, setAlert] = useState({
+        open: false,
+        message: "",
+        severity: "",
+    });
 
     useEffect(() => {
         fetchClinics();
@@ -70,104 +71,92 @@ function Owner() {
         setPage(1);
     };
 
-    const handleAddClinic = async (clientData) => {
-    try {
-      const response = await axios.post(
-        "http://localhost:8000/api/add-clinic/",
-        clientData
-      );
-      setSnackbarMessage("Clínica agregada exitosamente.");
-      setSnackbarSeverity("success");
-      setSnackbarOpen(true);
-      fetchClinics(); // Refrescar la tabla al agregar la clinica
-      setOpen(false); // Cierra el modal al agregar exitosamente
-    } catch (error) {
-      // Aquí manejamos los errores del backend
-      if (error.response && error.response.data) {
-        const backendError = error.response.data.error;
 
-        // Verifica si la clinica ya existe
-        if (backendError === "La clinica ya existe") {
-          setSnackbarMessage("La clinica ya existe");
-        } else {
-          setSnackbarMessage(backendError || "Error al agregar clínica.");
-        }
-      } else {
-        setSnackbarMessage("Error de conexión al agregar clínica.");
-      }
+    const handleCloseAlert = () => {
+        setAlert({ open: false, message: "", severity: "" });
+    };
 
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
-    }
-  };
+    const handleAdd = async (message, severity) => {
+        setAlert({ open: true, message, severity });
+        await fetchClinics();
+    };
 
-    const handleOpenModal = (clinic) => {
-        setSelectedClinic(clinic);  
-        setOpenMod(true);
+    const handleModification = async (message, severity) => {
+        setAlert({ open: true, message, severity });
+        await fetchClinics();
+    };
+
+    const handleDelete = async (message, severity) => {
+        setAlert({ open: true, message, severity });
+        await fetchClinics();
     };
 
     return (
         <>
-            <Header />
-            <div className="flex-grow px-4 md:mt-6 md:mb-6 h-[90vh]">
-                <div className="flex flex-col items-center justify-between mb-4 space-y-4 md:flex-row md:space-y-0">
-                    <h1 className="text-2xl font-semibold">Consultar Clínicas</h1>
-                    <div className="flex flex-col w-full space-y-4 md:w-auto md:flex-row md:items-center md:space-y-0">
-                        <Button
-                            variant="contained"
-                            startIcon={<Add />}
-                            onClick={() => setOpen(true)} // Abre el modal
-                            sx={{
-                                backgroundColor: "#00308F",
-                                "&:hover": { backgroundColor: "#00246d" },
-                                minWidth: "200px",
-                                marginBottom: { xs: "-4px", md: "0px" },
-                                marginRight: { xs: "0px", md: "10px" },
-                                width: { xs: "100%", md: "auto" },
-                            }}
-                        >
-                            Agregar Clínica
-                        </Button>
-                        <SearchBar
-                            onSearch={handleSearch}
-                            columns={columns.map((col) => col.field)}
+            <div className="flex flex-col min-h-screen">
+                <Header />
+                <div className="flex-grow px-4 md:mt-6 md:mb-6">
+                    {alert.open && (
+                        <Stack sx={{ width: "100%", mb: 2 }} spacing={2}>
+                            <Alert severity={alert.severity} onClose={handleCloseAlert}>
+                                {alert.message || "Ocurrió un error desconocido."}
+                            </Alert>
+                        </Stack>
+                    )}
+                    <div className="flex flex-col items-center justify-between mb-4 space-y-4 md:flex-row md:space-y-0">
+                        <h1 className="text-2xl font-semibold">Consultar Clínicas</h1>
+                        <div className="flex flex-col w-full space-y-4 md:w-auto md:flex-row md:items-center md:space-y-0">
+                            <Button
+                                variant="contained"
+                                startIcon={<Add />}
+                                onClick={() => setOpen(true)} // Abre el modal
+                                sx={{
+                                    backgroundColor: "#00308F",
+                                    "&:hover": { backgroundColor: "#00246d" },
+                                    minWidth: "200px",
+                                    marginBottom: { xs: "-4px", md: "0px" },
+                                    marginRight: { xs: "0px", md: "10px" },
+                                    width: { xs: "100%", md: "auto" },
+                                }}
+                            >
+                                Agregar Clínica
+                            </Button>
+                            <SearchBar
+                                onSearch={handleSearch}
+                                columns={columns.map((col) => col.field)}
+                            />
+                        </div>
+                    </div>
+
+                    {loading ? (
+                        <div className="flex items-center justify-center">
+                            <CircularProgress />
+                        </div>
+                    ) : (
+                        <GeneralTable
+                            data={clinicas}
+                            columns={columns}
+                            totalCount={totalCount}
+                            rowsPerPage={rowsPerPage}
+                            page={page}
+                            pkCol="clinica_id"
+                            deletionUrl="http://localhost:8000/api/delete-clinic"
+                            fetchData={fetchClinics}
+                            OnModModal={ModifyClinicModal}
+                            onDelete={handleDelete}
+                            onModify={handleModification}
+                            onPageChange={setPage}
                         />
-                    </div>
+                    )}
                 </div>
-
-                {loading ? (
-                    <div className="flex items-center justify-center">
-                        <CircularProgress />
-                    </div>
-                ) : (
-                    <GeneralTable
-                        data={clinicas}
-                        columns={columns}
-                        totalCount={totalCount}
-                        rowsPerPage={rowsPerPage}
-                        page={page}
-                        pkCol="clinica_id"
-                        deletionUrl="http://localhost:8000/api/delete-clinic"
-                        fetchData={fetchClinics}
-                        onModModal={handleOpenModal}
-                        onPageChange={setPage}>
-                    </GeneralTable>
-                )}
+                <AddClinicaModal
+                    open={open}
+                    onClose={() => setOpen(false)}
+                    onSuccess={handleAdd}
+                />
+                {/* Footer at the bottom */}
+                <Footer />
             </div>
-            <AddClinicaModal
-                open={open}
-                onClose={() => setOpen(false)}
-                onSubmit={handleAddClinic}
-            />
-
-            <ModifyClinicModal
-                open={openMod}
-                onClose={() => setOpenMod(false)}
-                onSuccess={fetchClinics}
-                selectedClinic={selectedClinic}
-            />
-            
-            <Footer />
         </>
     )
 
