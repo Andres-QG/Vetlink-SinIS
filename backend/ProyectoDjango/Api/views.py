@@ -171,36 +171,44 @@ def check_new_pass(request):
     return Response({"exists": True, "status": "success"}, status=status.HTTP_200_OK)
 
 
-@api_view(["GET"])
+@api_view(['GET'])
 def consult_clinics(request):
-    search = request.GET.get("search", "")
-    column = request.GET.get("column", "nombre")
-    order = request.GET.get("order", "asc")
+    search = request.GET.get('search', '')
+    column = request.GET.get('column', 'nombre')
+    order = request.GET.get('order', 'asc')
+
+    if (column == "clinica"):
+        column = "nombre"
+    if (column == "dueño"):
+        column = "usuario_propietario"
 
     try:
         clinicas = Clinicas.objects.all()
         if search:
-            kwargs = {f"{column}__icontains": search}
+            # Para otras columnas, utiliza el filtrado dinámico basado en kwargs
+            kwargs = {f'{column}__icontains': search}
             clinicas = clinicas.filter(**kwargs)
 
-        clinicas = clinicas.order_by(f"-{column}" if order == "desc" else column)
+        # Ordenamiento de resultados
+        clinicas = clinicas.order_by(f'-{column}' if order == 'desc' else column)
 
         paginator = CustomPagination()
         result_page = paginator.paginate_queryset(clinicas, request)
         serializer_data = [
             {
-                "clinica_id": clinica.clinica_id,  # Ajusta para enviar el ID
-                "nombre": clinica.nombre,
-                "direccion": clinica.direccion,
-                "telefono": clinica.telefono,
-                "dueño": clinica.usuario_propietario.nombre,
+                "clinica_id": clinicas.clinica_id,
+                "clinica": clinicas.nombre,
+                "direccion": clinicas.direccion,
+                "telefono": clinicas.telefono,
+                "dueño": clinicas.usuario_propietario.nombre,
             }
-            for clinica in result_page
+            for clinicas in result_page
         ]
 
         return paginator.get_paginated_response(serializer_data)
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        print(e)
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(["POST"])

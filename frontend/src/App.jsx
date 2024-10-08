@@ -7,6 +7,7 @@ import Services from "./routes/Services";
 import ConsultClients from "./routes/ConsultClients";
 import ConsultVets from "./routes/ConsultVets";
 import ConsultPets from "./routes/ConsultPets";
+import ConsultClinics from "./routes/ConsultClinics";
 import {
   PassReset,
   CheckCode,
@@ -16,7 +17,6 @@ import {
 import Owner from "./routes/Owner";
 import Error from "./routes/Error";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Clients from "./components/Consult/Clients";
 import Signup from "./routes/Signup";
 import ConsultAdmins from "./routes/ConsultAdmins";
 
@@ -60,8 +60,8 @@ function App() {
             <Route path="/error" element={<Error />} />
             <Route path="*" element={<Error />} />
             <Route path="/consultpets" element={<ConsultPets />} />
-            <Route path="/clients" element={<Clients />} />
             <Route path="/consultvets" element={<ConsultVets />} />
+            <Route path="/consultclinics" element={<ConsultClinics />} />
 
             <Route
               path="/owner"

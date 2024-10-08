@@ -8,7 +8,6 @@ import {
   Button,
 } from "@mui/material";
 import axios from "axios";
-import Swal from "sweetalert2";
 
 const EditVetModal = ({
   open,
@@ -189,7 +188,8 @@ const EditVetModal = ({
           value={formData.clinica}
           onChange={handleChange}
           fullWidth
-          margin="normal">
+          margin="normal"
+        >
           {clinics.map((clinic) => (
             <MenuItem key={clinic.clinica_id} value={clinic.clinica_id}>
               {clinic.nombre}
@@ -203,11 +203,13 @@ const EditVetModal = ({
           value={formData.especialidad}
           onChange={handleChange}
           fullWidth
-          margin="normal">
+          margin="normal"
+        >
           {specialties.map((specialty) => (
             <MenuItem
               key={specialty.especialidad_id}
-              value={specialty.especialidad_id}>
+              value={specialty.especialidad_id}
+            >
               {specialty.nombre}
             </MenuItem>
           ))}
