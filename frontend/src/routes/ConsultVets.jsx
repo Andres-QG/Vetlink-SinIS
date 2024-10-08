@@ -191,6 +191,9 @@ const ConsultVets = () => {
         open={openEditModal}
         onClose={() => setOpenEditModal(false)}
         vet={selectedVet}
+        clinics={clinics}
+        specialties={specialties}
+        fetchVets={fetchVets}
       />
 
       <Snackbar

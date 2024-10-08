@@ -508,3 +508,36 @@ def consult_specialties(request):
         return paginator.get_paginated_response(serializer.data)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["PUT"])
+@transaction.atomic
+def update_vet(request, usuario):
+    try:
+        vet = Usuarios.objects.get(usuario=usuario)
+        data = request.data
+
+        vet.cedula = data.get("cedula", vet.cedula)
+        vet.correo = data.get("correo", vet.correo)
+        vet.nombre = data.get("nombre", vet.nombre)
+        vet.apellido1 = data.get("apellido1", vet.apellido1)
+        vet.apellido2 = data.get("apellido2", vet.apellido2)
+        vet.telefono = data.get("telefono", vet.telefono)
+        vet.clinica_id = data.get("clinica", vet.clinica_id)
+        vet.especialidad_id = data.get("especialidad", vet.especialidad_id)
+
+        if "clave" in data and data["clave"]:
+            vet.clave = make_password(data["clave"])
+
+        vet.save()
+
+        return Response(
+            {"status": "success", "message": "Veterinario actualizado exitosamente."},
+            status=status.HTTP_200_OK,
+        )
+    except Usuarios.DoesNotExist:
+        return Response(
+            {"error": "Veterinario no encontrado."}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
