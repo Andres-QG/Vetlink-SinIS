@@ -17,6 +17,8 @@ import Owner from "./routes/Owner";
 import Error from "./routes/Error";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Clients from "./components/Consult/Clients";
+import Signup from "./routes/Signup";
+import ConsultAdmins from "./routes/ConsultAdmins";
 
 function App() {
   return (
@@ -26,6 +28,7 @@ function App() {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
             <Route path="/reset" element={<PassReset />} />
             <Route
               path="/check-reset"
@@ -53,6 +56,7 @@ function App() {
             />
             <Route path="/services" element={<Services />} />
             <Route path="/consultclients" element={<ConsultClients />} />
+            <Route path="/consultAdmins" element={<ConsultAdmins />} />
             <Route path="/error" element={<Error />} />
             <Route path="*" element={<Error />} />
             <Route path="/consultpets" element={<ConsultPets />} />

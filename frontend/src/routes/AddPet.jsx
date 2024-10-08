@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState } from "react";
+import { useState, forwardRef } from "react";
 import {
   TextField,
   Select,
@@ -9,9 +9,21 @@ import {
   Button,
   Box,
   Stack,
+  IconButton,
+  InputAdornment,
+  CircularProgress,
 } from "@mui/material";
+import {
+  Close as CloseIcon,
+  Person as PersonIcon,
+  Pets as PetsIcon,
+  Cake as CakeIcon,
+  Transgender as TransgenderIcon,
+  Category as CategoryIcon,
+  LocalOffer as BreedIcon,
+} from "@mui/icons-material";
 
-const CreatePet = ({ handleClose }) => {
+const AddPet = forwardRef(({ handleClose, onSuccess }, ref) => {
   const [formData, setFormData] = useState({
     usuario_cliente: "",
     nombre: "",
@@ -54,13 +66,15 @@ const CreatePet = ({ handleClose }) => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const [loading, setLoading] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     if (!validateForm()) {
       return;
     }
 
-    // '-' como valor por defecto en campos no obligatorios.
     const formDataToSend = {
       usuario_cliente: formData.usuario_cliente,
       nombre: formData.nombre,
@@ -83,21 +97,72 @@ const CreatePet = ({ handleClose }) => {
       );
 
       if (response.status === 201) {
-        alert("Mascota agregada exitosamente");
-        handleClose(); // Cerrar modal al éxito
+        onSuccess("Mascota agregada exitosamente.", "success"); // Llamar al éxito con mensaje
       }
     } catch (error) {
-      alert("Error al agregar mascota");
+      if (error.response) {
+        if (error.response.status === 404) {
+          onSuccess("Usuario no encontrado.", "error");
+        } else if (error.response.status === 400) {
+          onSuccess(
+            "Datos inválidos. Revise los campos e intente nuevamente.",
+            "error"
+          );
+        } else if (error.response.status === 500) {
+          onSuccess(
+            "Error interno del servidor. Inténtelo más tarde.",
+            "error"
+          );
+        }
+      } else {
+        onSuccess("Error desconocido. Inténtelo más tarde.", "error");
+      }
     }
+
+    setLoading(false);
+  };
+
+  const handleClear = () => {
+    setFormData({
+      usuario_cliente: "",
+      nombre: "",
+      edad: "",
+      especie: "",
+      raza: "",
+      sexo: "M",
+      otraEspecie: "",
+    });
+    setErrors({});
   };
 
   return (
-    <Box className="font-montserrat">
-      <h2 className="text-2xl font-semibold text-secondary p-3">
-        Crear Mascota
-      </h2>
+    <Box
+      ref={ref}
+      sx={{
+        p: 3,
+        borderRadius: 2,
+        boxShadow: 3,
+        bgcolor: "#fff",
+        width: "100%",
+        maxWidth: "500px",
+        mx: "auto",
+      }}
+    >
+      <form onSubmit={handleSubmit}>
+        {/* Cabecera con botón de cierre */}
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={2}
+        >
+          <h2>Agregar Mascota</h2>
+          <IconButton onClick={handleClose}>
+            <CloseIcon />
+          </IconButton>
+        </Stack>
 
-      <form onSubmit={handleSubmit} className="space-y-6 font-montserrat">
+        {/* Campos del formulario */}
         <TextField
           label="Usuario Cliente"
           variant="outlined"
@@ -107,6 +172,14 @@ const CreatePet = ({ handleClose }) => {
           onChange={handleChange}
           error={!!errors.usuario_cliente}
           helperText={errors.usuario_cliente}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <PersonIcon />
+              </InputAdornment>
+            ),
+          }}
+          sx={{ mb: 2 }}
         />
 
         <TextField
@@ -118,6 +191,14 @@ const CreatePet = ({ handleClose }) => {
           onChange={handleChange}
           error={!!errors.nombre}
           helperText={errors.nombre}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <PetsIcon />
+              </InputAdornment>
+            ),
+          }}
+          sx={{ mb: 2 }}
         />
 
         <TextField
@@ -129,9 +210,17 @@ const CreatePet = ({ handleClose }) => {
           onChange={handleChange}
           error={!!errors.edad}
           helperText={errors.edad}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <CakeIcon />
+              </InputAdornment>
+            ),
+          }}
+          sx={{ mb: 2 }}
         />
 
-        <FormControl fullWidth variant="outlined">
+        <FormControl fullWidth sx={{ mb: 2 }}>
           <InputLabel>Especie</InputLabel>
           <Select
             label="Especie"
@@ -139,6 +228,13 @@ const CreatePet = ({ handleClose }) => {
             value={formData.especie}
             onChange={handleChange}
             error={!!errors.especie}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <CategoryIcon /> {/* Ícono de Especie */}
+                </InputAdornment>
+              ),
+            }}
           >
             <MenuItem value="perro">Perro</MenuItem>
             <MenuItem value="gato">Gato</MenuItem>
@@ -154,6 +250,14 @@ const CreatePet = ({ handleClose }) => {
             name="otraEspecie"
             value={formData.otraEspecie}
             onChange={handleChange}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <CategoryIcon /> {/* Ícono de Especie */}
+                </InputAdornment>
+              ),
+            }}
+            sx={{ mb: 2 }}
           />
         )}
 
@@ -164,9 +268,17 @@ const CreatePet = ({ handleClose }) => {
           name="raza"
           value={formData.raza}
           onChange={handleChange}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <BreedIcon />
+              </InputAdornment>
+            ),
+          }}
+          sx={{ mb: 2 }}
         />
 
-        <FormControl fullWidth variant="outlined">
+        <FormControl fullWidth sx={{ mb: 2 }}>
           <InputLabel>Sexo</InputLabel>
           <Select
             label="Sexo"
@@ -174,46 +286,61 @@ const CreatePet = ({ handleClose }) => {
             value={formData.sexo}
             onChange={handleChange}
             error={!!errors.sexo}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <TransgenderIcon /> {/* Ícono de Sexo */}
+                </InputAdornment>
+              ),
+            }}
           >
             <MenuItem value="M">Macho</MenuItem>
             <MenuItem value="H">Hembra</MenuItem>
           </Select>
         </FormControl>
 
-        <Stack direction="row" spacing={2}>
+        <Stack
+          direction="row"
+          spacing={2}
+          sx={{
+            width: "100%",
+            justifyContent: "center",
+            alignItems: "center",
+            mx: "auto",
+          }}
+        >
           <Button
-            onClick={handleClose}
             variant="outlined"
-            size="small"
+            onClick={handleClear}
+            fullWidth
+            size="medium"
             sx={{
-              color: "#00308F",
               borderColor: "#00308F",
-              "&:hover": {
-                backgroundColor: "#f0f0f0",
-              },
+              color: "#00308F",
             }}
           >
-            Cancelar
+            Limpiar
           </Button>
-
           <Button
-            type="submit"
             variant="contained"
-            size="small"
+            onClick={handleSubmit}
+            fullWidth
+            size="medium"
+            disabled={loading}
+            startIcon={loading && <CircularProgress size={20} />}
             sx={{
               backgroundColor: "#00308F",
-              color: "#fff",
               "&:hover": {
                 backgroundColor: "#00246d",
               },
             }}
           >
-            Agregar Mascota
+            {loading ? "Agregando..." : "Agregar Clinica"}
           </Button>
         </Stack>
       </form>
     </Box>
   );
-};
+});
 
-export default CreatePet;
+export default AddPet;

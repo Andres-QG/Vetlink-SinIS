@@ -6,12 +6,9 @@ export const AuthContext = createContext();
 function AuthProvider({ children }) {
     const [role, setRole] = useState(undefined);
 
-    console.log("Context: "+role)
-
     const fetchUserRole = async () => {
         if (role !== 5) {
             try {
-                console.log("Creando solicitud")
                 const response = await axios.get('http://localhost:8000/api/get-user-role/', {
                     withCredentials: true,
                 });
@@ -20,7 +17,6 @@ function AuthProvider({ children }) {
                 } else {
                     setRole(undefined)
                 }
-                console.log(response)
             } catch (error) {
                 setRole(undefined)
             }
@@ -29,7 +25,7 @@ function AuthProvider({ children }) {
 
     return (
         <AuthContext.Provider value={{ role, setRole, fetchUserRole }}>
-            {children} 
+            {children}
         </AuthContext.Provider>
     );
 } export default AuthProvider;

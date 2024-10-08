@@ -27,7 +27,11 @@ const GeneralTable = ({
   onPageChange,
   deletionUrl,
   pkCol,
+  onDelete,
+  visualIdentifierCol,
   fetchData,
+  OnModModal,
+  onModify,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -50,8 +54,10 @@ const GeneralTable = ({
   };
 
   const [openModal, setOpenModal] = useState(false);
+  const [openModModal, setOpenModModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
+  // "Delete" modal
   const handleOpenModal = (item) => {
     setSelectedItem(item);
     setOpenModal(true);
@@ -69,21 +75,32 @@ const GeneralTable = ({
     try {
       const url = `${deletionUrl}/${selectedItem[pkCol]}/`;
       const response = await axios.delete(url);
-      alert("Elemento eliminado correctamente");
+      onDelete("Elemento eliminado correctamente.", "success");
     } catch (error) {
       if (error.response) {
-        alert(
+        onDelete(
           `Error: ${error.response.status} - ${
             error.response.data.error || error.response.data.detail
           }`
         );
       } else if (error.request) {
-        alert("No se recibió respuesta del servidor. Verifica tu conexión.");
+        onDelete("No se recibió respuesta del servidor. Verifica tu conexión.");
       } else {
-        alert(`Error desconocido: ${error.message}`);
+        onDelete(`Error desconocido: ${error.message}`);
       }
     }
     fetchData();
+  };
+
+  // "Modify" modal
+  const handleOpenModModal = (item) => {
+    setSelectedItem(item);
+    setOpenModModal(true);
+  };
+
+  const handleCloseModModal = () => {
+    setOpenModModal(false);
+    setSelectedItem(null);
   };
 
   return (
@@ -105,7 +122,11 @@ const GeneralTable = ({
                 </div>
               ))}
               <div>
-                <IconButton onClick={() => console.log("Edit clicked")}>
+                <IconButton
+                  onClick={() => {
+                    handleOpenModModal(item);
+                  }}
+                >
                   <Edit />
                 </IconButton>
                 <IconButton onClick={() => handleOpenModal(item)}>
@@ -134,15 +155,15 @@ const GeneralTable = ({
               </TableRow>
             </TableHead>
             <TableBody>
-              {data.map((item) => (
-                <TableRow key={`row-${item.id}`}>
-                  {columns.map((col, index) => (
-                    <TableCell key={`cell-${item.id}-${col.field}`}>
+              {data.map((item, index) => (
+                <TableRow key={item.id || `row-${index}`}>
+                  {columns.map((col) => (
+                    <TableCell key={`cell-${item.id || index}-${col.field}`}>
                       {item[col.field]}
                     </TableCell>
                   ))}
-                  <TableCell key={`actions-${item.id}`}>
-                    <IconButton onClick={() => console.log("Edit clicked")}>
+                  <TableCell key={`actions-${item.id || index}`}>
+                    <IconButton onClick={() => handleOpenModModal(item)}>
                       <Edit />
                     </IconButton>
                     <IconButton onClick={() => handleOpenModal(item)}>
@@ -184,7 +205,8 @@ const GeneralTable = ({
           style={{ width: 400, margin: "auto", marginTop: "10%" }}
         >
           <Typography variant="h6" component="h2">
-            ¿Estás seguro de que deseas eliminar este elemento?
+            ¿Estás seguro de que deseas eliminar{" a "}
+            {selectedItem?.[visualIdentifierCol]}?
           </Typography>
           <Typography sx={{ mt: 2 }}>
             Esta acción no se puede deshacer. El elemento será eliminado
@@ -200,6 +222,15 @@ const GeneralTable = ({
           </Box>
         </Box>
       </Modal>
+      {/*Modal de modificación*/}
+      {selectedItem && openModModal && (
+        <OnModModal
+          handleOpen={openModModal}
+          handleClose={handleCloseModModal}
+          onSuccess={onModify}
+          selectedItem={selectedItem}
+        />
+      )}
     </>
   );
 };

@@ -8,7 +8,8 @@ import SearchBar from "../components/Consult/GeneralizedSearchBar";
 
 import { CircularProgress, Button, Modal } from "@mui/material";
 import { Add } from "@mui/icons-material";
-import AddClinicaModal from "../components/consultClinicas/AddClinicaModal";
+import AddClinicaModal from "../components/consultClinics/AddClinicModal";
+import ModifyClinicModal from "../components/consultClinics/ModifyClinicModal";
 
 function Owner() {
     const [clinicas, setClinicas] = useState([]);
@@ -20,6 +21,8 @@ function Owner() {
     const [order, setOrder] = useState("asc");
     const rowsPerPage = 10;
     const [open, setOpen] = useState(false);
+    const [openMod, setOpenMod] = useState(false);
+    const [selectedClinic, setSelectedClinic] = useState(null);
     const [snackbarMessage, setSnackbarMessage] = useState(""); // Estado para el mensaje de éxito/error
     const [snackbarOpen, setSnackbarOpen] = useState(false); // Controla el estado del Snackbar
     const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // Controla si es éxito o error
@@ -48,6 +51,7 @@ function Owner() {
 
             const response = await axios.get(
                 "http://localhost:8000/api/consult-clinics/",
+                { params }
             );
             const data = response.data;
             setClinicas(data.results);
@@ -69,20 +73,20 @@ function Owner() {
     const handleAddClinic = async (clientData) => {
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/add-client/",
+        "http://localhost:8000/api/add-clinic/",
         clientData
       );
       setSnackbarMessage("Clínica agregada exitosamente.");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-      fetchClinics(); // Refrescar la tabla al agregar cliente
+      fetchClinics(); // Refrescar la tabla al agregar la clinica
       setOpen(false); // Cierra el modal al agregar exitosamente
     } catch (error) {
       // Aquí manejamos los errores del backend
       if (error.response && error.response.data) {
         const backendError = error.response.data.error;
 
-        // Verifica si el error es de usuario o correo duplicados
+        // Verifica si la clinica ya existe
         if (backendError === "La clinica ya existe") {
           setSnackbarMessage("La clinica ya existe");
         } else {
@@ -97,10 +101,15 @@ function Owner() {
     }
   };
 
+    const handleOpenModal = (clinic) => {
+        setSelectedClinic(clinic);  
+        setOpenMod(true);
+    };
+
     return (
         <>
             <Header />
-            <div className="flex-grow px-4 md:mt-6 md:mb-6 h-[80vh]">
+            <div className="flex-grow px-4 md:mt-6 md:mb-6 h-[90vh]">
                 <div className="flex flex-col items-center justify-between mb-4 space-y-4 md:flex-row md:space-y-0">
                     <h1 className="text-2xl font-semibold">Consultar Clínicas</h1>
                     <div className="flex flex-col w-full space-y-4 md:w-auto md:flex-row md:items-center md:space-y-0">
@@ -119,7 +128,10 @@ function Owner() {
                         >
                             Agregar Clínica
                         </Button>
-                        <SearchBar onSearch={handleSearch} />
+                        <SearchBar
+                            onSearch={handleSearch}
+                            columns={columns.map((col) => col.field)}
+                        />
                     </div>
                 </div>
 
@@ -134,6 +146,10 @@ function Owner() {
                         totalCount={totalCount}
                         rowsPerPage={rowsPerPage}
                         page={page}
+                        pkCol="clinica_id"
+                        deletionUrl="http://localhost:8000/api/delete-clinic"
+                        fetchData={fetchClinics}
+                        onModModal={handleOpenModal}
                         onPageChange={setPage}>
                     </GeneralTable>
                 )}
@@ -143,6 +159,14 @@ function Owner() {
                 onClose={() => setOpen(false)}
                 onSubmit={handleAddClinic}
             />
+
+            <ModifyClinicModal
+                open={openMod}
+                onClose={() => setOpenMod(false)}
+                onSuccess={fetchClinics}
+                selectedClinic={selectedClinic}
+            />
+            
             <Footer />
         </>
     )

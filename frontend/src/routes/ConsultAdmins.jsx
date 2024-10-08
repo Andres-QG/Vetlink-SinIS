@@ -3,15 +3,15 @@ import { CircularProgress, Button, Snackbar, Alert } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import GeneralTable2 from "../components/Consult/GeneralTable2";
 import SearchBar from "../components/Consult/GeneralizedSearchBar";
-import ModifyClientModal from "../components/ConsultClients/ModifyClientModal";
-import DeleteClientModal from "../components/ConsultClients/DeleteClientModal";
+import ModifyAdminModal from "../components/ConsultAdmins/ModifyAdminModal";
+import DeleteAdminModal from "../components/ConsultAdmins/DeleteAdminModal";
 import axios from "axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import AddClientModal from "../components/ConsultClients/AddClientModal";
+import AddAdminModal from "../components/ConsultAdmins/AddAdminModal";
 
-const ConsultClients = () => {
-  const [clients, setClients] = useState([]);
+const ConsultAdmins = () => {
+  const [admins, setAdmins] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchColumn, setSearchColumn] = useState("usuario");
@@ -24,10 +24,10 @@ const ConsultClients = () => {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   useEffect(() => {
-    fetchClients();
+    fetchAdmins();
   }, [searchTerm, searchColumn, order, page]);
 
-  const fetchClients = async () => {
+  const fetchAdmins = async () => {
     setLoading(true);
     const params = {
       search: searchTerm,
@@ -38,14 +38,14 @@ const ConsultClients = () => {
 
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/consult-client/",
+        "http://localhost:8000/api/consult-admin/",
         { params }
       );
       const data = response.data;
-      setClients(data.results);
+      setAdmins(data.results);
       setTotalPages(Math.ceil(data.count / 10));
     } catch (error) {
-      console.error("Failed to fetch clients:", error);
+      console.error("Failed to fetch admins:", error);
     } finally {
       setLoading(false);
     }
@@ -71,6 +71,7 @@ const ConsultClients = () => {
     { field: "cedula", headerName: "Cédula" },
     { field: "telefono", headerName: "Teléfono" },
     { field: "correo", headerName: "Correo" },
+    { field: "clinica", headerName: "Clínica" },
   ];
 
   return (
@@ -78,7 +79,7 @@ const ConsultClients = () => {
       <Header />
       <div className="flex-grow p-4 md:mt-6 md:mb-6">
         <div className="flex flex-col items-center justify-between mb-4 space-y-4 md:flex-row md:space-y-0">
-          <h1 className="text-2xl font-semibold">Consultar Clientes</h1>
+          <h1 className="text-2xl font-semibold">Consultar Administradores</h1>
           <div className="flex flex-col w-full space-y-4 md:w-auto md:flex-row md:items-center md:space-y-0">
             <Button
               variant="contained"
@@ -87,13 +88,13 @@ const ConsultClients = () => {
               sx={{
                 backgroundColor: "#00308F",
                 "&:hover": { backgroundColor: "#00246d" },
-                minWidth: "190px",
+                minWidth: "250px",
                 marginBottom: { xs: "-4px", md: "0px" },
                 marginRight: { xs: "0px", md: "10px" },
                 width: { xs: "100%", md: "auto" },
               }}
             >
-              Agregar Cliente
+              Agregar Administrador
             </Button>
             <SearchBar
               onSearch={handleSearch}
@@ -108,25 +109,25 @@ const ConsultClients = () => {
           </div>
         ) : (
           <GeneralTable2
-            data={clients}
+            data={admins}
             columns={columns}
             page={page}
             setPage={setPage}
             totalPages={totalPages}
-            fetchData={fetchClients}
+            fetchData={fetchAdmins}
             showSnackbar={showSnackbar}
-            EditModal={ModifyClientModal}
-            DeleteModal={DeleteClientModal}
+            EditModal={ModifyAdminModal}
+            DeleteModal={DeleteAdminModal}
             keyField="usuario"
           />
         )}
       </div>
       <Footer />
 
-      <AddClientModal
+      <AddAdminModal
         open={openModal}
         onClose={() => setOpenModal(false)}
-        fetchClients={fetchClients}
+        fetchData={fetchAdmins} // Cambiado a fetchData
         showSnackbar={showSnackbar}
       />
 
@@ -147,4 +148,4 @@ const ConsultClients = () => {
   );
 };
 
-export default ConsultClients;
+export default ConsultAdmins;

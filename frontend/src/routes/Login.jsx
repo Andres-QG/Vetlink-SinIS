@@ -1,6 +1,5 @@
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import Button from "../components/Button";
 import Loading from "../components/Loading";
 
 import eyeOnIcon from "../assets/icons/eye-on.png";
@@ -11,31 +10,75 @@ import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from '../context/AuthContext';
 
+import {
+    TextField,
+    InputAdornment,
+    CircularProgress,
+    Button,
+    IconButton,
+} from "@mui/material";
+import {
+    Email,
+    CheckCircleOutline,
+    CheckCircle,
+    LockReset,
+    AccountCircle,
+    VpnKey,
+    Visibility,
+    VisibilityOff,
+} from "@mui/icons-material";
+
+
 function Login() {
+    const initialFormData = {
+    usuario: "",
+    clave: "",
+  };
     const navigate = useNavigate();
 
     const [showPassword, setShowPassword] = useState(false);
-    const [user, setUser] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
+    const [formData, setFormData] = useState(initialFormData);
+    const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
 
     const { setRole } = useContext(AuthContext);
 
-    const togglePasswordVisibility = () => {
-        setShowPassword((prev) => !prev);
+    const toggleShowPassword = () => {
+        setShowPassword(!showPassword);
     };
 
     const passRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^\d[a-zA-Z])[\S]{8,}$/;
+
+    const validate = () => {
+    const newErrors = {};
+
+    if (!formData.usuario) {
+      newErrors.usuario = "El usuario es requerido.";
+    }
+
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
+
+    if (!formData.clave || !passwordRegex.test(formData.clave)) {
+      newErrors.clave =
+        "La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true)
 
-        if (!passRegex.test(password)) {
-            setError(errorTexts[3])
-            return
-        };
+        validate()
 
         const redirectItems = new Map([
             [1, 'owner'],
@@ -46,34 +89,23 @@ function Login() {
 
         try {
             const response = await axios.post('http://localhost:8000/api/check-user/', {
-                user,
-                password,
+                formData,
             }, {
                 withCredentials: true
             });
             setLoading(false)
             if (response.data.rol) {
                 setRole(response.data.rol)
+                document.cookie = "active=true; path=/;";
                 navigate(`/${redirectItems.get(response.data.rol)}`);
             } else {
                 setRole(0)
-                setError(errorTexts[4])
             }
         } catch (error) {
             console.log(error)
             setLoading(false)
-            setError(errorTexts[4]);
         }
     }
-
-    const errorTexts = [
-        'Correo o contraseña incorrectas.',
-        'Contraseña incorrecta.',
-        'Digite un correo válido.',
-        'Digite una contraseña válida.',
-        'Login no funcionó.',
-    ];
-
 
     return (
         <>
@@ -91,65 +123,83 @@ function Login() {
                                     {/* Campo correo */}
                                     <form onSubmit={handleSubmit} className="w-full flex flex-col items-center">
 
-                                        <label htmlFor="user" className="w-[300px] text-lg text-secondary text-left font-bold">Usuario</label>
-                                        <input
-                                            id="usuario"
-                                            type="text"
-                                            value={user}
-                                            placeholder="Escribe tu usuario"
-                                            onChange={(e) => setUser(e.target.value)}
-                                            className="h-6 w-[300px] mb-5 bg-transparent border-b-2 border-secondary focus:border-primary focus:outline-none placeholder-gray-500 text-lg"
+                                        <TextField
+                                            fullWidth
+                                            label="Usuario"
+                                            name="usuario"
+                                            value={formData.usuario}
+                                            onChange={handleChange}
+                                            sx={{
+                                                maxWidth: "300px",
+                                                mb: 2
+                                            }}
+                                            required
+                                            error={!!errors.usuario}
+                                            helperText={errors.usuario}
+                                            InputProps={{
+                                                startAdornment: (
+                                                    <InputAdornment position="start">
+                                                        <AccountCircle />
+                                                    </InputAdornment>
+                                                ),
+                                            }}
                                         />
-
-                                        {/* Campo contraseña */}
-                                        <label htmlFor="contraseña" className="w-[300px] text-lg text-secondary text-left font-bold">Contraseña</label>
-                                        <input
-                                            id="contraseña"
+                                        <TextField
+                                            fullWidth
+                                            label="Contraseña"
                                             type={showPassword ? "text" : "password"}
-                                            value={password}
-                                            placeholder="Escribe tu contraseña"
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            className="h-6 w-[300px] bg-transparent border-b-2 border-secondary focus:border-primary focus:outline-none placeholder-gray-500 text-lg"
+                                            name="clave"
+                                            value={formData.clave}
+                                            onChange={handleChange}
+                                            sx={{
+                                                maxWidth: "300px",
+                                                mb: 2
+                                            }}
+                                            required
+                                            error={!!errors.clave}
+                                            helperText={errors.clave}
+                                            InputProps={{
+                                                startAdornment: (
+                                                    <InputAdornment position="start">
+                                                        <VpnKey />
+                                                    </InputAdornment>
+                                                ),
+                                                endAdornment: (
+                                                    <InputAdornment position="end">
+                                                        <IconButton
+                                                            onClick={toggleShowPassword}
+                                                            edge="end"
+                                                            aria-label="toggle password visibility"
+                                                        >
+                                                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                        </IconButton>
+                                                    </InputAdornment>
+                                                ),
+                                            }}
                                         />
-
-                                        {/* Boton ver contraseña */}
-                                        <button
-                                            type="button"
-                                            onClick={togglePasswordVisibility}
-                                            className="relative bottom-6 left-[8.7rem]"
-                                        >
-                                            <img
-                                                src={showPassword ? eyeOnIcon : eyeOffIcon}
-                                                alt="Toggle password visibility"
-                                                className="h-5 w-5"
-                                            />
-                                        </button>
-
-                                        {/* Error */}
-                                        {error && (
-                                            <div className="flex items-center justify-center h-14 w-40 rounded-md text-bgprimary bg-red-700 bg-opacity-90">
-                                                <div className="text-center">{error}</div>
-                                            </div>
-                                        )}
-
-                                        {/* Olvidaste tu contraseña */}
-                                        <a href="reset" className="pt-5 font-bold text-primary hover:underline">
-                                            ¿Olvidaste tu contraseña?
-                                        </a>
-
                                         {/* Boton iniciar sesion */}
                                         <Button
-                                            className="mt-5 text-3xl w-64 h-12 border-none text-bgsecondary bg-primary hover:scale-[1.03]"
+                                            variant="contained"
                                             type="submit"
-                                            onClick={handleSubmit}
+                                            sx={{
+                                                minWidth: "300px",
+                                                minHeight: "45px",
+                                                mt: 3,
+                                                backgroundColor: "#00308F",
+                                                "&:hover": { backgroundColor: "#00246d" },
+                                            }}
                                         >
                                             Iniciar Sesión
                                         </Button>
                                     </form>
+                                    {/* Olvidaste tu contraseña */}
+                                    <a href="reset" className="pt-5 font-bold text-primary hover:underline">
+                                        ¿Olvidaste tu contraseña?
+                                    </a>
 
                                     {/* Registro */}
                                     <p className="pt-5 text-elemsec font-bold opacity-70">¿No tienes un usuario?</p>
-                                    <a href="registro" className="font-bold text-primary hover:underline">
+                                    <a href="signup" className="font-bold text-primary hover:underline">
                                         Regístrate
                                     </a>
                                 </div>

@@ -5,9 +5,14 @@ import { AuthContext } from '../context/AuthContext';
 import axios from 'axios';
 import Button from "./Button";
 import Loading from '../components/Loading';
+import Dropdown from "./Dropdown";
+
 
 function Header() {
   const navigate = useNavigate();
+  const isActive = document.cookie.includes('true');
+  const { role, fetchUserRole, setRole } = useContext(AuthContext);
+
 
   const [burger_class, setBurgerClass] = useState("burger-bar unclicked");
   const [menu_class, setMenuClass] = useState("menu_hidden");
@@ -15,7 +20,10 @@ function Header() {
   const [loading, setLoading] = useState(false);
   const [loadText, setLoadText] = useState("Cerrando sesión");
 
-  const { role, fetchUserRole } = useContext(AuthContext);
+  const items = [
+    { text: "Consultar clínicas", href: "/owner", role: [1, 2] },
+    { text: "Consultar clientes", href: "/consultclients", role: [1] },
+  ];
 
   const updateMenu = () => {
     setBurgerClass(
@@ -29,12 +37,12 @@ function Header() {
     navigate(`/${route}`);
   };
 
-  async function logOut () {
+  async function logOut() {
     try {
       setLoadText("Cerrando sesión")
       setLoading(true)
       await axios.post('http://localhost:8000/api/log-out/', {}, { withCredentials: true });
-      await fetchUserRole()
+      document.cookie = "active=false;path=/;";
       setLoading(false)
       navigate("/login");
     } catch (error) {
@@ -42,34 +50,37 @@ function Header() {
     }
   }
 
+  console.log(role)
+
   useEffect(() => {
-      setLoadText("Obteniendo rol")
-      const fetchRole = async () => {
-        setLoading(true);
-        await fetchUserRole();
-        setLoading(false);
-      };
-      fetchRole();
-    }, [role]);
- 
-  const menuItems = role !== undefined && role !== 5 
+    if (!isActive && !document.cookie.includes('false')) {
+      logOut();
+    }
+  }, [document.cookie]);
+
+  const menuItems = isActive
     ? [
       { text: "Sobre nosotros", href: "/" },
       { text: "Servicios", href: "services" },
       { text: "Contacto", href: "#" },
-      { text: "Cerrar Sesión", onClick: logOut},
+      { text: "Cerrar Sesión", onClick: logOut },
     ]
     : [
       { text: "Sobre nosotros", href: "/" },
       { text: "Servicios", href: "services" },
       { text: "Contacto", href: "#" },
       { text: "Iniciar Sesión", href: "login" },
-      { text: "Registrarme", href: "#" },
-    ]; 
+      { text: "Registrarme", href: "signup" },
+    ];
 
-    if (loading) {
-      return <Loading text={loadText}/>
-    } 
+  const additionalItems = items.filter(item => item.role.includes(role));
+  menuItems.splice(3, 0, ...additionalItems);
+
+  console.log(menuItems)
+
+  if (loading) {
+    return <Loading text={loadText} />
+  }
 
   return (
     <>
@@ -119,9 +130,14 @@ function Header() {
                   <span className="absolute block w-0 h-0.5 bg-primary bottom-0 left-0 group-hover:w-full transition-all duration-300"></span>
                 </a>
               </li>
+              {isActive ?
+                <li>
+                  <Dropdown items={items}/>
+                </li> : null
+              }
             </ul>
           </nav>
-          {(role === undefined || role === 5) ? (
+          {!isActive ? (
             <div className="hidden lg:flex space-x-3 mt-4 md:mt-0 font-bold">
               <Button
                 className="border-primary transition-all duration-300 hover:scale-105"
@@ -131,19 +147,24 @@ function Header() {
               >
                 Iniciar sesión
               </Button>
-              <Button className="border-primary bg-primary text-bgsecondary hover:text-bgprimary hover:border-primary hover:scale-105 transition-all duration-300">
+              <Button 
+                className="border-primary bg-primary text-bgsecondary hover:text-bgprimary hover:border-primary hover:scale-105 transition-all duration-300"
+                onClick={() => handleClick("signup")}>
                 Registrarme
               </Button>
             </div>
           ) : (
-            <Button
+            <>
+              <Button
                 className="hidden lg:flex border-primary bg-primary text-bgsecondary hover:text-bgprimary hover:border-primary hover:scale-105 transition-all duration-300"
                 onClick={logOut}
-            >
-              Cerrar Sesión
-            </Button>
+              >
+                Cerrar Sesión
+              </Button>
+            </>
           )
           }
+          
           <div
             className="burger-menu flex flex-col space-y-1 lg:hidden cursor-pointer  "
             onClick={updateMenu}

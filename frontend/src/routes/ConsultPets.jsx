@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { CircularProgress, Button, Modal } from "@mui/material";
+import { CircularProgress, Button, Modal, Alert, Stack } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import GeneralTable from "../components/Consult/GeneralTable";
 import SearchBar from "../components/Consult/GeneralizedSearchBar";
-import CreatePet from "./CreatePet";
+import AddPet from "./AddPet";
+import ModifyPet from "./ModifyPet";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import axios from "axios";
@@ -18,6 +19,12 @@ const ConsultPets = () => {
   const [order, setOrder] = useState("asc");
   const rowsPerPage = 10;
   const [open, setOpen] = useState(false);
+
+  const [alert, setAlert] = useState({
+    open: false,
+    message: "",
+    severity: "",
+  });
 
   const columns = [
     { field: "usuario_cliente", headerName: "Dueño" },
@@ -60,17 +67,45 @@ const ConsultPets = () => {
     }
   };
 
-  const handleSearch = (term, column, sortOrder) => {
+  const handleSearch = (term, column) => {
     setSearchTerm(term);
     setSearchColumn(column);
-    setOrder(sortOrder);
     setPage(1);
+  };
+
+  const handleAddPetSuccess = (message, severity) => {
+    setAlert({ open: true, message, severity });
+    handleClose();
+    fetchPets();
+  };
+
+  const handleCloseAlert = () => {
+    setAlert({ open: false, message: "", severity: "" });
+  };
+
+  const handleDelete = (message, severity) => {
+    setAlert({ open: true, message, severity });
+    fetchPets();
+  };
+
+  const handleModification = (message, severity) => {
+    setAlert({ open: true, message, severity });
+    fetchPets();
   };
 
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
       <div className="flex-grow p-4">
+        {/* Mostrar alerta si está abierta */}
+        {alert.open && (
+          <Stack sx={{ width: "100%", mb: 2 }} spacing={2}>
+            <Alert severity={alert.severity} onClose={handleCloseAlert}>
+              {alert.message || "Ocurrió un error desconocido."}
+            </Alert>
+          </Stack>
+        )}
+
         <div className="flex flex-col items-center justify-between mb-4 space-y-4 md:flex-row md:space-y-0">
           <h1 className="text-2xl font-semibold">Consultar Mascotas</h1>
           <div className="flex flex-col w-full space-y-4 md:w-auto md:flex-row md:items-center md:space-y-0">
@@ -112,14 +147,24 @@ const ConsultPets = () => {
             onPageChange={setPage}
             deletionUrl="http://localhost:8000/api/delete-pet"
             pkCol="mascota_id"
+            onDelete={handleDelete}
+            visualIdentifierCol="nombre"
             fetchData={fetchPets}
+            OnModModal={ModifyPet}
+            onModify={handleModification}
           />
         )}
-        {/*Modal agregar*/}
-        <Modal open={open} onClose={handleClose}>
-          <div className="absolute p-6 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg top-1/2 left-1/2">
-            <CreatePet handleClose={handleClose} />
-          </div>
+        {/* Modal agregar */}
+        <Modal
+          open={open}
+          onClose={handleClose}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <AddPet handleClose={handleClose} onSuccess={handleAddPetSuccess} />
         </Modal>
       </div>
       <Footer />
