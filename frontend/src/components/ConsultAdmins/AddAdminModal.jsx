@@ -326,11 +326,16 @@ const AddAdminModal = ({ open, onClose, fetchAdmins, showSnackbar }) => {
                 ),
               }}
             >
-              {clinics.map((clinic) => (
-                <MenuItem key={clinic.clinica_id} value={clinic.clinica_id}>
-                  {clinic.nombre}
-                </MenuItem>
-              ))}
+              {console.log(clinics)}
+              {clinics.length > 0 ? (
+                clinics.map((clinic) => (
+                  <MenuItem key={clinic.clinica_id} value={clinic.clinica_id}>
+                    {clinic.clinica}
+                  </MenuItem>
+                ))
+              ) : (
+                <MenuItem disabled>No hay clínicas disponibles</MenuItem>
+              )}
             </TextField>
           </Grid>
         </Grid>

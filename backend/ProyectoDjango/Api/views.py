@@ -177,11 +177,6 @@ def consult_clinics(request):
     column = request.GET.get("column", "nombre")
     order = request.GET.get("order", "asc")
 
-    if column == "clinica":
-        column = "nombre"
-    if column == "dueño":
-        column = "usuario_propietario"
-
     try:
         clinicas = Clinicas.objects.all()
         if search:
@@ -194,8 +189,8 @@ def consult_clinics(request):
         result_page = paginator.paginate_queryset(clinicas, request)
         serializer_data = [
             {
-                "clinica_id": clinica.clinica_id,
-                "clinica": clinica.nombre,
+                "clinica_id": clinica.clinica_id,  # Ajusta para enviar el ID
+                "nombre": clinica.nombre,
                 "direccion": clinica.direccion,
                 "telefono": clinica.telefono,
                 "dueño": clinica.usuario_propietario.nombre,
@@ -205,7 +200,6 @@ def consult_clinics(request):
 
         return paginator.get_paginated_response(serializer_data)
     except Exception as e:
-        print(e)
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
