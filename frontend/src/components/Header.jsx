@@ -8,14 +8,13 @@ import Loading from '../components/Loading';
 
 function Header() {
   const navigate = useNavigate();
+  const isActive = document.cookie.includes('active=true');
 
   const [burger_class, setBurgerClass] = useState("burger-bar unclicked");
   const [menu_class, setMenuClass] = useState("menu_hidden");
   const [isMenuClicked, setIsMenuClicked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadText, setLoadText] = useState("Cerrando sesión");
-
-  const { role, fetchUserRole } = useContext(AuthContext);
 
   const updateMenu = () => {
     setBurgerClass(
@@ -34,25 +33,15 @@ function Header() {
       setLoadText("Cerrando sesión")
       setLoading(true)
       await axios.post('http://localhost:8000/api/log-out/', {}, { withCredentials: true });
-      await fetchUserRole()
+      document.cookie = "active=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       setLoading(false)
       navigate("/login");
     } catch (error) {
       console.error('Error logging out:', error);
     }
   }
-
-  useEffect(() => {
-      setLoadText("Obteniendo rol")
-      const fetchRole = async () => {
-        setLoading(true);
-        await fetchUserRole();
-        setLoading(false);
-      };
-      fetchRole();
-    }, [role]);
  
-  const menuItems = role !== undefined && role !== 5 
+  const menuItems = isActive 
     ? [
       { text: "Sobre nosotros", href: "/" },
       { text: "Servicios", href: "services" },
@@ -121,7 +110,7 @@ function Header() {
               </li>
             </ul>
           </nav>
-          {(role === undefined || role === 5) ? (
+          {!isActive ? (
             <div className="hidden lg:flex space-x-3 mt-4 md:mt-0 font-bold">
               <Button
                 className="border-primary transition-all duration-300 hover:scale-105"

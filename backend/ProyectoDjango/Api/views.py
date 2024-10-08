@@ -22,11 +22,13 @@ class CustomPagination(PageNumberPagination):
 
 @api_view(['POST'])
 def check_user_exists(request):
-    user = request.data.get('user')
-    password = request.data.get('password')
+    print(request.data)
+    formData = request.data.get('formData')
+    user = formData.get('usuario')
+    password = formData.get('clave')
 
     if not user or not password:
-        return Response({"error": "Username and cedula are required."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "Username and password are required."}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
         userResponse = Usuarios.objects.get(usuario=user) 

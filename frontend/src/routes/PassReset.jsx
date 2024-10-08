@@ -4,17 +4,19 @@ import { useNavigate } from "react-router-dom";
 import { useState, useContext, useRef } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import Button from '../components/Button';
 import Loading from '../components/Loading';
 import { AuthContext } from '../context/AuthContext';
 import {
-  TextField,
-  InputAdornment,
+    TextField,
+    InputAdornment,
+    CircularProgress,
+    Button,
 } from "@mui/material";
 import {
   Email,
   CheckCircleOutline,
   CheckCircle,
+  LockReset,
 } from "@mui/icons-material";
 
 // Pagina que pide el correo al usuario
@@ -23,10 +25,12 @@ export function PassReset() {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [error, setError] = useState(false);
+    const [loading, setLoading] = useState(false);
     const { setRole } = useContext(AuthContext);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true)
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
@@ -50,6 +54,7 @@ export function PassReset() {
         } catch (error) {
             console.log(error)
         }
+        setLoading(false)
     }
 
     return (
@@ -58,10 +63,11 @@ export function PassReset() {
                 <Header />
                 <main className="flex-grow">
                     <div className="h-screen flex items-center justify-center bg-[url('./src/assets/shapes/wave.svg')] bg-bottom bg-no-repeat w-full">
-                        <div className="flex flex-col h-[650px] w-[400px] rounded-xl bg-bgsecondary shadow-2xl items-center pt-8 text-secondary">
-                            <h1 className="font-bold text-2xl text-center">¿Olvidaste tu contraseña?</h1>
-                            <p className='font-bold text-center m-2'>Escribe tu correo para enviarte un código de verificación</p>
-                            <form onSubmit={handleSubmit} className="w-full flex flex-col items-center">
+                        <div className="flex flex-col h-[450px] w-[400px] rounded-xl relative bottom-3 bg-bgsecondary shadow-2xl items-center pt-8 text-secondary ">
+                            <LockReset  style={{ fontSize: "80px"}} />
+                            <h1 className="font-bold text-2xl text-center pb-4">¿Olvidaste tu contraseña?</h1>
+                            <p className='font-bold text-center'>Escribe tu correo para enviarte un código de verificación</p>
+                            <form onSubmit={handleSubmit} className="w-full flex flex-col items-center py-16">
 
                                 {/* Campo correo */}
                                 <TextField
@@ -69,8 +75,8 @@ export function PassReset() {
                                     name="correo"
                                     value={email}
                                     error={error}
+                                    className='w-5/6 relative bottom-6'
                                     onChange={(e) => setEmail(e.target.value)}
-                                    sx={{ m: 2 }}
                                     required
                                     InputProps={{
                                         startAdornment: (
@@ -82,13 +88,45 @@ export function PassReset() {
                                 />
 
                                 {/* Boton enviar correo */}
-                                <Button
-                                    className="mt-5 text-3xl w-64 h-12 border-none text-bgsecondary bg-primary hover:scale-[1.03]"
-                                    type="submit"
-                                    onClick={handleSubmit}
-                                >
-                                    Enviar correo
-                                </Button>
+
+                                <div className='h-full w-5/6 flex justify-center text-md gap-7'>
+                                    <Button
+                                        variant="outlined"
+                                        onClick={() => navigate('/login')}
+                                        disabled={loading}
+                                        sx={{
+                                            borderColor: "#00308F",
+                                            color: "#00308F",
+                                            minWidth: "150px",  // Set a fixed width for both buttons
+                                            "&:hover": {
+                                                color: "#00246d",
+                                                borderColor: "#00246d",
+                                            },
+                                        }}
+                                    >
+                                        Cancelar
+                                    </Button>
+
+                                    <Button
+                                        variant="contained"
+                                        onClick={handleSubmit}
+                                        disabled={loading}
+                                        startIcon={loading && <CircularProgress size={20} />}
+                                        sx={{
+                                            backgroundColor: "#00308F",
+                                            color: "#fff",
+                                            minWidth: "150px",  // Matching width for both buttons
+                                            "&:hover": {
+                                                backgroundColor: "#00246d",
+                                            },
+                                        }}
+                                    >
+                                        {loading ? "Enviando..." : "Enviar"}
+                                    </Button>
+
+
+                                </div>
+
                             </form>
 
                         </div>
@@ -105,6 +143,7 @@ export function PassReset() {
 export function CheckCode() {
     const navigate = useNavigate();
     const [values, setValues] = useState(new Array(6).fill(''));
+    const [loading, setLoading] = useState(false);
     const { role, setRole } = useContext(AuthContext);
 
     const inputRefs = useRef([]);
@@ -154,6 +193,7 @@ export function CheckCode() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true)
 
         try {
             const response = await axios.post('http://localhost:8000/api/verify-code/', {
@@ -170,7 +210,7 @@ export function CheckCode() {
             setRole(null)
             console.log(error)
         }
-
+        setLoading(false)
     }
 
     return (
@@ -179,14 +219,14 @@ export function CheckCode() {
                 <Header />
                 <main className="flex-grow">
                     <div className="h-screen flex items-center justify-center bg-[url('./src/assets/shapes/wave.svg')] bg-bottom bg-no-repeat w-full">
-                        <div className="flex flex-col h-[650px] w-[400px] rounded-xl bg-bgsecondary shadow-2xl items-center pt-8 text-secondary">
+                        <div className="flex flex-col h-[350px] w-[400px] rounded-xl bg-bgsecondary shadow-2xl items-center pt-8 text-secondary">
                             <h1 className="font-bold text-2xl text-center">Código de Verificación</h1>
-                            <p className='font-bold text-center m-2'>Digita el código enviado a tu correo</p>
-                            <form onSubmit={handleSubmit} className="w-full flex flex-col items-center">
+                            <p className='font-bold text-center mt-4'>Digita el código enviado a tu correo</p>
+                            <form onSubmit={handleSubmit} className="w-full flex flex-col items-center py-10">
 
                                 {/* Campo valores */}
 
-                                <div className="flex space-x-2" onPaste={handlePaste}>
+                                <div className="flex space-x-2 pt-6" onPaste={handlePaste}>
                                     {values.map((value, index) => (
                                         <input
                                             key={index}
@@ -203,15 +243,24 @@ export function CheckCode() {
                                 </div>
                                 
                                 {/* Boton enviar correo */}
-                                <p className='font-bold text-center m-2'>¿No lo has recibido?</p>
-                                <a href=""></a>
                                 <Button
-                                    className="mt-5 text-2xl w-72 h-12 border-none text-bgsecondary bg-primary hover:scale-[1.03]"
-                                    type="submit"
+                                    variant="contained"
                                     onClick={handleSubmit}
+                                    disabled={loading}
+                                    startIcon={loading && <CircularProgress size={20} />}
+                                    sx={{
+                                        backgroundColor: "#00308F",
+                                        color: "#fff",
+                                        mt: 8,
+                                        minWidth: "260px",
+                                        "&:hover": {
+                                            backgroundColor: "#00246d",
+                                        },
+                                    }}
                                 >
-                                    Confirmar Código
+                                    {loading ? "Confirmando..." : "Confirmar"}
                                 </Button>
+                               
                             </form>
 
                         </div>
@@ -229,6 +278,7 @@ export function ChangePass() {
     const navigate = useNavigate();
     const [newPass, setNewPass] = useState('');
     const [confPass, setConfPass] = useState('');
+    const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
 
     const passRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^\d[a-zA-Z])[\S]{8,}$/;
@@ -256,6 +306,7 @@ export function ChangePass() {
         }
 
         try {
+            setLoading(true)
             const response = await axios.post('http://localhost:8000/api/check-new-pass/', {
                 newPass,
                 confPass,
@@ -263,6 +314,7 @@ export function ChangePass() {
                 withCredentials: true
             });
             console.log(response)
+            setLoading(false)
             if (response.data.same === true) {
                 console.log("Password can't be the same")
             }
@@ -329,12 +381,24 @@ export function ChangePass() {
                                 {/* Boton enviar correo */}
                                 <a href=""></a>
                                 <Button
-                                    className="mt-5 text-xl w-72 h-12 border-none text-bgsecondary bg-primary hover:scale-[1.03]"
-                                    type="submit"
+                                    variant="contained"
                                     onClick={handleSubmit}
+                                    disabled={loading}
+                                    startIcon={loading && <CircularProgress size={20} />}
+                                    sx={{
+                                        backgroundColor: "#00308F",
+                                        color: "#fff",
+                                        mt: 8,
+                                        minWidth: "19rem",
+                                        height: "45px",
+                                        "&:hover": {
+                                            backgroundColor: "#00246d",
+                                        },
+                                    }}
                                 >
-                                    Establecer Contraseña
+                                    {loading ? "Estableciendo..." : "Establecer Contraseña"}
                                 </Button>
+                                
                             </form>
 
                         </div>
