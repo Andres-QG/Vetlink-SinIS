@@ -30,7 +30,8 @@ const GeneralTable = ({
   onDelete,
   visualIdentifierCol,
   fetchData,
-  onModModal,
+  OnModModal,
+  onModify,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -53,8 +54,10 @@ const GeneralTable = ({
   };
 
   const [openModal, setOpenModal] = useState(false);
+  const [openModModal, setOpenModModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
+  // "Delete" modal
   const handleOpenModal = (item) => {
     setSelectedItem(item);
     setOpenModal(true);
@@ -65,13 +68,9 @@ const GeneralTable = ({
     setSelectedItem(null);
   };
 
-    
-
   const handleDelete = async () => {
     handleCloseModal();
     if (!selectedItem) return;
-
-    console.log(selectedItem);
 
     try {
       const url = `${deletionUrl}/${selectedItem[pkCol]}/`;
@@ -93,6 +92,17 @@ const GeneralTable = ({
     fetchData();
   };
 
+  // "Modify" modal
+  const handleOpenModModal = (item) => {
+    setSelectedItem(item);
+    setOpenModModal(true);
+  };
+
+  const handleCloseModModal = () => {
+    setOpenModModal(false);
+    setSelectedItem(null);
+  };
+
   return (
     <>
       <TableContainer component={Paper}>
@@ -112,7 +122,11 @@ const GeneralTable = ({
                 </div>
               ))}
               <div>
-                <IconButton onClick={() => {onModModal(item)}}>
+                <IconButton
+                  onClick={() => {
+                    handleOpenModModal(item);
+                  }}
+                >
                   <Edit />
                 </IconButton>
                 <IconButton onClick={() => handleOpenModal(item)}>
@@ -149,7 +163,7 @@ const GeneralTable = ({
                     </TableCell>
                   ))}
                   <TableCell key={`actions-${item.id || index}`}>
-                    <IconButton onClick={() => {onModModal(item)}}>
+                    <IconButton onClick={() => handleOpenModModal(item)}>
                       <Edit />
                     </IconButton>
                     <IconButton onClick={() => handleOpenModal(item)}>
@@ -208,6 +222,15 @@ const GeneralTable = ({
           </Box>
         </Box>
       </Modal>
+      {/*Modal de modificación*/}
+      {selectedItem && openModModal && (
+        <OnModModal
+          handleOpen={openModModal}
+          handleClose={handleCloseModModal}
+          onSuccess={onModify}
+          selectedItem={selectedItem}
+        />
+      )}
     </>
   );
 };

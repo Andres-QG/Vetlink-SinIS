@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState } from "react";
+import { useState, forwardRef } from "react";
 import {
   TextField,
   Select,
@@ -11,6 +11,7 @@ import {
   Stack,
   IconButton,
   InputAdornment,
+  CircularProgress,
 } from "@mui/material";
 import {
   Close as CloseIcon,
@@ -22,7 +23,7 @@ import {
   LocalOffer as BreedIcon,
 } from "@mui/icons-material";
 
-const CreatePet = ({ handleClose, onSuccess }) => {
+const AddPet = forwardRef(({ handleClose, onSuccess }, ref) => {
   const [formData, setFormData] = useState({
     usuario_cliente: "",
     nombre: "",
@@ -65,8 +66,11 @@ const CreatePet = ({ handleClose, onSuccess }) => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const [loading, setLoading] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     if (!validateForm()) {
       return;
     }
@@ -114,6 +118,8 @@ const CreatePet = ({ handleClose, onSuccess }) => {
         onSuccess("Error desconocido. Inténtelo más tarde.", "error");
       }
     }
+
+    setLoading(false);
   };
 
   const handleClear = () => {
@@ -131,6 +137,7 @@ const CreatePet = ({ handleClose, onSuccess }) => {
 
   return (
     <Box
+      ref={ref}
       sx={{
         p: 3,
         borderRadius: 2,
@@ -292,11 +299,21 @@ const CreatePet = ({ handleClose, onSuccess }) => {
           </Select>
         </FormControl>
 
-        <Stack direction="row" spacing={2}>
+        <Stack
+          direction="row"
+          spacing={2}
+          sx={{
+            width: "100%",
+            justifyContent: "center",
+            alignItems: "center",
+            mx: "auto",
+          }}
+        >
           <Button
             variant="outlined"
             onClick={handleClear}
-            size="small"
+            fullWidth
+            size="medium"
             sx={{
               borderColor: "#00308F",
               color: "#00308F",
@@ -305,20 +322,25 @@ const CreatePet = ({ handleClose, onSuccess }) => {
             Limpiar
           </Button>
           <Button
-            type="submit"
             variant="contained"
-            size="small"
+            onClick={handleSubmit}
+            fullWidth
+            size="medium"
+            disabled={loading}
+            startIcon={loading && <CircularProgress size={20} />}
             sx={{
               backgroundColor: "#00308F",
-              "&:hover": { backgroundColor: "#00246d" },
+              "&:hover": {
+                backgroundColor: "#00246d",
+              },
             }}
           >
-            Agregar Mascota
+            {loading ? "Agregando..." : "Agregar Clinica"}
           </Button>
         </Stack>
       </form>
     </Box>
   );
-};
+});
 
-export default CreatePet;
+export default AddPet;

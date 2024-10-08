@@ -483,6 +483,57 @@ def delete_pet(request, mascota_id):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(['PUT'])
+def update_pet(request, mascota_id):
+    try:
+        # Obtener los datos de la solicitud
+        data = request.data
+
+        # Obtener el usuario enviado en la solicitud
+        usuario = data.get('usuario_cliente')
+
+        # Verificar la existencia del usuario cliente
+        try:
+            usuario_cliente = Usuarios.objects.get(usuario=usuario)
+        except Usuarios.DoesNotExist:
+            return Response({'error': 'Usuario no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Obtener la mascota a modificar, asegurándose de usar "mascota_id" en minúsculas
+        try:
+            mascota = Mascotas.objects.get(mascota_id=mascota_id)  # Aquí está el cambio
+        except Mascotas.DoesNotExist:
+            return Response({'error': 'Mascota no encontrada.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Verificar si se envía la edad y convertirla en fecha de nacimiento aproximada si es necesario
+        edad = data.get('edad', None)
+        if edad:
+            try:
+                # Convertir la edad en fecha de nacimiento aproximada
+                edad = int(edad)
+                current_year = datetime.now().year
+                birth_year = current_year - edad
+                data['fecha_nacimiento'] = f"{birth_year}-01-01"
+            except ValueError:
+                return Response({'error': 'La edad debe ser un número entero.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Asignar la instancia del usuario relacionado al campo usuario_cliente
+        data['usuario_cliente'] = usuario_cliente.usuario
+
+        # Serializar los datos con la instancia de la mascota existente
+        serializer = MascotaSerializer(mascota, data=data)
+
+        # Validar y guardar los datos actualizados
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
 
 @api_view(['GET'])
 def consult_mascotas(request):

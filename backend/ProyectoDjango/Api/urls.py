@@ -20,6 +20,7 @@ urlpatterns = [
     path('consult-mascotas/', consult_mascotas, name='consult_mascotas'),
     path('create-pet/', create_pet, name='create_pet'),
     path('delete-pet/<int:mascota_id>/', delete_pet, name='delete_pet'),
+    path('update-pet/<int:mascota_id>/', update_pet, name='update_pet'),
     path('consult-admin/', consult_admin, name='consult_admin'),
     path('add-admin/', add_admin, name='add_admin'),
     path('update-admin/<str:usuario>/', update_admin, name='update_admin'),

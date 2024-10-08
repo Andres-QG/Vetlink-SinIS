@@ -3,7 +3,8 @@ import { CircularProgress, Button, Modal, Alert, Stack } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import GeneralTable from "../components/Consult/GeneralTable";
 import SearchBar from "../components/Consult/GeneralizedSearchBar";
-import CreatePet from "./CreatePet";
+import AddPet from "./AddPet";
+import ModifyPet from "./ModifyPet";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import axios from "axios";
@@ -87,6 +88,11 @@ const ConsultPets = () => {
     fetchPets();
   };
 
+  const handleModification = (message, severity) => {
+    setAlert({ open: true, message, severity });
+    fetchPets();
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -95,7 +101,7 @@ const ConsultPets = () => {
         {alert.open && (
           <Stack sx={{ width: "100%", mb: 2 }} spacing={2}>
             <Alert severity={alert.severity} onClose={handleCloseAlert}>
-              {alert.message}
+              {alert.message || "Ocurrió un error desconocido."}
             </Alert>
           </Stack>
         )}
@@ -141,10 +147,11 @@ const ConsultPets = () => {
             onPageChange={setPage}
             deletionUrl="http://localhost:8000/api/delete-pet"
             pkCol="mascota_id"
-            onModModal={() => {}}
             onDelete={handleDelete}
             visualIdentifierCol="nombre"
             fetchData={fetchPets}
+            OnModModal={ModifyPet}
+            onModify={handleModification}
           />
         )}
         {/* Modal agregar */}
@@ -157,10 +164,7 @@ const ConsultPets = () => {
             justifyContent: "center",
           }}
         >
-          <CreatePet
-            handleClose={handleClose}
-            onSuccess={handleAddPetSuccess}
-          />
+          <AddPet handleClose={handleClose} onSuccess={handleAddPetSuccess} />
         </Modal>
       </div>
       <Footer />
