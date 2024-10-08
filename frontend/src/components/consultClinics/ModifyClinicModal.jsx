@@ -110,7 +110,6 @@ const ModifyClinicModal = ({ open, onClose, onSuccess, selectedClinic = undefine
           `http://localhost:8000/api/update-clinic/${formData.clinica}/`,
           formData
         );
-        setOpen(false); // Cierra el modal al modificar exitosamente
       } catch (error) {
         console.log(error)
       }
