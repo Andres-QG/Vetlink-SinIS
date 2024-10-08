@@ -70,11 +70,11 @@ const AddPet = forwardRef(({ handleClose, onSuccess }, ref) => {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
     if (!validateForm()) {
       return;
     }
+    e.preventDefault();
+    setLoading(true);
 
     const formDataToSend = {
       usuario_cliente: formData.usuario_cliente,
