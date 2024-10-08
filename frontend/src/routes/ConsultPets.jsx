@@ -3,8 +3,8 @@ import { CircularProgress, Button, Modal, Alert, Stack } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import GeneralTable from "../components/Consult/GeneralTable";
 import SearchBar from "../components/Consult/GeneralizedSearchBar";
-import AddPet from "./AddPet";
-import ModifyPet from "./ModifyPet";
+import AddPet from "../components/consultPets/AddPet";
+import ModifyPet from "../components/consultPets/ModifyPet";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import axios from "axios";
@@ -73,24 +73,24 @@ const ConsultPets = () => {
     setPage(1);
   };
 
-  const handleAddPetSuccess = (message, severity) => {
+  const handleAddPetSuccess = async (message, severity) => {
     setAlert({ open: true, message, severity });
     handleClose();
-    fetchPets();
+    await fetchPets();
   };
 
   const handleCloseAlert = () => {
     setAlert({ open: false, message: "", severity: "" });
   };
 
-  const handleDelete = (message, severity) => {
+  const handleDelete = async (message, severity) => {
     setAlert({ open: true, message, severity });
-    fetchPets();
+    await fetchPets();
   };
 
-  const handleModification = (message, severity) => {
+  const handleModification = async (message, severity) => {
     setAlert({ open: true, message, severity });
-    fetchPets();
+    await fetchPets();
   };
 
   return (
