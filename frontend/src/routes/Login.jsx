@@ -96,6 +96,7 @@ function Login() {
             setLoading(false)
             if (response.data.rol) {
                 setRole(response.data.rol)
+                document.cookie = "active=true; path=/;";
                 navigate(`/${redirectItems.get(response.data.rol)}`);
             } else {
                 setRole(0)
@@ -176,16 +177,10 @@ function Login() {
                                                 ),
                                             }}
                                         />
-
-                                        {/* Olvidaste tu contraseña */}
-                                        <a href="reset" className="pt-5 font-bold text-primary hover:underline">
-                                            ¿Olvidaste tu contraseña?
-                                        </a>
-
                                         {/* Boton iniciar sesion */}
                                         <Button
                                             variant="contained"
-                                            onClick={handleSubmit}
+                                            type="submit"
                                             sx={{
                                                 minWidth: "300px",
                                                 minHeight: "45px",
@@ -196,8 +191,11 @@ function Login() {
                                         >
                                             Iniciar Sesión
                                         </Button>
-                                        
                                     </form>
+                                    {/* Olvidaste tu contraseña */}
+                                    <a href="reset" className="pt-5 font-bold text-primary hover:underline">
+                                        ¿Olvidaste tu contraseña?
+                                    </a>
 
                                     {/* Registro */}
                                     <p className="pt-5 text-elemsec font-bold opacity-70">¿No tienes un usuario?</p>
