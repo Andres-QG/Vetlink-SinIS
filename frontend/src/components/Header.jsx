@@ -23,6 +23,7 @@ function Header() {
   const items = [
     { text: "Consultar clínicas", href: "/owner", role: [1, 2] },
     { text: "Consultar clientes", href: "/consultclients", role: [1] },
+    { text: "Consultar veterinarios", href: "/consultvets", role: [1] },
   ];
 
   const updateMenu = () => {
