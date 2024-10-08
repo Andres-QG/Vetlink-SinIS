@@ -7,6 +7,7 @@ import Footer from "../components/Footer";
 import GeneralizedSearchBar from "../components/Consult/GeneralizedSearchBar";
 import AddVetModal from "../components/ConsultVets/AddVetModal";
 import VetsTable from "../components/ConsultVets/VetsTable";
+import EditVetModal from "../components/ConsultVets/EditVetModal";
 import Swal from "sweetalert2";
 
 const ConsultVets = () => {
@@ -17,7 +18,9 @@ const ConsultVets = () => {
   const [order, setOrder] = useState("asc");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [openModal, setOpenModal] = useState(false);
+  const [openAddModal, setOpenAddModal] = useState(false);
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [selectedVet, setSelectedVet] = useState(null); // Estado para el veterinario seleccionado
   const [clinics, setClinics] = useState([]);
   const [specialties, setSpecialties] = useState([]);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -82,11 +85,7 @@ const ConsultVets = () => {
         "http://localhost:8000/api/add-vet/",
         vetData
       );
-      Swal.fire({
-        title: "Exito",
-        text: "Veterinario agregado correctamente",
-        icon: "success",
-      });
+      setSnackbarMessage("Veterinario agregado exitosamente.");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
       fetchVets();
@@ -103,6 +102,11 @@ const ConsultVets = () => {
     setSearchColumn(column);
     setOrder(sortOrder);
     setPage(1);
+  };
+
+  const handleEditVet = (vet) => {
+    setSelectedVet(vet);
+    setOpenEditModal(true);
   };
 
   const columns = [
@@ -137,7 +141,7 @@ const ConsultVets = () => {
             <Button
               variant="contained"
               startIcon={<Add />}
-              onClick={() => setOpenModal(true)}
+              onClick={() => setOpenAddModal(true)}
               sx={{
                 backgroundColor: "#00308F",
                 "&:hover": { backgroundColor: "#00246d" },
@@ -168,20 +172,25 @@ const ConsultVets = () => {
             page={page}
             rowsPerPage={10}
             onPageChange={setPage}
-            deletionUrl="http://localhost:8000/api/delete_vet"
-            pkCol="id"
             fetchData={fetchVets}
+            onEditVet={handleEditVet} // Pasar la función de edición a VetsTable
           />
         )}
       </div>
       <Footer />
 
       <AddVetModal
-        open={openModal}
-        onClose={() => setOpenModal(false)}
+        open={openAddModal}
+        onClose={() => setOpenAddModal(false)}
         onSubmit={handleAddVet}
         clinics={clinics}
         specialties={specialties}
+      />
+
+      <EditVetModal
+        open={openEditModal}
+        onClose={() => setOpenEditModal(false)}
+        vet={selectedVet}
       />
 
       <Snackbar

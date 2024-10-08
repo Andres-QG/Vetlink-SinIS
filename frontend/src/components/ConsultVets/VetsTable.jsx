@@ -1,8 +1,5 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
 import {
-  IconButton,
-  TablePagination,
   Table,
   TableBody,
   TableCell,
@@ -10,13 +7,14 @@ import {
   TableHead,
   TableRow,
   Paper,
+  IconButton,
+  TablePagination,
   Modal,
   Box,
   Typography,
   Button,
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
-import Swal from "sweetalert2";
 
 const VetsTable = ({
   data,
@@ -26,12 +24,13 @@ const VetsTable = ({
   rowsPerPage,
   onPageChange,
   fetchData,
+  onEditVet, // Recibir la función de edición
 }) => {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 905);
+      setIsMobile(window.innerWidth <= 768);
     };
 
     handleResize();
@@ -65,27 +64,13 @@ const VetsTable = ({
     if (!selectedItem) return;
 
     try {
-      const url = `http://localhost:8000/api/delete-client/${selectedItem.usuario}/`;
-      await axios.delete(url);
-      Swal.fire({
-        title: "Exito",
-        text: "Veterinario eliminado correctamente",
-        icon: "success",
-      });
+      await axios.delete(
+        `http://localhost:8000/api/delete_vet/${selectedItem.id}/`
+      );
+      fetchData();
     } catch (error) {
-      if (error.response) {
-        alert(
-          `Error: ${error.response.status} - ${
-            error.response.data.error || error.response.data.detail
-          }`
-        );
-      } else if (error.request) {
-        alert("No se recibió respuesta del servidor. Verifica tu conexión.");
-      } else {
-        alert(`Error desconocido: ${error.message}`);
-      }
+      console.error("Failed to delete vet:", error);
     }
-    fetchData();
   };
 
   return (
@@ -106,7 +91,7 @@ const VetsTable = ({
                 </div>
               ))}
               <div>
-                <IconButton onClick={() => console.log("Edit clicked")}>
+                <IconButton onClick={() => onEditVet(item)}>
                   <Edit />
                 </IconButton>
                 <IconButton onClick={() => handleOpenModal(item)}>
@@ -141,7 +126,7 @@ const VetsTable = ({
                     </TableCell>
                   ))}
                   <TableCell key={`actions-${item.id}`}>
-                    <IconButton onClick={() => console.log("Edit clicked")}>
+                    <IconButton onClick={() => onEditVet(item)}>
                       <Edit />
                     </IconButton>
                     <IconButton onClick={() => handleOpenModal(item)}>
@@ -176,7 +161,7 @@ const VetsTable = ({
         showLastButton={true}
         getItemAriaLabel={getItemAriaLabel}
       />
-      {/*Modal de confirmación de eliminación*/}
+
       <Modal open={openModal} onClose={handleCloseModal}>
         <Box
           className="bg-white p-6 rounded-lg shadow-lg"
