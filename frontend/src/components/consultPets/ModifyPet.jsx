@@ -43,12 +43,20 @@ const ModifyPet = ({
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
+  function calcularEdad(fechaNacimiento) {
+    const fechaActual = new Date(); // Fecha actual
+    const anoActual = fechaActual.getFullYear(); // Año actual
+    const anoNacimiento = new Date(fechaNacimiento).getFullYear(); // Año de nacimiento
+
+    return anoActual - anoNacimiento;
+  }
+
   useEffect(() => {
     if (selectedItem) {
       setFormData({
         usuario_cliente: selectedItem.usuario_cliente,
         nombre: selectedItem.nombre,
-        edad: selectedItem.edad,
+        edad: calcularEdad(selectedItem.fecha_nacimiento),
         especie: selectedItem.especie,
         raza: selectedItem.raza,
         sexo: selectedItem.sexo,
@@ -86,11 +94,14 @@ const ModifyPet = ({
     if (!formData.nombre) {
       newErrors.nombre = "Nombre es obligatorio";
     }
-    if (!formData.edad) {
-      newErrors.edad = "Edad es obligatoria";
-    }
     if (!formData.especie) {
-      newErrors.especie = "Especie es obligatoria";
+      newErrors.especie = "Especie es obligatorio";
+    }
+    if (!formData.sexo) {
+      newErrors.sexo = "Sexo es obligatorio";
+    }
+    if (!formData.edad || isNaN(formData.edad) || formData.edad < 0) {
+      newErrors.edad = "Por favor, introduzca una edad válida";
     }
 
     setErrors(newErrors);
@@ -189,6 +200,7 @@ const ModifyPet = ({
           alignItems="center"
           mb={2}
         >
+          <h2>Modificar Mascota</h2>
           <IconButton onClick={handleClose}>
             <CloseIcon />
           </IconButton>
@@ -309,32 +321,32 @@ const ModifyPet = ({
             </Box>
           )}
 
-          <Button
-            variant="contained"
-            onClick={handleSubmit}
-            fullWidth
-            size="medium"
-            disabled={loading}
-            startIcon={loading && <CircularProgress size={20} />}
-            sx={{
-              backgroundColor: "#00308F",
-              "&:hover": {
-                backgroundColor: "#00246d",
-              },
-            }}
-          >
-            {loading ? "Modificando..." : "Modificar Mascota"}
-          </Button>
-
-          {/* Botón para limpiar los campos del formulario */}
-          <Button
-            variant="outlined"
-            onClick={clearForm}
-            fullWidth
-            size="medium"
-          >
-            Limpiar
-          </Button>
+          <Stack direction="row" spacing={2}>
+            <Button
+              variant="outlined"
+              onClick={clearForm}
+              fullWidth
+              size="medium"
+            >
+              Limpiar
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleSubmit}
+              fullWidth
+              size="medium"
+              disabled={loading}
+              startIcon={loading && <CircularProgress size={20} />}
+              sx={{
+                backgroundColor: "#00308F",
+                "&:hover": {
+                  backgroundColor: "#00246d",
+                },
+              }}
+            >
+              {loading ? "Modificando..." : "Modificar Mascota"}
+            </Button>
+          </Stack>
         </Stack>
       </Box>
     </Modal>
