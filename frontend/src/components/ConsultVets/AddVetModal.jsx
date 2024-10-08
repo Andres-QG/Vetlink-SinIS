@@ -350,7 +350,7 @@ const AddVetModal = ({ open, onClose, onSubmit, clinics, specialties }) => {
                   backgroundColor: "#00246d",
                 },
               }}>
-              {loading ? "Guardando..." : "Guardar"}
+              {loading ? "AGREGANDO" : "AGREGAR VETEINARIO"}
             </Button>
           </Stack>
         </form>
