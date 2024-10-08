@@ -21,10 +21,6 @@ function Owner() {
     const [order, setOrder] = useState("asc");
     const rowsPerPage = 10;
     const [open, setOpen] = useState(false);
-    const [openMod, setOpenMod] = useState(false);
-    const [snackbarMessage, setSnackbarMessage] = useState(""); // Estado para el mensaje de éxito/error
-    const [snackbarOpen, setSnackbarOpen] = useState(false); // Controla el estado del Snackbar
-    const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // Controla si es éxito o error
 
     const columns = [
         { field: "clinica", headerName: "Clinica" },
@@ -80,10 +76,6 @@ function Owner() {
         setAlert({ open: false, message: "", severity: "" });
     };
 
-    const handleClose = () => {
-        setOpen(false)
-    };
-
     const handleAdd = async (message, severity) => {
         setAlert({ open: true, message, severity });
         await fetchClinics();
@@ -101,9 +93,9 @@ function Owner() {
 
     return (
         <>
-            <div className="flex-grow flex-col min-h-screen">
+            <div className="flex flex-col min-h-screen">
                 <Header />
-                <div className="flex-grow px-4 md:mt-6 md:mb-6 h-[90vh]">
+                <div className="flex-grow px-4 md:mt-6 md:mb-6">
                     {alert.open && (
                         <Stack sx={{ width: "100%", mb: 2 }} spacing={2}>
                             <Alert severity={alert.severity} onClose={handleCloseAlert}>
@@ -153,8 +145,8 @@ function Owner() {
                             OnModModal={ModifyClinicModal}
                             onDelete={handleDelete}
                             onModify={handleModification}
-                            onPageChange={setPage}>
-                        </GeneralTable>
+                            onPageChange={setPage}
+                        />
                     )}
                 </div>
                 <AddClinicaModal
@@ -162,8 +154,9 @@ function Owner() {
                     onClose={() => setOpen(false)}
                     onSuccess={handleAdd}
                 />
+                {/* Footer at the bottom */}
+                <Footer />
             </div>
-            <Footer/>
         </>
     )
 
