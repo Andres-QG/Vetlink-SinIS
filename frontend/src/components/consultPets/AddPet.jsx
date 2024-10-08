@@ -24,6 +24,7 @@ import {
 } from "@mui/icons-material";
 
 const AddPet = forwardRef(({ handleClose, onSuccess }, ref) => {
+  AddPet.displayName = "AddPet";
   const [formData, setFormData] = useState({
     usuario_cliente: "",
     nombre: "",
@@ -58,7 +59,7 @@ const AddPet = forwardRef(({ handleClose, onSuccess }, ref) => {
     if (!formData.sexo) {
       newErrors.sexo = "Sexo es obligatorio";
     }
-    if (!formData.edad || isNaN(formData.edad) || formData.edad <= 0) {
+    if (!formData.edad || isNaN(formData.edad) || formData.edad < 0) {
       newErrors.edad = "Por favor, introduzca una edad válida";
     }
 
@@ -69,11 +70,11 @@ const AddPet = forwardRef(({ handleClose, onSuccess }, ref) => {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
     if (!validateForm()) {
       return;
     }
+    e.preventDefault();
+    setLoading(true);
 
     const formDataToSend = {
       usuario_cliente: formData.usuario_cliente,
@@ -228,13 +229,11 @@ const AddPet = forwardRef(({ handleClose, onSuccess }, ref) => {
             value={formData.especie}
             onChange={handleChange}
             error={!!errors.especie}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <CategoryIcon /> {/* Ícono de Especie */}
-                </InputAdornment>
-              ),
-            }}
+            startAdornment={
+              <InputAdornment position="start">
+                <CategoryIcon />
+              </InputAdornment>
+            }
           >
             <MenuItem value="perro">Perro</MenuItem>
             <MenuItem value="gato">Gato</MenuItem>
@@ -250,13 +249,11 @@ const AddPet = forwardRef(({ handleClose, onSuccess }, ref) => {
             name="otraEspecie"
             value={formData.otraEspecie}
             onChange={handleChange}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <CategoryIcon /> {/* Ícono de Especie */}
-                </InputAdornment>
-              ),
-            }}
+            startAdornment={
+              <InputAdornment position="start">
+                <CategoryIcon />
+              </InputAdornment>
+            }
             sx={{ mb: 2 }}
           />
         )}
@@ -286,13 +283,11 @@ const AddPet = forwardRef(({ handleClose, onSuccess }, ref) => {
             value={formData.sexo}
             onChange={handleChange}
             error={!!errors.sexo}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <TransgenderIcon /> {/* Ícono de Sexo */}
-                </InputAdornment>
-              ),
-            }}
+            startAdornment={
+              <InputAdornment position="start">
+                <TransgenderIcon />
+              </InputAdornment>
+            }
           >
             <MenuItem value="M">Macho</MenuItem>
             <MenuItem value="H">Hembra</MenuItem>
