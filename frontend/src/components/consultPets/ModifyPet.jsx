@@ -94,14 +94,26 @@ const ModifyPet = ({
     if (!formData.nombre) {
       newErrors.nombre = "Nombre es obligatorio";
     }
-    if (!formData.especie) {
-      newErrors.especie = "Especie es obligatorio";
+    if (!formData.especie || !/^[a-zA-Z]+$/.test(formData.especie)) {
+      newErrors.especie = "Especie solo puede contener letras";
+    }
+    if (!/^[a-zA-Z]+$/.test(formData.raza)) {
+      newErrors.raza = "Raza solo puede contener letras";
     }
     if (!formData.sexo) {
       newErrors.sexo = "Sexo es obligatorio";
     }
-    if (!formData.edad || isNaN(formData.edad) || formData.edad < 0) {
+    if (
+      !formData.edad ||
+      isNaN(formData.edad) ||
+      formData.edad < 0 ||
+      formData.edad > 100
+    ) {
       newErrors.edad = "Por favor, introduzca una edad válida";
+    }
+
+    if (formData.especie === "otro" && !formData.otraEspecie) {
+      newErrors.otraEspecie = "Por favor, introduzca la otra especie";
     }
 
     setErrors(newErrors);
