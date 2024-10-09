@@ -85,7 +85,7 @@ function Header() {
 
   return (
     <>
-      <header className="z-10 w-full py-4 bg-bgsecondary text-primary font-montserrat">
+      <header className="z-20 w-full py-4 bg-bgsecondary text-primary font-montserrat">
         <div className="flex flex-wrap items-center justify-between w-full px-4 mx-auto">
           <div
             className="left-0 flex transition-all duration-300 ease-in-out hover:scale-105 text-secondary"
