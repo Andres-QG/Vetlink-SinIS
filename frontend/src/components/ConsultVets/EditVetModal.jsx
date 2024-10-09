@@ -341,6 +341,9 @@ const EditVetModal = ({
               startAdornment: (
                 <InputAdornment position="start">
                   <PhoneIcon />
+                  <Box component="span" sx={{ ml: 1 }}>
+                    +506
+                  </Box>
                 </InputAdornment>
               ),
             }}
