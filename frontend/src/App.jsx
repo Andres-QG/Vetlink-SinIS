@@ -7,7 +7,6 @@ import Services from "./routes/Services";
 import ConsultClients from "./routes/ConsultClients";
 import ConsultVets from "./routes/ConsultVets";
 import ConsultPets from "./routes/ConsultPets";
-import ConsultClinics from "./routes/ConsultClinics";
 import {
   PassReset,
   CheckCode,
@@ -27,13 +26,14 @@ function App() {
         <Router>
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/services" element={<Services />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/reset" element={<PassReset />} />
             <Route
               path="/check-reset"
               element={
-                <ProtectedRoute requiredRole="reset">
+                <ProtectedRoute requiredRoles={[5]}>
                   <CheckCode />
                 </ProtectedRoute>
               }
@@ -41,7 +41,7 @@ function App() {
             <Route
               path="/change-pass"
               element={
-                <ProtectedRoute requiredRole="reset">
+                <ProtectedRoute requiredRoles={[5]}>
                   <ChangePass />
                 </ProtectedRoute>
               }
@@ -49,28 +49,54 @@ function App() {
             <Route
               path="/pass-success"
               element={
-                <ProtectedRoute requiredRole="reset">
+                <ProtectedRoute requiredRoles={[5]}>
                   <PassSuccess />
                 </ProtectedRoute>
               }
             />
-            <Route path="/services" element={<Services />} />
-            <Route path="/consultclients" element={<ConsultClients />} />
-            <Route path="/consultAdmins" element={<ConsultAdmins />} />
-            <Route path="/error" element={<Error />} />
-            <Route path="*" element={<Error />} />
-            <Route path="/consultpets" element={<ConsultPets />} />
-            <Route path="/consultvets" element={<ConsultVets />} />
-            <Route path="/consultclinics" element={<ConsultClinics />} />
 
+            <Route
+              path="/consultclients"
+              element={
+                <ProtectedRoute requiredRoles={[1,2]}>
+                  <ConsultClients />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/owner"
               element={
-                <ProtectedRoute requiredRole="owner">
+                <ProtectedRoute requiredRoles={[1]}>
                   <Owner />
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/consultpets"
+              element={
+                <ProtectedRoute requiredRoles={[1,2,3]}>
+                  <ConsultPets/>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/consultvets"
+              element={
+                <ProtectedRoute requiredRoles={[1]}>
+                  <ConsultVets/>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/consultAdmins"
+              element={
+                <ProtectedRoute requiredRoles={[1,2]}>
+                  <ConsultAdmins/>
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/error" element={<Error />} />
+            <Route path="*" element={<Error />} />
           </Routes>
         </Router>
       </AuthProvider>

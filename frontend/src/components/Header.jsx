@@ -11,7 +11,7 @@ import Dropdown from "./Dropdown";
 function Header() {
   const navigate = useNavigate();
   const isActive = document.cookie.includes('true');
-  const { role, fetchUserRole, setRole } = useContext(AuthContext);
+  const { role } = useContext(AuthContext);
 
 
   const [burger_class, setBurgerClass] = useState("burger-bar unclicked");
@@ -22,8 +22,10 @@ function Header() {
 
   const items = [
     { text: "Consultar clínicas", href: "/owner", role: [1, 2] },
-    { text: "Consultar clientes", href: "/consultclients", role: [1] },
+    { text: "Consultar clientes", href: "/consultclients", role: [1,2] },
+    { text: "Consultar mascotas", href: "/consultpets", role: [1,2,3] },
     { text: "Consultar veterinarios", href: "/consultvets", role: [1] },
+    { text: "Consultar administradores", href: "/consultAdmins", role: [1] },
   ];
 
   const updateMenu = () => {

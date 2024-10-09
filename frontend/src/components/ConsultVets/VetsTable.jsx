@@ -60,8 +60,6 @@ const VetsTable = ({
     setSelectedItem(null);
   };
 
-  console.log(selectedItem);
-
   const handleDelete = async () => {
     handleCloseModal();
     if (!selectedItem) return;
@@ -146,24 +144,29 @@ const VetsTable = ({
                 </TableRow>
               )}
             </TableBody>
+            <TableRow>
+              <TableCell
+                colSpan={columns.length + 1}
+                sx={{ borderBottom: "none", padding: "8px 0" }}>
+                <TablePagination
+                  component="div"
+                  count={totalCount}
+                  rowsPerPage={rowsPerPage}
+                  page={page - 1}
+                  onPageChange={(event, newPage) => onPageChange(newPage + 1)}
+                  labelDisplayedRows={({ from, to, count }) =>
+                    `${from}-${to} de ${count !== -1 ? count : `más de ${to}`}`
+                  }
+                  rowsPerPageOptions={[]} // Eliminar la opción de cambiar el número de filas por página
+                  showFirstButton={true}
+                  showLastButton={true}
+                  getItemAriaLabel={getItemAriaLabel}
+                />
+              </TableCell>
+            </TableRow>
           </Table>
         )}
       </TableContainer>
-
-      <TablePagination
-        component="div"
-        count={totalCount}
-        rowsPerPage={rowsPerPage}
-        page={page - 1}
-        onPageChange={(event, newPage) => onPageChange(newPage + 1)}
-        labelDisplayedRows={({ from, to, count }) =>
-          `${from}-${to} de ${count !== -1 ? count : `más de ${to}`}`
-        }
-        rowsPerPageOptions={[]}
-        showFirstButton={true}
-        showLastButton={true}
-        getItemAriaLabel={getItemAriaLabel}
-      />
 
       <Modal open={openModal} onClose={handleCloseModal}>
         <Box
