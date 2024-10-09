@@ -14,6 +14,9 @@ import {
   Box,
   Typography,
   Button,
+  Card,
+  CardContent,
+  CardActions,
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 
@@ -78,29 +81,41 @@ const VetsTable = ({
     <>
       <TableContainer component={Paper}>
         {isMobile ? (
-          data.map((item) => (
-            <div
-              key={item.id}
-              style={{
-                border: "1px solid #ddd",
-                marginBottom: "10px",
-                padding: "10px",
-              }}>
-              {columns.map((col) => (
-                <div key={col.field} style={{ marginBottom: "5px" }}>
-                  <strong>{col.headerName} :</strong> {item[col.field]}
-                </div>
-              ))}
-              <div>
-                <IconButton onClick={() => onEditVet(item)}>
-                  <Edit />
-                </IconButton>
-                <IconButton onClick={() => handleOpenModal(item)}>
-                  <Delete />
-                </IconButton>
-              </div>
-            </div>
-          ))
+          <>
+            {data.map((item) => (
+              <Card key={item.id} style={{ marginBottom: "10px" }}>
+                <CardContent>
+                  {columns.map((col) => (
+                    <Typography key={col.field} variant="body2" component="p">
+                      <strong>{col.headerName}:</strong> {item[col.field]}
+                    </Typography>
+                  ))}
+                </CardContent>
+                <CardActions>
+                  <IconButton onClick={() => onEditVet(item)}>
+                    <Edit />
+                  </IconButton>
+                  <IconButton onClick={() => handleOpenModal(item)}>
+                    <Delete />
+                  </IconButton>
+                </CardActions>
+              </Card>
+            ))}
+            <TablePagination
+              component="div"
+              count={totalCount}
+              rowsPerPage={rowsPerPage}
+              page={page - 1}
+              onPageChange={(event, newPage) => onPageChange(newPage + 1)}
+              labelDisplayedRows={({ from, to, count }) =>
+                `${from}-${to} de ${count !== -1 ? count : `más de ${to}`}`
+              }
+              rowsPerPageOptions={[]} // Eliminar la opción de cambiar el número de filas por página
+              showFirstButton={true}
+              showLastButton={true}
+              getItemAriaLabel={getItemAriaLabel}
+            />
+          </>
         ) : (
           <Table>
             <TableHead>
