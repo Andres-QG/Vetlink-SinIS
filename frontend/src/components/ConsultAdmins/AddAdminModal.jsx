@@ -103,6 +103,7 @@ const AddAdminModal = ({ open, onClose, fetchAdmins, showSnackbar }) => {
       fetchAdmins();
       onClose();
     } catch (error) {
+      console.log(error);
       const backendError = error.response?.data?.error;
       showSnackbar(backendError || "Error al agregar administrador.", "error");
     } finally {

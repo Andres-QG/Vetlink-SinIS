@@ -127,7 +127,7 @@ const ConsultAdmins = () => {
       <AddAdminModal
         open={openModal}
         onClose={() => setOpenModal(false)}
-        fetchData={fetchAdmins} // Cambiado a fetchData
+        fetchAdmins={fetchAdmins} // Cambiado a fetchData
         showSnackbar={showSnackbar}
       />
 
