@@ -58,7 +58,7 @@ function App() {
             <Route
               path="/consultclients"
               element={
-                <ProtectedRoute requiredRoles={[1,2]}>
+                <ProtectedRoute requiredRoles={[1, 2, 3]}>
                   <ConsultClients />
                 </ProtectedRoute>
               }
@@ -74,24 +74,24 @@ function App() {
             <Route
               path="/consultpets"
               element={
-                <ProtectedRoute requiredRoles={[1,2,3]}>
-                  <ConsultPets/>
+                <ProtectedRoute requiredRoles={[1, 2, 3]}>
+                  <ConsultPets />
                 </ProtectedRoute>
               }
             />
             <Route
               path="/consultvets"
               element={
-                <ProtectedRoute requiredRoles={[1]}>
-                  <ConsultVets/>
+                <ProtectedRoute requiredRoles={[1, 2]}>
+                  <ConsultVets />
                 </ProtectedRoute>
               }
             />
             <Route
               path="/consultAdmins"
               element={
-                <ProtectedRoute requiredRoles={[1,2]}>
-                  <ConsultAdmins/>
+                <ProtectedRoute requiredRoles={[1]}>
+                  <ConsultAdmins />
                 </ProtectedRoute>
               }
             />

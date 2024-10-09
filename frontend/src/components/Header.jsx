@@ -1,18 +1,16 @@
-import React, { useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import React, { useContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
-import axios from 'axios';
+import axios from "axios";
 import Button from "./Button";
-import Loading from '../components/Loading';
+import Loading from "../components/Loading";
 import Dropdown from "./Dropdown";
-
 
 function Header() {
   const navigate = useNavigate();
-  const isActive = document.cookie.includes('true');
+  const isActive = document.cookie.includes("true");
   const { role } = useContext(AuthContext);
-
 
   const [burger_class, setBurgerClass] = useState("burger-bar unclicked");
   const [menu_class, setMenuClass] = useState("menu_hidden");
@@ -21,10 +19,10 @@ function Header() {
   const [loadText, setLoadText] = useState("Cerrando sesión");
 
   const items = [
-    { text: "Consultar clínicas", href: "/owner", role: [1, 2] },
-    { text: "Consultar clientes", href: "/consultclients", role: [1,2] },
-    { text: "Consultar mascotas", href: "/consultpets", role: [1,2,3] },
-    { text: "Consultar veterinarios", href: "/consultvets", role: [1] },
+    { text: "Consultar clínicas", href: "/owner", role: [1] },
+    { text: "Consultar clientes", href: "/consultclients", role: [1, 2, 3] },
+    { text: "Consultar mascotas", href: "/consultpets", role: [1, 2, 3] },
+    { text: "Consultar veterinarios", href: "/consultvets", role: [1, 2] },
     { text: "Consultar administradores", href: "/consultAdmins", role: [1] },
   ];
 
@@ -42,51 +40,55 @@ function Header() {
 
   async function logOut() {
     try {
-      setLoadText("Cerrando sesión")
-      setLoading(true)
-      await axios.post('http://localhost:8000/api/log-out/', {}, { withCredentials: true });
+      setLoadText("Cerrando sesión");
+      setLoading(true);
+      await axios.post(
+        "http://localhost:8000/api/log-out/",
+        {},
+        { withCredentials: true }
+      );
       document.cookie = "active=false;path=/;";
-      setLoading(false)
+      setLoading(false);
       navigate("/login");
     } catch (error) {
-      console.error('Error logging out:', error);
+      console.error("Error logging out:", error);
     }
   }
 
   useEffect(() => {
-    if (!isActive && !document.cookie.includes('false')) {
+    if (!isActive && !document.cookie.includes("false")) {
       logOut();
     }
   }, [document.cookie]);
 
   const menuItems = isActive
     ? [
-      { text: "Sobre nosotros", href: "/" },
-      { text: "Servicios", href: "services" },
-      { text: "Contacto", href: "#" },
-      { text: "Cerrar Sesión", onClick: logOut },
-    ]
+        { text: "Sobre nosotros", href: "/" },
+        { text: "Servicios", href: "services" },
+        { text: "Contacto", href: "#" },
+        { text: "Cerrar Sesión", onClick: logOut },
+      ]
     : [
-      { text: "Sobre nosotros", href: "/" },
-      { text: "Servicios", href: "services" },
-      { text: "Contacto", href: "#" },
-      { text: "Iniciar Sesión", href: "login" },
-      { text: "Registrarme", href: "signup" },
-    ];
+        { text: "Sobre nosotros", href: "/" },
+        { text: "Servicios", href: "services" },
+        { text: "Contacto", href: "#" },
+        { text: "Iniciar Sesión", href: "login" },
+        { text: "Registrarme", href: "signup" },
+      ];
 
-  const additionalItems = items.filter(item => item.role.includes(role));
+  const additionalItems = items.filter((item) => item.role.includes(role));
   menuItems.splice(3, 0, ...additionalItems);
 
   if (loading) {
-    return <Loading text={loadText} />
+    return <Loading text={loadText} />;
   }
 
   return (
     <>
-      <header className="bg-bgsecondary text-primary py-4 z-10 w-full font-montserrat">
-        <div className="w-full mx-auto flex flex-wrap justify-between items-center px-4">
+      <header className="z-10 w-full py-4 bg-bgsecondary text-primary font-montserrat">
+        <div className="flex flex-wrap items-center justify-between w-full px-4 mx-auto">
           <div
-            className="flex hover:scale-105 transition-all duration-300 ease-in-out left-0 text-secondary"
+            className="left-0 flex transition-all duration-300 ease-in-out hover:scale-105 text-secondary"
             onClick={() => {
               handleClick("");
             }}
@@ -94,18 +96,18 @@ function Header() {
             <img
               src="./src/assets/icons/logo.png"
               alt="logo"
-              className="h-10 w-10"
+              className="w-10 h-10"
             />
-            <h1 className="text-3xl font-bold cursor-pointer pl-2 pt-1">
+            <h1 className="pt-1 pl-2 text-3xl font-bold cursor-pointer">
               VetLink
             </h1>
           </div>
-          <nav className="items-center mt-4 md:mt-0 pl-10">
-            <ul className="hidden flex-wrap lg:flex md:space-x-10">
+          <nav className="items-center pl-10 mt-4 md:mt-0">
+            <ul className="flex-wrap hidden lg:flex md:space-x-10">
               <li>
                 <a
                   href="#"
-                  className="relative group font-bold hover:text-primary transition-colors duration-300 pb-1"
+                  className="relative pb-1 font-bold transition-colors duration-300 group hover:text-primary"
                 >
                   Sobre nosotros
                   <span className="absolute block w-0 h-0.5 bg-primary bottom-0 left-0 group-hover:w-full transition-all duration-300"></span>
@@ -114,7 +116,7 @@ function Header() {
               <li>
                 <a
                   href="services"
-                  className="relative group font-bold hover:text-primary transition-colors duration-300 pb-1"
+                  className="relative pb-1 font-bold transition-colors duration-300 group hover:text-primary"
                 >
                   Servicios
                   <span className="absolute block w-0 h-0.5 bg-primary bottom-0 left-0 group-hover:w-full transition-all duration-300"></span>
@@ -123,49 +125,49 @@ function Header() {
               <li>
                 <a
                   href="#"
-                  className="relative group font-bold hover:text-primary transition-colors duration-300 pb-1"
+                  className="relative pb-1 font-bold transition-colors duration-300 group hover:text-primary"
                 >
                   Contacto
                   <span className="absolute block w-0 h-0.5 bg-primary bottom-0 left-0 group-hover:w-full transition-all duration-300"></span>
                 </a>
               </li>
-              {isActive ?
+              {isActive ? (
                 <li>
-                  <Dropdown items={items}/>
-                </li> : null
-              }
+                  <Dropdown items={items} />
+                </li>
+              ) : null}
             </ul>
           </nav>
           {!isActive ? (
-            <div className="hidden lg:flex space-x-3 mt-4 md:mt-0 font-bold">
+            <div className="hidden mt-4 space-x-3 font-bold lg:flex md:mt-0">
               <Button
-                className="border-primary transition-all duration-300 hover:scale-105"
+                className="transition-all duration-300 border-primary hover:scale-105"
                 onClick={() => {
                   handleClick("login");
                 }}
               >
                 Iniciar sesión
               </Button>
-              <Button 
-                className="border-primary bg-primary text-bgsecondary hover:text-bgprimary hover:border-primary hover:scale-105 transition-all duration-300"
-                onClick={() => handleClick("signup")}>
+              <Button
+                className="transition-all duration-300 border-primary bg-primary text-bgsecondary hover:text-bgprimary hover:border-primary hover:scale-105"
+                onClick={() => handleClick("signup")}
+              >
                 Registrarme
               </Button>
             </div>
           ) : (
             <>
               <Button
-                className="hidden lg:flex border-primary bg-primary text-bgsecondary hover:text-bgprimary hover:border-primary hover:scale-105 transition-all duration-300"
+                className="hidden transition-all duration-300 lg:flex border-primary bg-primary text-bgsecondary hover:text-bgprimary hover:border-primary hover:scale-105"
                 onClick={logOut}
               >
                 Cerrar Sesión
               </Button>
             </>
-          )
-          }
-          
+          )}
+
           <div
-            className="burger-menu flex flex-col space-y-1 lg:hidden cursor-pointer  "
+            className="flex flex-col space-y-1 cursor-pointer burger-menu lg:hidden "
             onClick={updateMenu}
           >
             <div
@@ -195,7 +197,7 @@ function Header() {
           isMenuClicked ? "opacity-1" : "opacity-0 pointer-events-none"
         }`}
       >
-        <ul className="flex flex-col h-full justify-center">
+        <ul className="flex flex-col justify-center h-full">
           {menuItems.map((item, index) => (
             <React.Fragment key={item.text}>
               {" "}
@@ -216,7 +218,7 @@ function Header() {
                       window.location.href = item.href;
                     }
                   }}
-                  className="font-bold hover:text-action transition duration-500 cursor-pointer"
+                  className="font-bold transition duration-500 cursor-pointer hover:text-action"
                 >
                   {item.text}
                 </a>
