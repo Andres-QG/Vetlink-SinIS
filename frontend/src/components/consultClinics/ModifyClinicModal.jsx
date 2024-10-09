@@ -23,10 +23,13 @@ import axios from "axios";
 const ModifyClinicModal = ({ onSuccess, handleOpen, handleClose, selectedItem = undefined}) => {
   const initialFormData = {
     clinica: selectedItem?.clinica || "",
+    clinicaNew: selectedItem?.clinica || "",
     direccion: selectedItem?.direccion || "",
     telefono: selectedItem?.telefono || "",
     usuario: selectedItem?.dueño || "",
   };
+
+  console.log(initialFormData)
 
   const [formData, setFormData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
@@ -49,6 +52,7 @@ const ModifyClinicModal = ({ onSuccess, handleOpen, handleClose, selectedItem = 
     if (selectedItem) {
       setFormData({
         clinica: selectedItem.clinica || "",
+        clinicaNew: selectedItem.clinicaNew || "",
         direccion: selectedItem.direccion || "",
         telefono: selectedItem.telefono || "",
         usuario: selectedItem.dueño || "",
@@ -76,6 +80,8 @@ const ModifyClinicModal = ({ onSuccess, handleOpen, handleClose, selectedItem = 
       newErrors.telefono = "El teléfono debe tener 8 dígitos.";
     }
 
+    console.log(newErrors)
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -95,6 +101,7 @@ const ModifyClinicModal = ({ onSuccess, handleOpen, handleClose, selectedItem = 
   };
 
   const handleSubmit = async () => {
+    console.log("Vali")
     if (validate()) {
       setLoading(true);
       console.log(formData)
@@ -168,10 +175,11 @@ const ModifyClinicModal = ({ onSuccess, handleOpen, handleClose, selectedItem = 
             {/* Clinic Form Fields */}
             <TextField
               fullWidth
-              label="Clinica"
-              name="clinica"
-              value={formData.clinica}
-              onChange={handleChange}
+              label="Clínica"
+              name="clinicaNew" 
+              placeholder={formData.clinica} 
+              value={formData.clinicaNew} 
+              onChange={handleChange} 
               sx={{ mb: 2 }}
               required
               InputProps={{

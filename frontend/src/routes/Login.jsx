@@ -82,9 +82,9 @@ function Login() {
 
         const redirectItems = new Map([
             [1, 'owner'],
-            [2, 'admin'],
-            [3, 'vet'],
-            [4, 'clnt'],
+            [2, 'consultAdmins'],
+            [3, 'consultpets'],
+            [4, 'consultclients'],
         ]);
 
         try {

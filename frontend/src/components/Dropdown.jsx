@@ -40,7 +40,7 @@ function Dropdown({ items }) {
       >
         <div className="flex flex-col">
           {items
-            .filter(item => item.role.includes(role) >= role)
+            .filter(item => item.role.includes(role))
             .map((item, index) => (
               <a
                 key={index}
@@ -49,7 +49,8 @@ function Dropdown({ items }) {
               >
                 {item.text}
               </a>
-            ))}
+            ))
+          }
         </div>
       </div>
     </div>
