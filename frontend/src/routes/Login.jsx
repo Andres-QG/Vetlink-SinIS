@@ -16,6 +16,8 @@ import {
     CircularProgress,
     Button,
     IconButton,
+    Alert,
+    Stack,
 } from "@mui/material";
 import {
     Email,
@@ -47,6 +49,12 @@ function Login() {
         setShowPassword(!showPassword);
     };
 
+    const [alert, setAlert] = useState({
+        open: false,
+        message: "",
+        severity: "",
+    });
+
     const passRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^\d[a-zA-Z])[\S]{8,}$/;
 
     const validate = () => {
@@ -55,6 +63,11 @@ function Login() {
     if (!formData.usuario) {
       newErrors.usuario = "El usuario es requerido.";
     }
+
+    const handleDelete = async (message, severity) => {
+        setAlert({ open: true, message, severity });
+        await fetchClinics();
+    };
 
     const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
 
@@ -84,7 +97,7 @@ function Login() {
             [1, 'owner'],
             [2, 'consultAdmins'],
             [3, 'consultpets'],
-            [4, 'consultclients'],
+            [4, ''],
         ]);
 
         try {
@@ -99,22 +112,38 @@ function Login() {
                 document.cookie = "active=true; path=/;";
                 navigate(`/${redirectItems.get(response.data.rol)}`);
             } else {
+                setAlert({ open: true, message:"Credenciales erróneas", severity:"error"});
                 setRole(0)
             }
         } catch (error) {
+            setAlert({ open: true, message: "Credenciales erróneas", severity: "error" });
             console.log(error)
             setLoading(false)
         }
     }
+
+    const handleCloseAlert = () => {
+        setAlert({ open: false, message: "", severity: "" });
+    };
 
     return (
         <>
             {loading ? (
                 <Loading text={"Verificando permisos"} />
             ) : (
-            <div className="min-h-screen flex flex-col">
-                        <Header />
-                        <main className="flex-grow">
+                <div className="min-h-screen flex flex-col">
+                    <Header />
+
+                    <main className="flex-grow">
+                        {alert.open && (
+                            <div className="flex justify-center items-center w-full mt-4 mb-4">
+                                <Stack sx={{ width: "90%" }} spacing={2}>
+                                    <Alert severity={alert.severity} onClose={handleCloseAlert}>
+                                        {alert.message || "Ocurrió un error desconocido."}
+                                    </Alert>
+                                </Stack>
+                            </div>
+                        )}
                             <div className="h-screen flex items-center justify-center bg-[url('./src/assets/shapes/wave.svg')] bg-bottom bg-no-repeat w-full">
                                 <div className="flex flex-col h-[650px] w-[400px] rounded-xl bg-bgsecondary shadow-2xl items-center pt-8 text-secondary">
                                     <h1 className="font-bold text-4xl">Bienvenido</h1>

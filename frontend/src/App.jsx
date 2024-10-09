@@ -90,7 +90,7 @@ function App() {
             <Route
               path="/consultAdmins"
               element={
-                <ProtectedRoute requiredRoles={[1]}>
+                <ProtectedRoute requiredRoles={[1,2]}>
                   <ConsultAdmins/>
                 </ProtectedRoute>
               }
