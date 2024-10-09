@@ -64,6 +64,13 @@ const AddVetModal = ({ open, onClose, onSubmit, clinics, specialties }) => {
         "Nombre no puede tener números ni caracteres especiales";
     }
 
+    const passwordRegex =
+      /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
+    if (!formData.clave || !passwordRegex.test(formData.clave)) {
+      newErrors.clave =
+        "La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial.";
+    }
+
     if (!/^[a-zA-Z]+$/.test(formData.apellido1)) {
       newErrors.apellido1 =
         "Apellido 1 no puede tener números ni caracteres especiales";
@@ -245,6 +252,9 @@ const AddVetModal = ({ open, onClose, onSubmit, clinics, specialties }) => {
               startAdornment: (
                 <InputAdornment position="start">
                   <PhoneIcon />
+                  <Box component="span" sx={{ ml: 1 }}>
+                    +506
+                  </Box>
                 </InputAdornment>
               ),
             }}
