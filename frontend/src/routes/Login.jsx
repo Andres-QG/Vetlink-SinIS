@@ -54,7 +54,6 @@ function Login() {
     severity: "",
   });
 
-  const passRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^\d[a-zA-Z])[\S]{8,}$/;
 
   const validate = () => {
     const newErrors = {};

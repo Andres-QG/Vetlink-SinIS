@@ -67,6 +67,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'vetlinkmail@gmail.com'
 EMAIL_HOST_PASSWORD = 'mzny qytt mbds bryt'
+EMAIL_USE_SSL = False
 
 ROOT_URLCONF = "ConfiguracionProyecto.urls"
 
@@ -98,6 +99,7 @@ DATABASES = {
         "NAME": "(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=adb.sa-saopaulo-1.oraclecloud.com)(PORT=1522))(CONNECT_DATA=(SERVICE_NAME=g5936dc7ef2f8c4_vetlink_high.adb.oraclecloud.com))(SECURITY=(SSL_SERVER_DN_MATCH=YES)))",
         "USER": "VETLINK",
         "PASSWORD": "Pruebas$2024",
+        "CONN_MAX_AGE": None,
     },
 }
 

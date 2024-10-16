@@ -10,7 +10,7 @@ from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 from django.db import transaction
-from .models import Usuarios, Mascotas, Clinicas, Especialidades
+from django.views.decorators.cache import cache_page
 from .serializers import *
 import random
 from datetime import datetime

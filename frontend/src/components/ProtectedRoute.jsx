@@ -9,7 +9,6 @@ function ProtectedRoute ({children, requiredRoles}) {
 
     useEffect(() => {
         const verifyRole = async () => {
-            setLoading(true);
             await fetchUserRole();
             setLoading(false);
         };
@@ -17,7 +16,7 @@ function ProtectedRoute ({children, requiredRoles}) {
     }, [fetchUserRole]);
 
     if (loading) {
-        return <Loading text={"Verificando permisos"}/>
+        return <Loading text={"Cargando..."}/>
     }
 
     console.log("Protect: " + role)
