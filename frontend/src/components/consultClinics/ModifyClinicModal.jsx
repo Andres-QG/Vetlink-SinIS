@@ -22,8 +22,8 @@ import axios from "axios";
 
 const ModifyClinicModal = ({ onSuccess, handleOpen, handleClose, selectedItem = undefined}) => {
   const initialFormData = {
+    clinica_id: selectedItem.clinica_id || "",
     clinica: selectedItem?.clinica || "",
-    clinicaNew: selectedItem?.clinica || "",
     direccion: selectedItem?.direccion || "",
     telefono: selectedItem?.telefono || "",
     usuario: selectedItem?.dueño || "",
@@ -51,8 +51,8 @@ const ModifyClinicModal = ({ onSuccess, handleOpen, handleClose, selectedItem = 
   useEffect(() => {
     if (selectedItem) {
       setFormData({
+        clinica_id: selectedItem.clinica_id|| "",
         clinica: selectedItem.clinica || "",
-        clinicaNew: selectedItem.clinicaNew || "",
         direccion: selectedItem.direccion || "",
         telefono: selectedItem.telefono || "",
         usuario: selectedItem.dueño || "",
@@ -101,13 +101,12 @@ const ModifyClinicModal = ({ onSuccess, handleOpen, handleClose, selectedItem = 
   };
 
   const handleSubmit = async () => {
-    console.log("Vali")
     if (validate()) {
       setLoading(true);
       console.log(formData)
       try {
         const response = await axios.put(
-          `http://localhost:8000/api/update-clinic/${formData.clinica}/`,
+          `http://localhost:8000/api/update-clinic/${formData.clinica_id}/`,
           formData
         );
         onSuccess("Clínica modificada", "success")
@@ -176,9 +175,9 @@ const ModifyClinicModal = ({ onSuccess, handleOpen, handleClose, selectedItem = 
             <TextField
               fullWidth
               label="Clínica"
-              name="clinicaNew" 
+              name="clinica" 
               placeholder={formData.clinica} 
-              value={formData.clinicaNew} 
+              value={formData.clinica} 
               onChange={handleChange} 
               sx={{ mb: 2 }}
               required
@@ -227,35 +226,40 @@ const ModifyClinicModal = ({ onSuccess, handleOpen, handleClose, selectedItem = 
                 ),
               }}
             />
-            <TextField
-              fullWidth
-              select
-              label="Dueño"
-              name="usuario"
-              value={formData.usuario || ""}
-              onChange={handleChange}
-              sx={{ mb: 2 }}
-              required
-              error={!!errors.usuario}
-              helperText={errors.usuario}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Person />
-                  </InputAdornment>
-                ),
-              }}
-            >
-              <MenuItem value="" disabled>
-                Selecciona un dueño
-              </MenuItem>
-              {owners.map((owner) => (
-                <MenuItem key={owner.usuario} value={owner.usuario}>
-                  {owner.nombre}
+            {owners.length > 0 ? (
+              <TextField
+                fullWidth
+                select
+                label="Dueño"
+                name="usuario"
+                value={formData.usuario || ""}
+                onChange={handleChange}
+                sx={{ mb: 2 }}
+                required
+                error={!!errors.usuario}
+                helperText={errors.usuario}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Person />
+                    </InputAdornment>
+                  ),
+                }}
+              >
+                <MenuItem value="" disabled>
+                  Selecciona un dueño
                 </MenuItem>
-              ))}
-            </TextField>
-
+                {owners.map((owner) => (
+                  <MenuItem key={owner.usuario} value={owner.usuario}>
+                    {owner.nombre}
+                  </MenuItem>
+                ))}
+              </TextField>
+            ) : (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '70px' }}>
+                  <CircularProgress color="primary" />
+                </Box>
+            )}
             {/* Action Buttons */}
             <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
               <Button

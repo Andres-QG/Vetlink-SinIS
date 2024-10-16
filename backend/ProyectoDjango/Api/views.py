@@ -333,12 +333,12 @@ def add_clinic(request):
 
 
 @api_view(["PUT"])
-def update_clinic(request, clinica):
+def update_clinic(request, clinica_id):
     try:
-        clin = Clinicas.objects.get(nombre=clinica)  # Buscar clínica por el nombre
+        clin = Clinicas.objects.get(pk=clinica_id)  # Buscar clínica por el id
 
         # No permitimos modificar la llave primaria (usuario)
-        clinica_nombre = request.data.get("clinicaNew")
+        clinica_nombre = request.data.get("clinica")
         direccion = request.data.get("direccion")
         telefono = request.data.get("telefono")
         dueno = request.data.get("usuario")
@@ -347,12 +347,6 @@ def update_clinic(request, clinica):
             ownerUser = Usuarios.objects.get(usuario=dueno)
         except Usuarios.DoesNotExist:
             return Response({"error": "Usuario no encontrado"}, status=404)
-
-        if Clinicas.objects.get(nombre=clinica_nombre):
-            return Response(
-                {"error": "Ya hay una clínica con este nombre."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
 
         # Actualizar los datos de la clínica
         clin.nombre = clinica_nombre
