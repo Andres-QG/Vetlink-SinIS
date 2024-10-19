@@ -25,7 +25,7 @@ import {
 } from "@mui/icons-material";
 
 const ModifyPet = ({
-  handleOpen,
+  open,
   handleClose,
   onSuccess,
   selectedItem = undefined,
@@ -190,7 +190,7 @@ const ModifyPet = ({
   };
 
   return (
-    <Modal open={handleOpen} onClose={handleClose}>
+    <Modal open={open} onClose={handleClose}>
       <Box
         sx={{
           position: "absolute",

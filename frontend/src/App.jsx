@@ -18,6 +18,7 @@ import Error from "./routes/Error";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Signup from "./routes/Signup";
 import ConsultAdmins from "./routes/ConsultAdmins";
+import { NotificationProvider } from "./components/Notification";
 
 function App() {
   return (
@@ -75,7 +76,9 @@ function App() {
               path="/consultpets"
               element={
                 <ProtectedRoute requiredRoles={[1, 2, 3]}>
-                  <ConsultPets />
+                  <NotificationProvider>
+                    <ConsultPets />
+                  </NotificationProvider>
                 </ProtectedRoute>
               }
             />

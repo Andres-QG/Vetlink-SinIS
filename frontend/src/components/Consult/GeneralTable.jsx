@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import axios from "axios";
+import { useNotification } from "../Notification";
 import {
   IconButton,
   TablePagination,
@@ -20,7 +22,6 @@ import {
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 
-// TODO: Props: data, columns, totalCount, page, rowsPerPage, onPageChange
 const GeneralTable = ({
   data,
   columns,
@@ -30,13 +31,12 @@ const GeneralTable = ({
   onPageChange,
   deletionUrl,
   pkCol,
-  onDelete,
   visualIdentifierCol,
   fetchData,
-  OnModModal,
-  onModify,
+  ModModal,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
+  const notify = useNotification();
 
   useEffect(() => {
     const handleResize = () => {
@@ -78,18 +78,18 @@ const GeneralTable = ({
     try {
       const url = `${deletionUrl}/${selectedItem[pkCol]}/`;
       const response = await axios.delete(url);
-      onDelete("Elemento eliminado correctamente.", "success");
+      notify("Elemento eliminado correctamente.", "success");
     } catch (error) {
       if (error.response) {
-        onDelete(
+        notify(
           `Error: ${error.response.status} - ${
             error.response.data.error || error.response.data.detail
           }`
         );
       } else if (error.request) {
-        onDelete("No se recibió respuesta del servidor. Verifica tu conexión.");
+        notify("No se recibió respuesta del servidor. Verifica tu conexión.");
       } else {
-        onDelete(`Error desconocido: ${error.message}`);
+        notify(`Error desconocido: ${error.message}`);
       }
     }
     fetchData();
@@ -266,15 +266,39 @@ const GeneralTable = ({
       </Modal>
       {/*Modal de modificación*/}
       {selectedItem && openModModal && (
-        <OnModModal
-          handleOpen={openModModal}
+        <ModModal
+          open={openModModal}
           handleClose={handleCloseModModal}
-          onSuccess={onModify}
+          onSuccess={async (message, severity) => {
+            notify(message, severity);
+            handleCloseModModal();
+            await fetchData();
+          }}
           selectedItem={selectedItem}
         />
       )}
     </>
   );
+};
+
+GeneralTable.propTypes = {
+  data: PropTypes.arrayOf(PropTypes.object).isRequired,
+  columns: PropTypes.arrayOf(
+    PropTypes.shape({
+      field: PropTypes.string.isRequired,
+      headerName: PropTypes.string.isRequired,
+      width: PropTypes.number,
+    })
+  ).isRequired,
+  totalCount: PropTypes.number.isRequired,
+  page: PropTypes.number.isRequired,
+  rowsPerPage: PropTypes.number.isRequired,
+  onPageChange: PropTypes.func.isRequired,
+  deletionUrl: PropTypes.string.isRequired,
+  pkCol: PropTypes.string.isRequired,
+  visualIdentifierCol: PropTypes.string.isRequired,
+  fetchData: PropTypes.func.isRequired,
+  ModModal: PropTypes.elementType.isRequired,
 };
 
 export default GeneralTable;
