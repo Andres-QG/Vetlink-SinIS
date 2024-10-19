@@ -4,12 +4,16 @@ import ModifyPet from "../components/consultPets/ModifyPet";
 
 const ConsultPets = () => {
   const columns = [
-    { field: "usuario_cliente", headerName: "Dueño" },
-    { field: "nombre", headerName: "Nombre" },
-    { field: "fecha_nacimiento", headerName: "Fecha de nacimiento" },
-    { field: "especie", headerName: "Especie" },
-    { field: "raza", headerName: "Raza" },
-    { field: "sexo", headerName: "Sexo" },
+    { field: "usuario_cliente", headerName: "Dueño", type: "text" },
+    { field: "nombre", headerName: "Nombre", type: "text" },
+    {
+      field: "fecha_nacimiento",
+      headerName: "Fecha de nacimiento",
+      type: "text",
+    },
+    { field: "especie", headerName: "Especie", type: "text" },
+    { field: "raza", headerName: "Raza", type: "text" },
+    { field: "sexo", headerName: "Sexo", type: "text" },
   ];
 
   return (

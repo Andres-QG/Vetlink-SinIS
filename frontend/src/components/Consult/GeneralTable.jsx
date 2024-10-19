@@ -19,6 +19,7 @@ import {
   Button,
   Card,
   CardContent,
+  Chip,
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 
@@ -60,7 +61,6 @@ const GeneralTable = ({
   const [openModModal, setOpenModModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
-  // "Delete" modal
   const handleOpenModal = (item) => {
     setSelectedItem(item);
     setOpenModal(true);
@@ -111,11 +111,7 @@ const GeneralTable = ({
       {isMobile ? (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {data.map((item) => (
-            <Card
-              key={item.id} // Usa keyField para el valor de la clave
-              variant="outlined"
-              sx={{ padding: 1 }}
-            >
+            <Card key={item.id} variant="outlined" sx={{ padding: 1 }}>
               <CardContent>
                 {columns.map((col) => (
                   <Typography variant="body2" key={col.field}>
@@ -187,7 +183,14 @@ const GeneralTable = ({
                 <TableRow key={item.id || `row-${index}`}>
                   {columns.map((col) => (
                     <TableCell key={`cell-${item.id || index}-${col.field}`}>
-                      {item[col.field]}
+                      {col.type === "chip" ? (
+                        <Chip
+                          label={item[col.field].text}
+                          style={{ backgroundColor: item[col.field].bgcolor }}
+                        />
+                      ) : (
+                        item[col.field]
+                      )}
                     </TableCell>
                   ))}
                   <TableCell key={`actions-${item.id || index}`}>
@@ -197,6 +200,16 @@ const GeneralTable = ({
                     <IconButton onClick={() => handleOpenModal(item)}>
                       <Delete />
                     </IconButton>
+                    {columns
+                      .filter((col) => col.type === "action")
+                      .map((col) => (
+                        <IconButton
+                          key={`action-${col.field}`}
+                          onClick={() => col.onClick(item)}
+                        >
+                          {col.icon}
+                        </IconButton>
+                      ))}
                   </TableCell>
                 </TableRow>
               ))}
@@ -288,6 +301,9 @@ GeneralTable.propTypes = {
       field: PropTypes.string.isRequired,
       headerName: PropTypes.string.isRequired,
       width: PropTypes.number,
+      type: PropTypes.oneOf(["text", "chip", "action"]),
+      icon: PropTypes.element,
+      onClick: PropTypes.func,
     })
   ).isRequired,
   totalCount: PropTypes.number.isRequired,
