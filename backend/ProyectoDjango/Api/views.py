@@ -201,6 +201,7 @@ def consult_clinics(request):
                 "direccion": clinicas.direccion,
                 "telefono": clinicas.telefono,
                 "dueño": clinicas.usuario_propietario.nombre,
+                "estado": clinicas.activo,
             }
             for clinicas in result_page
         ]
@@ -363,23 +364,6 @@ def update_clinic(request, clinica_id):
         print(f"Error actualizando clínica: {str(e)}")
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
-@api_view(["DELETE"])
-def delete_clinic(request, clinica_id):
-    try:
-        clinica = Clinicas.objects.get(pk=clinica_id)
-        clinica.delete()
-        return Response(
-            {"message": "Clínica eliminada correctamente"}, status=status.HTTP_200_OK
-        )
-    except Clinicas.DoesNotExist:
-        return Response(
-            {"error": "Clínica no encontrada"}, status=status.HTTP_404_NOT_FOUND
-        )
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
 @api_view(["GET"])
 def consult_client(request):
     search = request.GET.get("search", "")
@@ -420,6 +404,7 @@ def consult_client(request):
                 "apellidos": f"{usuario.apellido1} {usuario.apellido2}",
                 "telefono": usuario.telefono,
                 "correo": usuario.correo,
+                "estado": usuario.activo,
             }
             for usuario in result_page
         ]
@@ -575,46 +560,12 @@ def update_client(request, usuario):
         print(f"Error actualizando usuario: {str(e)}")
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
-@api_view(["DELETE"])
-def delete_client(request, usuario):
-    try:
-        user = Usuarios.objects.get(usuario=usuario)
-        user.delete()
-        return Response(
-            {"message": "Usuario eliminado con éxito."}, status=status.HTTP_200_OK
-        )
-    except Usuarios.DoesNotExist:
-        return Response(
-            {"error": "Usuario no encontrado."}, status=status.HTTP_404_NOT_FOUND
-        )
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
 @api_view(["POST"])
 def log_out(request):
     logout(request)
     return Response(
         {"status": "success", "message": "Usuario desconectado exitosamente"}
     )
-
-
-@api_view(["DELETE"])
-def delete_pet(request, mascota_id):
-    try:
-        mascota = Mascotas.objects.get(pk=mascota_id)
-        mascota.delete()
-        return Response(
-            {"message": "Mascota eliminada correctamente"}, status=status.HTTP_200_OK
-        )
-    except Mascotas.DoesNotExist:
-        return Response(
-            {"error": "Mascota no encontrada"}, status=status.HTTP_404_NOT_FOUND
-        )
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 @api_view(["PUT"])
 def update_pet(request, mascota_id):
@@ -740,6 +691,7 @@ def consult_admin(request):
                 "correo": usuario.correo,
                 "clinica": usuario.clinica.nombre if usuario.clinica else None,
                 "clinica_id": usuario.clinica.clinica_id if usuario.clinica else None,
+                "estado": usuario.activo,
             }
             for usuario in result_page
         ]
@@ -850,22 +802,6 @@ def update_admin(request, usuario):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@api_view(["DELETE"])
-def delete_admin(request, usuario):
-    try:
-        admin = Usuarios.objects.get(usuario=usuario)
-        admin.delete()
-        return Response(
-            {"message": "Administrador eliminado con éxito."}, status=status.HTTP_200_OK
-        )
-    except Usuarios.DoesNotExist:
-        return Response(
-            {"error": "Administrador no encontrado."}, status=status.HTTP_404_NOT_FOUND
-        )
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
 @api_view(["GET"])
 def consult_vet(request):
     search = request.GET.get("search", "")
@@ -895,6 +831,7 @@ def consult_vet(request):
                 "apellido2": usuario.apellido2,
                 "telefono": usuario.telefono,
                 "correo": usuario.correo,
+                "estado": usuario.activo,
                 "especialidad": (
                     {
                         "id": usuario.especialidad.especialidad_id,
@@ -999,6 +936,75 @@ def update_vet(request, usuario):
     except Usuarios.DoesNotExist:
         return Response(
             {"error": "Veterinario no encontrado."}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["DELETE"])
+def delete_client(request, usuario):
+    try:
+        user = Usuarios.objects.get(usuario=usuario)
+        user.activo = False
+        user.save()
+        return Response(
+            {"message": "Usuario desactivado con éxito."}, status=status.HTTP_200_OK
+        )
+    except Usuarios.DoesNotExist:
+        return Response(
+            {"error": "Usuario no encontrado."}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["DELETE"])
+def delete_clinic(request, clinica_id):
+    try:
+        clinica = Clinicas.objects.get(pk=clinica_id)
+        clinica.activo = False
+        clinica.save()
+        return Response(
+            {"message": "Clínica desactivada correctamente."}, status=status.HTTP_200_OK
+        )
+    except Clinicas.DoesNotExist:
+        return Response(
+            {"error": "Clínica no encontrada."}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["DELETE"])
+def delete_pet(request, mascota_id):
+    try:
+        mascota = Mascotas.objects.get(pk=mascota_id)
+        mascota.activo = False
+        mascota.save()
+        return Response(
+            {"message": "Mascota desactivada correctamente."}, status=status.HTTP_200_OK
+        )
+    except Mascotas.DoesNotExist:
+        return Response(
+            {"error": "Mascota no encontrada."}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["DELETE"])
+def delete_admin(request, usuario):
+    try:
+        admin = Usuarios.objects.get(usuario=usuario)
+        admin.activo = False
+        admin.save()
+        return Response(
+            {"message": "Administrador desactivado con éxito."},
+            status=status.HTTP_200_OK,
+        )
+    except Usuarios.DoesNotExist:
+        return Response(
+            {"error": "Administrador no encontrado."}, status=status.HTTP_404_NOT_FOUND
         )
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -90,6 +90,14 @@ const VetsTable = ({
                       <strong>{col.headerName}:</strong> {item[col.field]}
                     </Typography>
                   ))}
+                  <Typography
+                    variant="body2"
+                    component="p"
+                    style={{
+                      color: item.estado === "Activo" ? "green" : "red",
+                    }}>
+                    <strong>Estado:</strong> {item.estado}
+                  </Typography>
                 </CardContent>
                 <CardActions>
                   <IconButton onClick={() => onEditVet(item)}>
@@ -129,6 +137,10 @@ const VetsTable = ({
                 ))}
                 <TableCell
                   style={{ fontWeight: "bold", backgroundColor: "#f0f0f0" }}>
+                  Estado
+                </TableCell>
+                <TableCell
+                  style={{ fontWeight: "bold", backgroundColor: "#f0f0f0" }}>
                   Acciones
                 </TableCell>
               </TableRow>
@@ -141,6 +153,13 @@ const VetsTable = ({
                       {item[col.field]}
                     </TableCell>
                   ))}
+                  <TableCell
+                    key={`estado-${item.id}`}
+                    style={{
+                      color: item.estado === "Activo" ? "green" : "red",
+                    }}>
+                    {item.estado}
+                  </TableCell>
                   <TableCell key={`actions-${item.id}`}>
                     <IconButton onClick={() => onEditVet(item)}>
                       <Edit />
@@ -153,7 +172,7 @@ const VetsTable = ({
               ))}
               {data.length === 0 && (
                 <TableRow key="empty-row">
-                  <TableCell colSpan={columns.length + 1} align="center">
+                  <TableCell colSpan={columns.length + 2} align="center">
                     No hay datos disponibles
                   </TableCell>
                 </TableRow>
@@ -161,7 +180,7 @@ const VetsTable = ({
             </TableBody>
             <TableRow>
               <TableCell
-                colSpan={columns.length + 1}
+                colSpan={columns.length + 2}
                 sx={{ borderBottom: "none", padding: "8px 0" }}>
                 <TablePagination
                   component="div"
