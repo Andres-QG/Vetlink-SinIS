@@ -246,13 +246,14 @@ def create_pet(request):
         # Reemplazar el usuario_cliente por el objeto relacionado
         data["usuario_cliente"] = usuario_cliente.usuario
 
+        data["activo"] = 1
+
         # Serializar los datos y crear la mascota
         serializer = MascotaSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -689,9 +690,21 @@ def consult_mascotas(request):
 
         paginator = CustomPagination()
         result_page = paginator.paginate_queryset(mascotas, request)
-        serializer = MascotaSerializer(result_page, many=True)
+        serializer_data = [
+            {
+                "mascota_id": mascota.mascota_id,
+                "nombre": mascota.nombre,
+                "sexo": mascota.sexo,
+                "especie": mascota.especie,
+                "raza": mascota.raza,
+                "fecha_nacimiento": mascota.fecha_nacimiento,
+                "usuario_cliente": mascota.usuario_cliente.usuario,
+                "activo": "activo" if mascota.activo == 1 else "inactivo",
+            }
+            for mascota in result_page
+        ]
 
-        return paginator.get_paginated_response(serializer.data)
+        return paginator.get_paginated_response(serializer_data)
 
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

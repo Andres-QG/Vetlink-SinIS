@@ -417,7 +417,7 @@ class HistorialServicios(models.Model):
 
 
 class Mascotas(models.Model):
-    mascota_id = models.FloatField(
+    mascota_id = models.AutoField(
         primary_key=True,
         db_comment="Este campo es la llave primaria de la tabla. Almacena un identificador ·nico para cada mascota. Este valor debe ser ·nico y permite distinguir cada mascota de manera clara.",
     )

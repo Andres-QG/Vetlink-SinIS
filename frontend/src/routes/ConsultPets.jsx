@@ -14,6 +14,12 @@ const ConsultPets = () => {
     { field: "especie", headerName: "Especie", type: "text" },
     { field: "raza", headerName: "Raza", type: "text" },
     { field: "sexo", headerName: "Sexo", type: "text" },
+    {
+      field: "activo",
+      headerName: "Estado",
+      type: "chip",
+      chipColors: { activo: "#b8e6d7", inactivo: "#ff7c7d" },
+    },
   ];
 
   return (

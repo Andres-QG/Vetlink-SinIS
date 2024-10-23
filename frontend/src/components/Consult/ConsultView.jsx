@@ -143,6 +143,10 @@ ConsultView.propTypes = {
       field: PropTypes.string.isRequired,
       headerName: PropTypes.string.isRequired,
       width: PropTypes.number,
+      type: PropTypes.oneOf(["text", "chip", "action"]),
+      icon: PropTypes.element,
+      onClick: PropTypes.func,
+      chipColors: PropTypes.object,
     })
   ).isRequired,
   pkCol: PropTypes.string.isRequired,

@@ -115,7 +115,19 @@ const GeneralTable = ({
               <CardContent>
                 {columns.map((col) => (
                   <Typography variant="body2" key={col.field}>
-                    <strong>{col.headerName}:</strong> {item[col.field]}
+                    <strong>{col.headerName}:</strong>{" "}
+                    {col.type === "chip" ? (
+                      <Chip
+                        label={item[col.field]}
+                        style={{
+                          backgroundColor:
+                            col.chipColors?.[item[col.field]] ||
+                            "gray" /*default*/,
+                        }}
+                      />
+                    ) : (
+                      item[col.field]
+                    )}
                   </Typography>
                 ))}
                 <Box
@@ -185,8 +197,12 @@ const GeneralTable = ({
                     <TableCell key={`cell-${item.id || index}-${col.field}`}>
                       {col.type === "chip" ? (
                         <Chip
-                          label={item[col.field].text}
-                          style={{ backgroundColor: item[col.field].bgcolor }}
+                          label={item[col.field]}
+                          style={{
+                            backgroundColor:
+                              col.chipColors?.[item[col.field]] ||
+                              "gray" /*default*/,
+                          }}
                         />
                       ) : (
                         item[col.field]
@@ -303,6 +319,7 @@ GeneralTable.propTypes = {
       width: PropTypes.number,
       type: PropTypes.oneOf(["text", "chip", "action"]),
       icon: PropTypes.element,
+      chipColors: PropTypes.object,
       onClick: PropTypes.func,
     })
   ).isRequired,
