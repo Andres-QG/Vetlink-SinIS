@@ -28,7 +28,7 @@ const DashboardLayout = ({
   const navigate = useNavigate();
   const location = useLocation();
   const [isActive, setIsActive] = useState(document.cookie.includes("true"));
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
 
   useEffect(() => {
     setIsActive(document.cookie.includes("true"));
@@ -259,6 +259,7 @@ const DashboardLayout = ({
             style={{
               backgroundColor: isActive ? "#1890ff" : "#808080",
               cursor: "pointer",
+              marginLeft: "16px",
             }}
             icon={<PersonIcon />}
           />
@@ -272,7 +273,9 @@ const DashboardLayout = ({
             collapsible
             collapsed={collapsed}
             onCollapse={(value) => setCollapsed(value)}
-            style={{ background: colorBgContainer }}
+            style={{
+              background: colorBgContainer,
+            }}
           >
             <Menu
               mode="inline"
@@ -296,6 +299,8 @@ const DashboardLayout = ({
               minHeight: 280,
               background: colorBgContainer,
               borderRadius: borderRadiusLG,
+              // Sombra para el contenido
+              boxShadow: "0 8px 16px rgba(0, 0, 0, 0.3)",
             }}
           >
             {children}

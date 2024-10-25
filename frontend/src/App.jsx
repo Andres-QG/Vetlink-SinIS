@@ -45,7 +45,14 @@ function App() {
                 </DashBoardLayout>
               }
             />
-            <Route path="/login" element={<Login />} />
+            <Route
+              path="/login"
+              element={
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <Login />
+                </DashBoardLayout>
+              }
+            />
             <Route path="/signup" element={<Signup />} />
             <Route path="/reset" element={<PassReset />} />
             <Route
@@ -93,7 +100,9 @@ function App() {
               path="/consultclients"
               element={
                 <ProtectedRoute requiredRoles={[1, 2, 3]}>
-                  <ConsultClients />
+                  <DashBoardLayout>
+                    <ConsultClients />
+                  </DashBoardLayout>
                 </ProtectedRoute>
               }
             />

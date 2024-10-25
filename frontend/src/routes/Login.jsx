@@ -143,7 +143,6 @@ function Login() {
         <Loading text={"Verificando permisos"} />
       ) : (
         <div className="flex flex-col min-h-screen">
-          <Header />
 
           <main className="flex-grow">
             {alert.open && (
@@ -259,7 +258,6 @@ function Login() {
               </div>
             </div>
           </main>
-          <Footer />
         </div>
       )}
     </>
