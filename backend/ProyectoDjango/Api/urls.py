@@ -29,5 +29,6 @@ urlpatterns = [
     path("add-vet/", add_vet, name="add_vet"),
     path("consult-specialties/", consult_specialties, name="consult_specialties"),
     path("update-vet/<str:usuario>/", update_vet, name="update_vet"),
-    path('consult-pet-records/<int:mascota_id>/', consult_pet_records, name='consult_pet_records')
+    path('consult-pet-records/<int:mascota_id>/', consult_pet_records, name='consult_pet_records'),
+    path('add-pet-record', add_pet_record, name='add_pet_record'),
 ]

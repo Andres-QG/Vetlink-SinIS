@@ -34,7 +34,7 @@ class EspecialidadesSerializer(serializers.ModelSerializer):
 # Mezcla de varias tablas requeridas para la vista de Expedientes
 class ExpedienteSerializer(serializers.Serializer):
     mascota_id = serializers.IntegerField()
-    nombre_mascota = serializers.CharField(max_length=255)
+    nombre_mascota = serializers.CharField(max_length=255, required=False)
     fecha = serializers.DateTimeField()
     diagnostico = serializers.CharField(max_length=255)
     peso = serializers.FloatField()

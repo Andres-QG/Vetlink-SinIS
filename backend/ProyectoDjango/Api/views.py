@@ -1017,30 +1017,59 @@ def update_vet(request, usuario):
         )
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
 
 @api_view(['GET'])
 def consult_pet_records(request, mascota_id):
     with connection.cursor() as cursor:
-        salida_cursor = cursor.connection.cursor() 
+        returned_cursor = cursor.connection.cursor()
+        cursor.callproc("VETLINK.Consultar_Expediente", [mascota_id, returned_cursor])
 
-        cursor.callproc("VETLINK.Consultar_Expediente", [mascota_id, salida_cursor])
+        pet_records = returned_cursor.fetchall()
 
-        resultado = salida_cursor.fetchone()
-
-        if not resultado:
+        if not pet_records:
             return JsonResponse({'error': 'Expediente no encontrado'}, status=404)
 
-        expediente_data = {
-            'mascota_id': resultado[0],
-            'nombre_mascota': resultado[1],
-            'fecha': resultado[2],
-            'diagnostico': resultado[3],
-            'peso': resultado[4],
-            'vacunas': resultado[5],
-            'sintomas': resultado[6],
-            'tratamientos': resultado[7]
-        }
+        pet_records_list = []
+        for entry in pet_records:
+            pet_record_data = {
+                'mascota_id': entry[0],
+                'nombre_mascota': entry[1],
+                'fecha': entry[2],
+                'diagnostico': entry[3],
+                'peso': entry[4],
+                'vacunas': entry[5],
+                'sintomas': entry[6],
+                'tratamientos': entry[7]
+            }
+            pet_records_list.append(pet_record_data)
 
-        serializer = ExpedienteSerializer(expediente_data)
-        return Response(serializer.data)
+        return Response(pet_records_list)
+
+
+@api_view(['POST'])
+def add_pet_record(request):
+    serializer = ExpedienteSerializer(data=request.data)
+    if serializer.is_valid():
+        mascota_id = serializer.validated_data['mascota_id']
+        fecha = serializer.validated_data['fecha']
+        diagnostico = serializer.validated_data['diagnostico']
+        peso = serializer.validated_data['peso']
+        vacunas = serializer.validated_data['vacunas']  # String separado por comas
+        sintomas = serializer.validated_data['sintomas']  # String separado por comas
+        tratamientos = serializer.validated_data['tratamientos']  # String separado por comas
+
+        with connection.cursor() as cursor:
+            cursor.callproc('VETLINK.Agregar_Expediente', [
+                mascota_id,
+                fecha,
+                diagnostico,
+                peso,
+                vacunas,
+                sintomas,
+                tratamientos
+            ])
+
+        return Response({'message': 'Expediente agregado correctamente'}, status=201)
+
+    return Response(serializer.errors, status=400)
