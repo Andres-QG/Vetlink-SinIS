@@ -14,6 +14,8 @@ from django.views.decorators.cache import cache_page
 from .serializers import *
 import random
 from datetime import datetime
+from django.http import JsonResponse
+from django.db import connection
 
 
 class CustomPagination(PageNumberPagination):
@@ -1015,3 +1017,30 @@ def update_vet(request, usuario):
         )
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+
+@api_view(['GET'])
+def consult_pet_records(request, mascota_id):
+    with connection.cursor() as cursor:
+        salida_cursor = cursor.connection.cursor() 
+
+        cursor.callproc("VETLINK.Consultar_Expediente", [mascota_id, salida_cursor])
+
+        resultado = salida_cursor.fetchone()
+
+        if not resultado:
+            return JsonResponse({'error': 'Expediente no encontrado'}, status=404)
+
+        expediente_data = {
+            'mascota_id': resultado[0],
+            'nombre_mascota': resultado[1],
+            'fecha': resultado[2],
+            'diagnostico': resultado[3],
+            'peso': resultado[4],
+            'vacunas': resultado[5],
+            'sintomas': resultado[6],
+            'tratamientos': resultado[7]
+        }
+
+        serializer = ExpedienteSerializer(expediente_data)
+        return Response(serializer.data)
