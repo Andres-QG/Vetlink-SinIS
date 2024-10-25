@@ -18,6 +18,9 @@ import Error from "./routes/Error";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Signup from "./routes/Signup";
 import ConsultAdmins from "./routes/ConsultAdmins";
+import ConsultSchedules from "./routes/ConsultSchedules";
+import ConsultMyPets from "./routes/ConsultMyPets";
+import DashBoardLayout from "./components/DashBoardLayout";
 import { NotificationProvider } from "./components/Notification";
 
 function App() {
@@ -26,11 +29,41 @@ function App() {
       <AuthProvider>
         <Router>
           <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/services" element={<Services />} />
+            <Route
+              path="/"
+              element={
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <LandingPage />
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/services"
+              element={
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <Services />
+                </DashBoardLayout>
+              }
+            />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/reset" element={<PassReset />} />
+            <Route
+              path="/consultSchedules"
+              element={
+                <DashBoardLayout>
+                  <ConsultSchedules />
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/consultMyPets"
+              element={
+                <DashBoardLayout>
+                  <ConsultMyPets />
+                </DashBoardLayout>
+              }
+            />
             <Route
               path="/check-reset"
               element={

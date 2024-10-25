@@ -1,23 +1,16 @@
-import Header from "../components/Header";
-import Footer from "../components/Footer";
-import { useState, useContext, useEffect } from "react";
-import { AuthContext } from "../context/AuthContext";
-
 import Services_Gallery from "../components/Services_Gallery";
-import Loading from "../components/Loading";
 
 function Services() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
+    <div className="flex flex-col min-h-screen">
       <main className="flex-grow">
         <section className="text-elemsec body-font">
           <div className="container px-5 py-24 mx-auto">
-            <div className="flex flex-col text-center w-full mb-20">
-              <h1 className="sm:text-3xl text-2xl font-semibold title-font font-montserrat mb-4 text-secondary">
+            <div className="flex flex-col w-full mb-20 text-center">
+              <h1 className="mb-4 text-2xl font-semibold sm:text-3xl title-font font-montserrat text-secondary">
                 Nuestros servicios
               </h1>
-              <p className="lg:w-2/3 mx-auto leading-relaxed text-base font-montserrat">
+              <p className="mx-auto text-base leading-relaxed lg:w-2/3 font-montserrat">
                 En VetLink nos preocupamos por el bienestar de nuestros amigos
                 peludos, por eso contamos con una alta variedad de servicios
                 para cuidarlos como se merecen, justo como ellos nos cuidan con
@@ -101,7 +94,6 @@ function Services() {
           </div>
         </section>
       </main>
-      <Footer />
     </div>
   );
 }
