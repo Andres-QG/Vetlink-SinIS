@@ -1,8 +1,18 @@
 import { useContext, useState, useEffect } from "react";
-import { Layout, Menu, Avatar, Dropdown, theme, Tooltip } from "antd";
+import {
+  Layout,
+  Menu,
+  Avatar,
+  Dropdown,
+  theme,
+  Tooltip,
+  Drawer,
+  Button,
+} from "antd";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import ComputerIcon from "@mui/icons-material/Computer";
 import SearchIcon from "@mui/icons-material/Search";
 import PersonIcon from "@mui/icons-material/Person";
@@ -16,9 +26,9 @@ const { Header, Content, Sider, Footer } = Layout;
 
 const DashboardLayout = ({
   children,
-  hideSidebar = false, // Opción para ocultar el sidebar
-  padding = "24px", // Valores predeterminados de padding
-  margin = "24px", // Valores predeterminados de margin
+  hideSidebar = false,
+  padding = "24px",
+  margin = "24px",
 }) => {
   const {
     token: { colorBgContainer, borderRadiusLG },
@@ -28,7 +38,8 @@ const DashboardLayout = ({
   const navigate = useNavigate();
   const location = useLocation();
   const [isActive, setIsActive] = useState(document.cookie.includes("true"));
-  const [collapsed, setCollapsed] = useState(true);
+  const [collapsed, setCollapsed] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false); // Estado actualizado para el Drawer
 
   useEffect(() => {
     setIsActive(document.cookie.includes("true"));
@@ -106,7 +117,7 @@ const DashboardLayout = ({
       items.push({
         key: "4",
         label: "Administración",
-        onClick: () => handleClick("admin"),
+        onClick: () => handleClick("consultSchedules"),
       });
     }
 
@@ -125,8 +136,8 @@ const DashboardLayout = ({
     switch (location.pathname) {
       case "/services":
         return "2";
-      case "/about":
-        return "1";
+      case "/consultSchedules":
+        return "4";
       default:
         return "";
     }
@@ -197,6 +208,11 @@ const DashboardLayout = ({
     }
   };
 
+  // Función para manejar la apertura/cierre del Drawer en pantallas menores a 768px
+  const toggleDrawer = () => {
+    setDrawerOpen(!drawerOpen);
+  };
+
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Header
@@ -251,6 +267,12 @@ const DashboardLayout = ({
             flexWrap: "wrap",
           }}
         />
+        <Button
+          icon={<MenuUnfoldOutlined />}
+          onClick={toggleDrawer}
+          className="lg:hidden"
+          style={{ marginLeft: "16px" }}
+        />
         <Dropdown
           menu={isActive ? loggedInMenu : loggedOutMenu}
           placement="bottomRight"
@@ -268,26 +290,46 @@ const DashboardLayout = ({
 
       <Layout>
         {!hideSidebar && (
-          <Sider
-            width={200}
-            collapsible
-            collapsed={collapsed}
-            onCollapse={(value) => setCollapsed(value)}
-            style={{
-              background: colorBgContainer,
-            }}
-          >
-            <Menu
-              mode="inline"
-              selectedKeys={[selectedKey()]}
+          <>
+            {/* Sider en pantallas grandes */}
+            <Sider
+              width={200}
+              collapsible
+              collapsed={collapsed}
+              onCollapse={(value) => setCollapsed(value)}
+              className="hidden lg:block"
               style={{
-                height: "100%",
-                borderRight: 0,
                 background: colorBgContainer,
               }}
-              items={createSidebarItems()}
-            />
-          </Sider>
+            >
+              <Menu
+                mode="inline"
+                selectedKeys={[selectedKey()]}
+                style={{
+                  height: "100%",
+                  borderRight: 0,
+                  background: colorBgContainer,
+                }}
+                items={createSidebarItems()}
+              />
+            </Sider>
+
+            {/* Drawer en pantallas pequeñas */}
+            <Drawer
+              width={200}
+              title="Menú"
+              placement="left"
+              onClose={toggleDrawer}
+              open={drawerOpen}
+              styles={{ body: { padding: 0 } }}
+            >
+              <Menu
+                mode="inline"
+                selectedKeys={[selectedKey()]}
+                items={createSidebarItems()}
+              />
+            </Drawer>
+          </>
         )}
 
         <Layout style={{ display: "flex", flexDirection: "column" }}>
@@ -299,7 +341,6 @@ const DashboardLayout = ({
               minHeight: 280,
               background: colorBgContainer,
               borderRadius: borderRadiusLG,
-              // Sombra para el contenido
               boxShadow: "0 8px 16px rgba(0, 0, 0, 0.3)",
             }}
           >

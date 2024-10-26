@@ -1,32 +1,49 @@
-import { useContext, useState, useEffect } from 'react';
-import { AuthContext } from '../context/AuthContext';
-import Error from '../routes/Error';
-import Loading from './Loading';
+import { useContext, useState, useEffect } from "react";
+import { AuthContext } from "../context/AuthContext";
+import Error from "../routes/Error";
+import { Player } from "@lottiefiles/react-lottie-player";
+import Box from "@mui/material/Box";
+import runningRabbitAnimation from "../assets/animations/RabbitAnimation.json";
 
-function ProtectedRoute ({children, requiredRoles}) {
-    const { role, fetchUserRole } = useContext(AuthContext);
-    const [loading, setLoading] = useState(true);
+function ProtectedRoute({ children, requiredRoles }) {
+  const { role, fetchUserRole } = useContext(AuthContext);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const verifyRole = async () => {
-            await fetchUserRole();
-            setLoading(false);
-        };
-        verifyRole();
-    }, [fetchUserRole]);
+  useEffect(() => {
+    const verifyRole = async () => {
+      await fetchUserRole();
+      setLoading(false);
+    };
+    verifyRole();
+  }, [fetchUserRole]);
 
-    if (loading) {
-        return <Loading text={"Cargando..."}/>
-    }
+  if (loading) {
+    // Animación Lottie durante el estado de carga
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <Player
+          autoplay
+          loop
+          src={runningRabbitAnimation} // La animación Lottie que cargaste
+          style={{ height: "300px", width: "300px" }} // Puedes ajustar el tamaño de la animación
+        />
+      </Box>
+    );
+  }
 
-    console.log("Protect: " + role)
-    console.log(requiredRoles)
-    if (!requiredRoles?.includes(role)) {
-        document.cookie = "active=false; path=/;";
-        return <Error />;
-    }
+  if (!requiredRoles?.includes(role)) {
+    document.cookie = "active=false; path=/;";
+    return <Error />;
+  }
 
-    return children;
-};
+  return children;
+}
 
 export default ProtectedRoute;

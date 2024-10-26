@@ -99,11 +99,11 @@ function App() {
             <Route
               path="/consultclients"
               element={
-                <ProtectedRoute requiredRoles={[1, 2, 3]}>
-                  <DashBoardLayout>
+                <DashBoardLayout>
+                  <ProtectedRoute requiredRoles={[1, 2, 3]}>
                     <ConsultClients />
-                  </DashBoardLayout>
-                </ProtectedRoute>
+                  </ProtectedRoute>
+                </DashBoardLayout>
               }
             />
             <Route

@@ -75,7 +75,7 @@ const ConsultClients = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="flex-grow p-4 md:mt-6 md:mb-6">
+      <div className="flex-grow">
         <div className="flex flex-col items-center justify-between mb-4 space-y-4 md:flex-row md:space-y-0">
           <h1 className="text-2xl font-semibold">Consultar Clientes</h1>
           <div className="flex flex-col w-full space-y-4 md:w-auto md:flex-row md:items-center md:space-y-0">
