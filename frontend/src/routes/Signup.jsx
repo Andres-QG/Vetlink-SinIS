@@ -1,18 +1,9 @@
-import Header from "../components/Header";
-import Footer from "../components/Footer";
-import Loading from "../components/Loading";
-
-import eyeOnIcon from "../assets/icons/eye-on.png";
-import eyeOffIcon from "../assets/icons/eye-off.png";
-
-import axios from 'axios';
+import axios from "axios";
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from '../context/AuthContext';
+import { AuthContext } from "../context/AuthContext";
 
 import {
-  Container,
-  Box,
   Typography,
   TextField,
   Button,
@@ -30,7 +21,7 @@ import {
 } from "@mui/icons-material";
 
 function Signup() {
-    const initialFormData = {
+  const initialFormData = {
     usuario: "",
     cedula: "",
     correo: "",
@@ -41,7 +32,7 @@ function Signup() {
     clave: "",
   };
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
@@ -63,9 +54,11 @@ function Signup() {
       newErrors.correo = "El correo electrónico no es válido.";
     }
 
-    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
+    const passwordRegex =
+      /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
     if (!formData.clave || !passwordRegex.test(formData.clave)) {
-      newErrors.clave = "La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial.";
+      newErrors.clave =
+        "La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial.";
     }
 
     const telefonoRegex = /^[0-9]{8}$/;
@@ -87,19 +80,22 @@ function Signup() {
   const handleSubmit = async () => {
     if (validate()) {
       setLoading(true);
-      console.log(formData)
+      console.log(formData);
       try {
-        const response = await axios.post('http://localhost:8000/api/add-client/', formData, {
-          withCredentials: true
-        });
-        setLoading(false)
-        if(response.data.success === true) {
-          navigate('/')
+        const response = await axios.post(
+          "http://localhost:8000/api/add-client/",
+          formData,
+          {
+            withCredentials: true,
+          }
+        );
+        setLoading(false);
+        if (response.data.success === true) {
+          navigate("/");
         }
-      }
-      catch (error) {
-        console.log(error)
-        setLoading(false)
+      } catch (error) {
+        console.log(error);
+        setLoading(false);
       }
       setLoading(false);
     }
@@ -112,20 +108,27 @@ function Signup() {
 
   return (
     <>
-      <Header />
       <div className=" bg-white flex w-full h-[93vh] sm:bg-[#274B92]">
-        <div className="hidden w-6/12 h-full sm:flex flex-col py-40 items-center justify-center">
-          <p className="text-5xl w-96 text-center text-white">
+        <div className="flex-col items-center justify-center hidden w-6/12 h-full py-40 sm:flex">
+          <p className="text-5xl text-center text-white w-96">
             Estás cerca de tener acceso al
             <span className="text-blue-300"> mejor cuidado </span>
             para tu mascota
           </p>
-          <img className='w-80 py-20' src="./src/assets/icons/big_logo.png" alt="" />
+          <img
+            className="py-20 w-80"
+            src="./src/assets/icons/big_logo.png"
+            alt=""
+          />
         </div>
-        <div className="max-w-5xl bg-white h-full ml-auto rounded-l-3xl flex items-center justify-center">
-         <div className="mx-auto flex justify-center">
+        <div className="flex items-center justify-center h-full max-w-5xl ml-auto bg-white rounded-l-3xl">
+          <div className="flex justify-center mx-auto">
             <div className="w-[70%] p-6 rounded-md">
-              <Typography variant="h4" component="h1" className="text-left pb-10">
+              <Typography
+                variant="h4"
+                component="h1"
+                className="pb-10 text-left"
+              >
                 Crear Cuenta
               </Typography>
 
@@ -141,7 +144,11 @@ function Signup() {
                 helperText={errors.usuario}
                 sx={{ mb: 2 }}
                 InputProps={{
-                  startAdornment: <InputAdornment position="start"><AccountCircle /></InputAdornment>,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <AccountCircle />
+                    </InputAdornment>
+                  ),
                 }}
               />
               <TextField
@@ -156,7 +163,11 @@ function Signup() {
                 helperText={errors.clave}
                 sx={{ mb: 2 }}
                 InputProps={{
-                  startAdornment: <InputAdornment position="start"><VpnKey /></InputAdornment>,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <VpnKey />
+                    </InputAdornment>
+                  ),
                 }}
               />
               <TextField
@@ -170,7 +181,11 @@ function Signup() {
                 helperText={errors.cedula}
                 sx={{ mb: 2 }}
                 InputProps={{
-                  startAdornment: <InputAdornment position="start"><Badge /></InputAdornment>,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Badge />
+                    </InputAdornment>
+                  ),
                 }}
               />
               <TextField
@@ -184,7 +199,11 @@ function Signup() {
                 helperText={errors.correo}
                 sx={{ mb: 2 }}
                 InputProps={{
-                  startAdornment: <InputAdornment position="start"><Email /></InputAdornment>,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Email />
+                    </InputAdornment>
+                  ),
                 }}
               />
               <TextField
@@ -196,7 +215,11 @@ function Signup() {
                 required
                 sx={{ mb: 2 }}
                 InputProps={{
-                  startAdornment: <InputAdornment position="start"><Person /></InputAdornment>,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Person />
+                    </InputAdornment>
+                  ),
                 }}
               />
               <TextField
@@ -208,7 +231,11 @@ function Signup() {
                 required
                 sx={{ mb: 2 }}
                 InputProps={{
-                  startAdornment: <InputAdornment position="start"><Person /></InputAdornment>,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Person />
+                    </InputAdornment>
+                  ),
                 }}
               />
               <TextField
@@ -219,7 +246,11 @@ function Signup() {
                 onChange={handleChange}
                 sx={{ mb: 2 }}
                 InputProps={{
-                  startAdornment: <InputAdornment position="start"><Person /></InputAdornment>,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Person />
+                    </InputAdornment>
+                  ),
                 }}
               />
               <TextField
@@ -233,7 +264,11 @@ function Signup() {
                 helperText={errors.telefono}
                 sx={{ mb: 2 }}
                 InputProps={{
-                  startAdornment: <InputAdornment position="start"><Phone /></InputAdornment>,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Phone />
+                    </InputAdornment>
+                  ),
                 }}
               />
 
@@ -244,19 +279,16 @@ function Signup() {
                 fullWidth
                 disabled={loading}
                 startIcon={loading && <CircularProgress size={20} />}
-                sx={{ bgcolor: "#00308F", '&:hover': { bgcolor: "#00246d" } }}
+                sx={{ bgcolor: "#00308F", "&:hover": { bgcolor: "#00246d" } }}
               >
                 {loading ? "Agregando..." : "Crear cuenta"}
               </Button>
             </div>
           </div>
-      
-          
         </div>
       </div>
-      <Footer />
     </>
   );
 }
 
-export default Signup
+export default Signup;
