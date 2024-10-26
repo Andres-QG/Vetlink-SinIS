@@ -7,6 +7,7 @@ import Services from "./routes/Services";
 import ConsultClients from "./routes/ConsultClients";
 import ConsultVets from "./routes/ConsultVets";
 import ConsultPets from "./routes/ConsultPets";
+import ConsultRecords from "./routes/ConsultRecords";
 import {
   PassReset,
   CheckCode,
@@ -79,6 +80,14 @@ function App() {
                   <NotificationProvider>
                     <ConsultPets />
                   </NotificationProvider>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/consultrecords"
+              element={
+                <ProtectedRoute requiredRoles={[1, 2, 3]}>
+                  <ConsultRecords />
                 </ProtectedRoute>
               }
             />

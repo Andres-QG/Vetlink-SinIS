@@ -1021,32 +1021,55 @@ def update_vet(request, usuario):
 
 @api_view(['GET'])
 def consult_pet_records(request):
-    with connection.cursor() as cursor:
-        returned_cursor = cursor.connection.cursor()
-        cursor.callproc("VETLINK.ConsultarExpedientes", [returned_cursor])
+    search = request.GET.get("search", "")
+    column = request.GET.get("column", "nombre_mascota")
+    order = request.GET.get("order", "asc")
 
-        pet_records = returned_cursor.fetchall()
+    try:
+        with connection.cursor() as cursor:
+            returned_cursor = cursor.connection.cursor()
+            cursor.callproc("VETLINK.ConsultarExpedientes", [returned_cursor])
 
-        if not pet_records:
-            return JsonResponse({'error': 'Expediente no encontrado'}, status=404)
+            pet_records = returned_cursor.fetchall()
 
-        pet_records_list = []
-        for entry in pet_records:
-            pet_record_data = {
-                'mascota_id': entry[0],
-                'nombre_mascota': entry[1],
-                'fecha': entry[2],
-                'diagnostico': entry[3],
-                'peso': entry[4],
-                'vacunas': entry[5],
-                'sintomas': entry[6],
-                'tratamientos': entry[7]
-            }
-            pet_records_list.append(pet_record_data)
+            if not pet_records:
+                return JsonResponse({'error': 'Expediente no encontrado'}, status=404)
 
-        paginator = CustomPagination()
-        result_page = paginator.paginate_queryset(pet_records_list, request)
-        return paginator.get_paginated_response(result_page)
+            pet_records_list = []
+            for entry in pet_records:
+                pet_record_data = {
+                    'consulta_id': entry[0],
+                    'mascota_id': entry[1],
+                    'nombre_mascota': entry[2],
+                    'usuario_cliente': entry[3],
+                    'fecha': entry[4],
+                    'diagnostico': entry[5],
+                    'peso': entry[6],
+                    'vacunas': entry[7],
+                    'sintomas': entry[8],
+                    'tratamientos': entry[9]
+                }
+                pet_records_list.append(pet_record_data)
+
+            # Filtrar por búsqueda
+            if search:
+                pet_records_list = [
+                    record for record in pet_records_list
+                    if search.lower() in str(record.get(column, "")).lower()
+                ]
+
+            # Ordenar resultados
+            pet_records_list.sort(
+                key=lambda x: x.get(column, ""),
+                reverse=(order == "desc")
+            )
+
+            paginator = CustomPagination()
+            result_page = paginator.paginate_queryset(pet_records_list, request)
+            return paginator.get_paginated_response(result_page)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])

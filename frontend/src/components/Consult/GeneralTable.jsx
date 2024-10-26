@@ -113,31 +113,45 @@ const GeneralTable = ({
           {data.map((item) => (
             <Card key={item.id} variant="outlined" sx={{ padding: 1 }}>
               <CardContent>
-                {columns.map((col) => (
-                  <Typography variant="body2" key={col.field}>
-                    <strong>{col.headerName}:</strong>{" "}
-                    {col.type === "chip" ? (
-                      <Chip
-                        label={item[col.field]}
-                        style={{
-                          backgroundColor:
-                            col.chipColors?.[item[col.field]] ||
-                            "gray" /*default*/,
-                        }}
-                      />
-                    ) : (
-                      item[col.field]
-                    )}
-                  </Typography>
-                ))}
+                {columns.map(
+                  (col) =>
+                    col.type !== "action" && (
+                      <Typography variant="body2" key={col.field}>
+                        <strong>{col.headerName}:</strong>{" "}
+                        {col.type === "chip" ? (
+                          <Chip
+                            label={item[col.field]}
+                            style={{
+                              backgroundColor:
+                                col.chipColors?.[item[col.field]] ||
+                                "gray" /*default*/,
+                            }}
+                          />
+                        ) : (
+                          item[col.field]
+                        )}
+                      </Typography>
+                    )
+                )}
                 <Box
                   sx={{
                     display: "flex",
-                    justifyContent: "flex-start",
+                    flexDirection: "column",
                     gap: 1,
                     mt: 2,
+                    alignItems: "flex-start",
                   }}
                 >
+                  {columns
+                    .filter((col) => col.type === "action")
+                    .map((col) => (
+                      <IconButton
+                        key={`action-${col.field}`}
+                        onClick={() => col.onClick(item)}
+                      >
+                        {col.icon}
+                      </IconButton>
+                    ))}
                   <Button
                     onClick={() => handleOpenModModal(item)}
                     startIcon={<Edit />}
@@ -175,14 +189,20 @@ const GeneralTable = ({
           <Table>
             <TableHead>
               <TableRow>
-                {columns.map((col) => (
-                  <TableCell
-                    key={col.field}
-                    style={{ fontWeight: "bold", backgroundColor: "#f0f0f0" }}
-                  >
-                    {col.headerName}
-                  </TableCell>
-                ))}
+                {columns.map(
+                  (col) =>
+                    col.type !== "action" && (
+                      <TableCell
+                        key={col.field}
+                        style={{
+                          fontWeight: "bold",
+                          backgroundColor: "#f0f0f0",
+                        }}
+                      >
+                        {col.headerName}
+                      </TableCell>
+                    )
+                )}
                 <TableCell
                   style={{ fontWeight: "bold", backgroundColor: "#f0f0f0" }}
                 >
@@ -193,29 +213,28 @@ const GeneralTable = ({
             <TableBody>
               {data.map((item, index) => (
                 <TableRow key={item.id || `row-${index}`}>
-                  {columns.map((col) => (
-                    <TableCell key={`cell-${item.id || index}-${col.field}`}>
-                      {col.type === "chip" ? (
-                        <Chip
-                          label={item[col.field]}
-                          style={{
-                            backgroundColor:
-                              col.chipColors?.[item[col.field]] ||
-                              "gray" /*default*/,
-                          }}
-                        />
-                      ) : (
-                        item[col.field]
-                      )}
-                    </TableCell>
-                  ))}
+                  {columns.map(
+                    (col) =>
+                      col.type !== "action" && (
+                        <TableCell
+                          key={`cell-${item.id || index}-${col.field}`}
+                        >
+                          {col.type === "chip" ? (
+                            <Chip
+                              label={item[col.field]}
+                              style={{
+                                backgroundColor:
+                                  col.chipColors?.[item[col.field]] ||
+                                  "gray" /*default*/,
+                              }}
+                            />
+                          ) : (
+                            item[col.field]
+                          )}
+                        </TableCell>
+                      )
+                  )}
                   <TableCell key={`actions-${item.id || index}`}>
-                    <IconButton onClick={() => handleOpenModModal(item)}>
-                      <Edit />
-                    </IconButton>
-                    <IconButton onClick={() => handleOpenModal(item)}>
-                      <Delete />
-                    </IconButton>
                     {columns
                       .filter((col) => col.type === "action")
                       .map((col) => (
@@ -226,6 +245,12 @@ const GeneralTable = ({
                           {col.icon}
                         </IconButton>
                       ))}
+                    <IconButton onClick={() => handleOpenModModal(item)}>
+                      <Edit />
+                    </IconButton>
+                    <IconButton onClick={() => handleOpenModal(item)}>
+                      <Delete />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               ))}
@@ -314,10 +339,10 @@ GeneralTable.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object).isRequired,
   columns: PropTypes.arrayOf(
     PropTypes.shape({
-      field: PropTypes.string.isRequired,
-      headerName: PropTypes.string.isRequired,
+      field: PropTypes.string,
+      headerName: PropTypes.string,
       width: PropTypes.number,
-      type: PropTypes.oneOf(["text", "chip", "action"]),
+      type: PropTypes.oneOf(["text", "chip", "action"]).isRequired,
       icon: PropTypes.element,
       chipColors: PropTypes.object,
       onClick: PropTypes.func,
