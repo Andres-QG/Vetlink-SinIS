@@ -5,8 +5,6 @@ import { Add } from "@mui/icons-material";
 import GeneralTable from "./GeneralTable";
 import SearchBar from "./GeneralizedSearchBar";
 import { useNotification } from "../Notification";
-import Header from "../Header";
-import Footer from "../Footer";
 import axios from "axios";
 
 const ConsultView = ({
