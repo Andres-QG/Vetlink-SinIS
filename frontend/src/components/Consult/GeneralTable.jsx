@@ -21,7 +21,7 @@ import {
   CardContent,
   Chip,
 } from "@mui/material";
-import { Edit, Delete } from "@mui/icons-material";
+import { Edit, Delete, Info } from "@mui/icons-material";
 
 const GeneralTable = ({
   data,
@@ -35,6 +35,7 @@ const GeneralTable = ({
   visualIdentifierCol,
   fetchData,
   ModModal,
+  DetailsModal,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const notify = useNotification();
@@ -59,6 +60,7 @@ const GeneralTable = ({
 
   const [openModal, setOpenModal] = useState(false);
   const [openModModal, setOpenModModal] = useState(false);
+  const [openDetailsModal, setOpenDetailsModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
   const handleOpenModal = (item) => {
@@ -103,6 +105,17 @@ const GeneralTable = ({
 
   const handleCloseModModal = () => {
     setOpenModModal(false);
+    setSelectedItem(null);
+  };
+
+  // "Details" modal
+  const handleOpenDetailsModal = (item) => {
+    setSelectedItem(item);
+    setOpenDetailsModal(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setOpenDetailsModal(false);
     setSelectedItem(null);
   };
 
@@ -152,6 +165,14 @@ const GeneralTable = ({
                         {col.icon}
                       </IconButton>
                     ))}
+                  {DetailsModal && (
+                    <Button
+                      onClick={() => handleOpenDetailsModal(item)}
+                      startIcon={<Info />}
+                    >
+                      Más detalles
+                    </Button>
+                  )}
                   <Button
                     onClick={() => handleOpenModModal(item)}
                     startIcon={<Edit />}
@@ -245,6 +266,11 @@ const GeneralTable = ({
                           {col.icon}
                         </IconButton>
                       ))}
+                    {DetailsModal && (
+                      <IconButton onClick={() => handleOpenDetailsModal(item)}>
+                        <Info />
+                      </IconButton>
+                    )}
                     <IconButton onClick={() => handleOpenModModal(item)}>
                       <Edit />
                     </IconButton>
@@ -331,6 +357,14 @@ const GeneralTable = ({
           selectedItem={selectedItem}
         />
       )}
+      {/*Modal de detalles*/}
+      {selectedItem && openDetailsModal && (
+        <DetailsModal
+          open={openDetailsModal}
+          handleClose={handleCloseDetailsModal}
+          selectedItem={selectedItem}
+        />
+      )}
     </>
   );
 };
@@ -357,6 +391,7 @@ GeneralTable.propTypes = {
   visualIdentifierCol: PropTypes.string.isRequired,
   fetchData: PropTypes.func.isRequired,
   ModModal: PropTypes.elementType.isRequired,
+  DetailsModal: PropTypes.elementType,
 };
 
 export default GeneralTable;

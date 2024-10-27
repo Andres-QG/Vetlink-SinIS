@@ -1,8 +1,6 @@
 import { useState } from "react";
 import ConsultView from "../components/Consult/ConsultView";
-import InfoIcon from "@mui/icons-material/Info";
-import Modal from "@mui/material/Modal";
-import Box from "@mui/material/Box";
+import DetailedRecordInfo from "../components/consultRecords/DetailedRecordInfo";
 
 const ConsultRecords = () => {
   const [open, setOpen] = useState(false);
@@ -18,11 +16,6 @@ const ConsultRecords = () => {
     { field: "fecha", headerName: "Fecha", type: "text" },
     { field: "diagnostico", headerName: "Diagnóstico", type: "text" },
     { field: "peso", headerName: "Peso", type: "text" },
-    {
-      type: "action",
-      icon: <InfoIcon />,
-      onClick: handleOpen,
-    },
   ];
 
   return (
@@ -33,28 +26,11 @@ const ConsultRecords = () => {
         deletionUrl="/api/delete_pet_record"
         addComponent={() => <div>Agregar Modal Placeholder</div>}
         modifyComponent={() => <div>Modificar Modal Placeholder</div>}
+        detailedInfoComponent={DetailedRecordInfo}
         columns={columns}
         pkCol="consulta_id"
         visualIdentifierCol="consulta_id"
       />
-      <Modal open={open} onClose={handleClose}>
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: 400,
-            bgcolor: "background.paper",
-            border: "2px solid #000",
-            boxShadow: 24,
-            p: 4,
-          }}
-        >
-          <h2>Detalles</h2>
-          <p>Contenido del modal</p>
-        </Box>
-      </Modal>
     </>
   );
 };

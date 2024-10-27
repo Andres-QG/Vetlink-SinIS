@@ -15,6 +15,7 @@ const ConsultView = ({
   deletionUrl,
   addComponent: AddComponent,
   modifyComponent: ModifyComponent,
+  detailedInfoComponent: DetailedInfoComponent,
   columns,
   pkCol,
   visualIdentifierCol,
@@ -112,6 +113,7 @@ const ConsultView = ({
             visualIdentifierCol={visualIdentifierCol}
             fetchData={fetchData}
             ModModal={ModifyComponent}
+            DetailsModal={DetailedInfoComponent}
           />
         )}
 
@@ -138,6 +140,7 @@ ConsultView.propTypes = {
   deletionUrl: PropTypes.string.isRequired,
   addComponent: PropTypes.elementType.isRequired,
   modifyComponent: PropTypes.elementType.isRequired,
+  detailedInfoComponent: PropTypes.elementType,
   columns: PropTypes.arrayOf(
     PropTypes.shape({
       field: PropTypes.string.isRequired,
