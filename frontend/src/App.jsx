@@ -19,6 +19,10 @@ import Error from "./routes/Error";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Signup from "./routes/Signup";
 import ConsultAdmins from "./routes/ConsultAdmins";
+import ConsultSchedules from "./routes/ConsultSchedules";
+import ConsultMyPets from "./routes/ConsultMyPets";
+import DashBoardLayout from "./components/DashBoardLayout";
+import Dashboard from "./routes/Dashboard";
 import { NotificationProvider } from "./components/Notification";
 
 function App() {
@@ -27,60 +31,131 @@ function App() {
       <AuthProvider>
         <Router>
           <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/reset" element={<PassReset />} />
+            {/* Landing Page, Services, Login */}
+            <Route
+              path="/"
+              element={
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <LandingPage />
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/services"
+              element={
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <Services />
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/login"
+              element={
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <Login />
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/signup"
+              element={
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <Signup />
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/reset"
+              element={
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <PassReset />
+                </DashBoardLayout>
+              }
+            />
             <Route
               path="/check-reset"
               element={
-                <ProtectedRoute requiredRoles={[5]}>
-                  <CheckCode />
-                </ProtectedRoute>
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <ProtectedRoute requiredRoles={[5]}>
+                    <CheckCode />
+                  </ProtectedRoute>
+                </DashBoardLayout>
               }
             />
             <Route
               path="/change-pass"
               element={
-                <ProtectedRoute requiredRoles={[5]}>
-                  <ChangePass />
-                </ProtectedRoute>
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <ProtectedRoute requiredRoles={[5]}>
+                    <ChangePass />
+                  </ProtectedRoute>
+                </DashBoardLayout>
               }
             />
             <Route
               path="/pass-success"
               element={
-                <ProtectedRoute requiredRoles={[5]}>
-                  <PassSuccess />
-                </ProtectedRoute>
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <ProtectedRoute requiredRoles={[5]}>
+                    <PassSuccess />
+                  </ProtectedRoute>
+                </DashBoardLayout>
               }
             />
 
+            {/* Consult Pages */}
             <Route
-              path="/consultclients"
+              path="/dashboard"
               element={
-                <ProtectedRoute requiredRoles={[1, 2, 3]}>
-                  <ConsultClients />
-                </ProtectedRoute>
+                <DashBoardLayout>
+                  <ProtectedRoute requiredRoles={[1, 2, 3, 4]}>
+                    <Dashboard />
+                  </ProtectedRoute>
+                </DashBoardLayout>
+              }
+            />
+
+            {/* Consult Pages */}
+            <Route
+              path="/consultSchedules"
+              element={
+                <DashBoardLayout>
+                  <ProtectedRoute requiredRoles={[1, 2]}>
+                    <ConsultSchedules />
+                  </ProtectedRoute>
+                </DashBoardLayout>
               }
             />
             <Route
-              path="/owner"
+              path="/consultMyPets"
               element={
-                <ProtectedRoute requiredRoles={[1]}>
-                  <Owner />
-                </ProtectedRoute>
+                <DashBoardLayout>
+                  <ProtectedRoute requiredRoles={[4]}>
+                    <ConsultMyPets />
+                  </ProtectedRoute>
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/consultclients"
+              element={
+                <DashBoardLayout>
+                  <ProtectedRoute requiredRoles={[1, 2, 3]}>
+                    <ConsultClients />
+                  </ProtectedRoute>
+                </DashBoardLayout>
               }
             />
             <Route
               path="/consultpets"
               element={
-                <ProtectedRoute requiredRoles={[1, 2, 3]}>
-                  <NotificationProvider>
-                    <ConsultPets />
-                  </NotificationProvider>
-                </ProtectedRoute>
+                <DashBoardLayout>
+                  <ProtectedRoute requiredRoles={[1, 2, 3]}>
+                    <NotificationProvider>
+                      <ConsultPets />
+                    </NotificationProvider>
+                  </ProtectedRoute>
+                </DashBoardLayout>
               }
             />
             <Route
@@ -94,21 +169,53 @@ function App() {
             <Route
               path="/consultvets"
               element={
-                <ProtectedRoute requiredRoles={[1, 2]}>
-                  <ConsultVets />
-                </ProtectedRoute>
+                <DashBoardLayout>
+                  <ProtectedRoute requiredRoles={[1, 2]}>
+                    <ConsultVets />
+                  </ProtectedRoute>
+                </DashBoardLayout>
               }
             />
             <Route
               path="/consultAdmins"
               element={
-                <ProtectedRoute requiredRoles={[1]}>
-                  <ConsultAdmins />
-                </ProtectedRoute>
+                <DashBoardLayout>
+                  <ProtectedRoute requiredRoles={[1]}>
+                    <ConsultAdmins />
+                  </ProtectedRoute>
+                </DashBoardLayout>
               }
             />
-            <Route path="/error" element={<Error />} />
-            <Route path="*" element={<Error />} />
+
+            {/* Owner Page */}
+            <Route
+              path="/owner"
+              element={
+                <DashBoardLayout>
+                  <ProtectedRoute requiredRoles={[1]}>
+                    <Owner />
+                  </ProtectedRoute>
+                </DashBoardLayout>
+              }
+            />
+
+            {/* Error Page */}
+            <Route
+              path="/error"
+              element={
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <Error />
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="*"
+              element={
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <Error />
+                </DashBoardLayout>
+              }
+            />
           </Routes>
         </Router>
       </AuthProvider>
