@@ -323,7 +323,7 @@ const DashboardLayout = ({
             flex: 1,
             minWidth: 0,
             display: "flex",
-            justifyContent: "end",
+            justifyContent: "center",
             flexWrap: "wrap",
           }}
         />

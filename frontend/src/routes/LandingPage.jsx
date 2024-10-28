@@ -1,4 +1,11 @@
-import Accordion from "../components/Accordion";
+import React from "react";
+import {
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Typography,
+} from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 import vetlinkTextIconLogo from "../assets/icons/vetlink-full-logo.png";
 import vetlinkFaceLogo from "../assets/icons/vetlink-logo-face.png";
@@ -183,7 +190,20 @@ function LandingPage() {
           <h2 className="mb-4 text-6xl font-semibold text-center text-secondary">
             Preguntas Frecuentes
           </h2>
-          <Accordion items={faqs} />
+          {faqs.map((faq) => (
+            <Accordion key={faq.title}>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls={`panel-${faq.title}-content`}
+                id={`panel-${faq.title}-header`}
+              >
+                <Typography className="font-semibold">{faq.title}</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Typography>{faq.content}</Typography>
+              </AccordionDetails>
+            </Accordion>
+          ))}
         </section>
       </main>
     </div>
