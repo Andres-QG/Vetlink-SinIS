@@ -5,8 +5,6 @@ import { Add } from "@mui/icons-material";
 import GeneralTable from "./GeneralTable";
 import SearchBar from "./GeneralizedSearchBar";
 import { useNotification } from "../Notification";
-import Header from "../Header";
-import Footer from "../Footer";
 import axios from "axios";
 
 const ConsultView = ({
@@ -15,6 +13,7 @@ const ConsultView = ({
   deletionUrl,
   addComponent: AddComponent,
   modifyComponent: ModifyComponent,
+  detailedInfoComponent: DetailedInfoComponent,
   columns,
   pkCol,
   visualIdentifierCol,
@@ -68,8 +67,7 @@ const ConsultView = ({
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header />
-      <div className="flex-grow p-4">
+      <div className="flex-grow">
         <div className="flex flex-col items-center justify-between mb-4 space-y-4 md:flex-row md:space-y-0">
           <h1 className="text-2xl font-semibold">{title}</h1>
           <div className="flex flex-col w-full space-y-4 md:w-auto md:flex-row md:items-center md:space-y-0">
@@ -112,6 +110,7 @@ const ConsultView = ({
             visualIdentifierCol={visualIdentifierCol}
             fetchData={fetchData}
             ModModal={ModifyComponent}
+            DetailsModal={DetailedInfoComponent}
           />
         )}
 
@@ -127,7 +126,6 @@ const ConsultView = ({
           />
         )}
       </div>
-      <Footer />
     </div>
   );
 };
@@ -138,11 +136,16 @@ ConsultView.propTypes = {
   deletionUrl: PropTypes.string.isRequired,
   addComponent: PropTypes.elementType.isRequired,
   modifyComponent: PropTypes.elementType.isRequired,
+  detailedInfoComponent: PropTypes.elementType,
   columns: PropTypes.arrayOf(
     PropTypes.shape({
       field: PropTypes.string.isRequired,
       headerName: PropTypes.string.isRequired,
       width: PropTypes.number,
+      type: PropTypes.oneOf(["text", "chip", "action"]),
+      icon: PropTypes.element,
+      onClick: PropTypes.func,
+      chipColors: PropTypes.object,
     })
   ).isRequired,
   pkCol: PropTypes.string.isRequired,
