@@ -132,6 +132,7 @@ const ModifyClinicModal = ({ onSuccess, handleOpen, handleClose, selectedItem = 
           onClose={handleClose}
           aria-labelledby="modal-title"
           aria-describedby="modal-description"
+          className="z-10"
         >
           <Box
             sx={{

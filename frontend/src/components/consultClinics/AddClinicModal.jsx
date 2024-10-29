@@ -20,7 +20,7 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 
-const AddClinicaModal = ({ open, onClose, onSuccess }) => {
+const AddClinicModal = ({ open, onClose, onSuccess }) => {
   const initialFormData = {
     clinica: "",
     direccion: "",
@@ -290,4 +290,4 @@ const AddClinicaModal = ({ open, onClose, onSuccess }) => {
   );
 };
 
-export default AddClinicaModal;
+export default AddClinicModal;
