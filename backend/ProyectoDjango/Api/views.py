@@ -1243,3 +1243,20 @@ def update_pet_record(request, mascota_id, consulta_id):
     except Exception as e:
         # Manejo de errores de base de datos
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["PUT"])
+def reactivate_user(request, usuario):
+    try:
+        user = Usuarios.objects.get(usuario=usuario)
+        user.activo = True
+        user.save()
+        return Response(
+            {"message": "Usuario reactivado con éxito."}, status=status.HTTP_200_OK
+        )
+    except Usuarios.DoesNotExist:
+        return Response(
+            {"error": "Usuario no encontrado."}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
