@@ -140,7 +140,7 @@ function Login() {
   return (
     <>
       {loading ? (
-        <Loading text={"Verificando permisos"} />
+        <Loading text={"Cargando..."} />
       ) : (
         <div className="flex flex-col min-h-screen">
 
