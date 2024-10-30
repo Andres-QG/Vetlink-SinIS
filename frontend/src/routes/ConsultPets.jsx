@@ -3,6 +3,7 @@ import AddPet from "../components/consultPets/AddPet";
 import ModifyPet from "../components/consultPets/ModifyPet";
 
 const ConsultPets = () => {
+  const rowsPerPage = 7
   const columns = [
     { field: "usuario_cliente", headerName: "Dueño", type: "text" },
     { field: "nombre", headerName: "Nombre", type: "text" },
@@ -29,6 +30,7 @@ const ConsultPets = () => {
       deletionUrl="http://localhost:8000/api/delete-pet"
       addComponent={AddPet}
       modifyComponent={ModifyPet}
+      rowsPerPage={rowsPerPage}
       columns={columns}
       pkCol="mascota_id"
       visualIdentifierCol="nombre"

@@ -20,14 +20,14 @@ function Owner() {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchColumn, setSearchColumn] = useState("nombre");
   const [order, setOrder] = useState("asc");
-  const rowsPerPage = 10;
+  const rowsPerPage = 7;
   const [open, setOpen] = useState(false);
 
   const columns = [
-    { field: "clinica", headerName: "Clinica" },
-    { field: "direccion", headerName: "Direccion" },
-    { field: "telefono", headerName: "Telefono" },
-    { field: "dueño", headerName: "Dueño" },
+    { field: "clinica", headerName: "Clinica", type: "text" },
+    { field: "direccion", headerName: "Direccion", type: "text" },
+    { field: "telefono", headerName: "Telefono", type: "text" },
+    { field: "dueño", headerName: "Dueño", type: "text" },
   ];
 
   const [alert, setAlert] = useState({
@@ -99,6 +99,7 @@ function Owner() {
         deletionUrl="http://localhost:8000/api/delete-clinic"
         addComponent={AddClinicModal}
         modifyComponent={ModifyClinicModal}
+        rowsPerPage={rowsPerPage}
         columns={columns}
         pkCol="mascota_id"
         visualIdentifierCol="nombre"
