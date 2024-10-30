@@ -98,9 +98,21 @@ const VetsTable = ({
   };
 
   const renderEstadoChip = (estado) => {
-    const color = estado === "Activo" ? "success" : "error";
+    const color =
+      estado === "Activo" ? "rgba(184,230,215,255)" : "rgba(255,124,125,255)";
     const label = estado === "Activo" ? "Activo" : "Inactivo";
-    return <Chip label={label} color={color} />;
+    return (
+      <Chip
+        label={label}
+        sx={{
+          backgroundColor: color,
+          color: "black",
+          width: "80px",
+          display: "flex",
+          justifyContent: "center",
+        }}
+      />
+    );
   };
 
   return (
@@ -111,21 +123,39 @@ const VetsTable = ({
             {data.map((item) => (
               <Card key={item.id} style={{ marginBottom: "10px" }}>
                 <CardContent>
-                  {columns.map((col) => (
-                    <Typography key={col.field} variant="body2" component="p">
-                      <strong>{col.headerName}:</strong> {item[col.field]}
+                  {columns.map(
+                    (col) =>
+                      col.headerName && (
+                        <Typography
+                          key={col.field}
+                          variant="body2"
+                          component="p">
+                          <strong>{col.headerName}:</strong> {item[col.field]}
+                        </Typography>
+                      )
+                  )}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}>
+                    <Typography variant="body2" component="p">
+                      <strong>Estado:</strong>
                     </Typography>
-                  ))}
-                  <Typography variant="body2" component="p">
-                    <strong>Estado:</strong> {renderEstadoChip(item.estado)}
-                  </Typography>
+                    {renderEstadoChip(item.estado)}
+                  </div>
                 </CardContent>
                 <CardActions>
                   <IconButton onClick={() => onEditVet(item)}>
-                    <Edit />
+                    <Edit fontSize="small" />
                   </IconButton>
                   <IconButton onClick={() => handleDeleteOrReactivate(item)}>
-                    {item.estado === "Activo" ? <Delete /> : <Restore />}
+                    {item.estado === "Activo" ? (
+                      <Delete fontSize="small" />
+                    ) : (
+                      <Restore fontSize="small" />
+                    )}
                   </IconButton>
                 </CardActions>
               </Card>
@@ -179,10 +209,14 @@ const VetsTable = ({
                   </TableCell>
                   <TableCell key={`actions-${item.id}`}>
                     <IconButton onClick={() => onEditVet(item)}>
-                      <Edit />
+                      <Edit fontSize="small" />
                     </IconButton>
                     <IconButton onClick={() => handleDeleteOrReactivate(item)}>
-                      {item.estado === "Activo" ? <Delete /> : <Restore />}
+                      {item.estado === "Activo" ? (
+                        <Delete fontSize="small" />
+                      ) : (
+                        <Restore fontSize="small" />
+                      )}
                     </IconButton>
                   </TableCell>
                 </TableRow>

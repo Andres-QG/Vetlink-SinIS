@@ -1260,3 +1260,39 @@ def reactivate_user(request, usuario):
         )
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["PUT"])
+def reactivate_clinic(request, clinica_id):
+    try:
+        clinica = Clinicas.objects.get(pk=clinica_id)
+        clinica.activo = True
+        clinica.save()
+        return Response(
+            {"message": "Clínica reactivada con éxito."},
+            status=status.HTTP_200_OK,
+        )
+    except Clinicas.DoesNotExist:
+        return Response(
+            {"error": "Clínica no encontrada."}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["PUT"])
+def reactivate_pet(request, mascota_id):
+    try:
+        mascota = Mascotas.objects.get(pk=mascota_id)
+        mascota.activo = True
+        mascota.save()
+        return Response(
+            {"message": "Mascota reactivada con éxito."},
+            status=status.HTTP_200_OK,
+        )
+    except Mascotas.DoesNotExist:
+        return Response(
+            {"error": "Mascota no encontrada."}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

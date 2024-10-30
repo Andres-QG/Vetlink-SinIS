@@ -27,6 +27,7 @@ const ConsultPets = () => {
       title="Consultar Mascotas"
       fetchUrl="http://localhost:8000/api/consult-mascotas/"
       deletionUrl="http://localhost:8000/api/delete-pet"
+      restoreUrl=""
       addComponent={AddPet}
       modifyComponent={ModifyPet}
       columns={columns}

@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Button, CircularProgress, Snackbar, Alert } from "@mui/material";
 import { Add } from "@mui/icons-material";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
 import GeneralizedSearchBar from "../components/Consult/GeneralizedSearchBar";
 import AddVetModal from "../components/ConsultVets/AddVetModal";
 import VetsTable from "../components/ConsultVets/VetsTable";

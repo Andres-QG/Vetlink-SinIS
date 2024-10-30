@@ -42,4 +42,10 @@ urlpatterns = [
         name="update_pet_record",
     ),
     path("reactivate-user/<str:usuario>/", reactivate_user, name="reactivate_user"),
+    path("reactivate-pet/<int:mascota_id>/", reactivate_pet, name="reactivate_pet"),
+    path(
+        "reactivate-clinic/<int:clinica_id>/",
+        reactivate_clinic,
+        name="reactivate_clinic",
+    ),
 ]
