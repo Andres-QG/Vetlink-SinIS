@@ -33,4 +33,7 @@ urlpatterns = [
     path('add-pet-record', add_pet_record, name='add_pet_record'),
     path('delete-pet-record/<int:mascota_id>/<int:consulta_id>/', delete_pet_record, name='delete_pet_record'),
     path('update-pet-record/<int:mascota_id>/<int:consulta_id>/', update_pet_record, name='update_pet_record'),
+    path('consult-schedules/', consult_schedules, name='consult_schedules'),
+    path('add-schedule/', add_vet_schedule, name='add_vet_schedule'),
+    path('autocomplete-vet/', autocomplete_vet, name='autocomplete_vet'),
 ]

@@ -6,8 +6,6 @@ import SearchBar from "../components/Consult/GeneralizedSearchBar";
 import ModifyClientModal from "../components/ConsultClients/ModifyClientModal";
 import DeleteClientModal from "../components/ConsultClients/DeleteClientModal";
 import axios from "axios";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
 import AddClientModal from "../components/ConsultClients/AddClientModal";
 
 const ConsultClients = () => {
