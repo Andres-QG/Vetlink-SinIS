@@ -43,3 +43,8 @@ class ExpedienteSerializer(serializers.Serializer):
     vacunas = serializers.CharField(max_length=255)   # Lista separada por comas
     sintomas = serializers.CharField(max_length=255)  # Lista separada por comas
     tratamientos = serializers.CharField(max_length=255)  # Lista separada por comas
+
+class CitasSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Citas
+        fields = "__all__"

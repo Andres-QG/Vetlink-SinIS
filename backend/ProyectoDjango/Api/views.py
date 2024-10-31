@@ -442,7 +442,8 @@ def update_cita(request, cita_id):
 def delete_cita(request, cita_id):
     try:
         cita = Citas.objects.get(pk=cita_id)
-        cita.delete()
+        cita.activo = False
+        cita.save()
         return Response(
             {"message": "Cita eliminada correctamente"}, status=status.HTTP_200_OK
         )
@@ -512,6 +513,40 @@ def get_user_role(request):
     else:
         return Response({"status": "error", "message": "Usuario no ha iniciado sesión"})
 
+@api_view(["GET"])
+def get_clients(request):
+    clients = Usuarios.objects.filter(rol__nombre="Cliente")  # Assuming "Cliente" represents clients in the 'Roles' table
+    serializer = NameUsuariosSerializer(clients, many=True)
+    if serializer:
+        return Response(
+            {
+                "status": "success",
+                "message": "Clientes obtenidos",
+                "clients": serializer.data,
+            }
+        )
+    else:
+        return Response(
+            {"status": "error", "message": "No se pudo obtener clientes"}
+        )
+
+
+@api_view(["GET"])
+def get_vets(request):
+    vets = Usuarios.objects.filter(rol__nombre="Veterinario")  # Assuming "Veterinario" represents veterinarians
+    serializer = NameUsuariosSerializer(vets, many=True)
+    if serializer:
+        return Response(
+            {
+                "status": "success",
+                "message": "Veterinarios obtenidos",
+                "vets": serializer.data,
+            }
+        )
+    else:
+        return Response(
+            {"status": "error", "message": "No se pudo obtener veterinarios"}
+        )
 
 @api_view(["GET"])
 def get_owners(request):

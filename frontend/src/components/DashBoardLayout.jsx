@@ -29,6 +29,8 @@ import CalendarIcon from "@mui/icons-material/Event";
 import ClientsIcon from "@mui/icons-material/Group";
 import PetsIconAlt from "@mui/icons-material/Pets";
 import VetsIcon from "@mui/icons-material/MedicalServices";
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+
 
 const { Header, Content, Sider, Footer } = Layout;
 
@@ -212,13 +214,19 @@ const DashboardLayout = ({
             label: "Veterinarios",
             onClick: () => handleClick("consultvets"),
           },
+          {
+            key: "consultCitas",
+            icon: <CalendarMonthIcon />,
+            label: "Citas",
+            onClick: () => handleClick("appointments"),
+          },
           ...(role === 1
             ? [
                 {
                   key: "consultClinics",
                   icon: <ClinicIcon />,
                   label: "Clínicas",
-                  onClick: () => handleClick("Owner"),
+                  onClick: () => handleClick("clinics"),
                 },
                 {
                   key: "consultAdmins",
@@ -226,6 +234,7 @@ const DashboardLayout = ({
                   label: "Administradores",
                   onClick: () => handleClick("consultAdmins"),
                 },
+                
               ]
             : []),
         ],

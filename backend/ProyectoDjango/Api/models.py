@@ -89,7 +89,7 @@ class CitaServicios(models.Model):
 
 
 class Citas(models.Model):
-    cita_id = models.FloatField(primary_key=True, db_comment='Este campo es la llave primaria de la tabla. Almacena un identificador ·nico para cada cita. Este valor debe ser ·nico y permite distinguir cada cita de manera clara.')
+    cita_id = models.AutoField(primary_key=True, db_comment='Este campo es la llave primaria de la tabla. Almacena un identificador ·nico para cada cita. Este valor debe ser ·nico y permite distinguir cada cita de manera clara.')
     usuario_cliente = models.ForeignKey('Usuarios', models.DO_NOTHING, db_column='usuario_cliente', db_comment='Este campo es una llave forßnea que hace referencia al usuario cliente que program¾ la cita. Permite vincular la cita con el cliente correspondiente en el sistema.')
     usuario_veterinario = models.ForeignKey('Usuarios', models.DO_NOTHING, db_column='usuario_veterinario', related_name='citas_usuario_veterinario_set', db_comment='Este campo es una llave forßnea que hace referencia al veterinario que atenderß la cita. Permite vincular la cita con el veterinario correspondiente en el sistema.')
     mascota = models.ForeignKey('Mascotas', models.DO_NOTHING, db_comment='Este campo es una llave forßnea que hace referencia a la mascota que serß atendida en la cita. Permite vincular la cita con la mascota correspondiente.')

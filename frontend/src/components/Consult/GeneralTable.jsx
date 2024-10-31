@@ -135,9 +135,7 @@ const GeneralTable = ({
                           <Chip
                             label={item[col.field] === true ? "Activo" : "Inactivo"}
                             style={{
-                              backgroundColor:
-                                col.chipColors?.[item[col.field]] ||
-                                "gray" /*default*/,
+                              backgroundColor: item[col.field] === true ? col.chipColors?.["activo"] : col.chipColors?.["inactivo"] || "gray",
                             }}
                           />
                         ) : (

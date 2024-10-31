@@ -9,6 +9,9 @@ urlpatterns = [
     path("reset-password/", reset_password, name="reset_password"),
     path("verify-code/", verify_code, name="verify_code"),
     path("check-new-pass/", check_new_pass, name="check_new_pass"),
+    path("get-owners/", get_owners, name="get_owners"),
+    path("get-clients/", get_clients, name="get_clients"),
+    path("get-vets/", get_vets, name="get_vets"),
     
     # Client APIs
     path("consult-client/", consult_client, name="consult_client"),
@@ -27,7 +30,6 @@ urlpatterns = [
     path("create-pet/", create_pet, name="create_pet"),
     path("update-pet/<int:mascota_id>/", update_pet, name="update_pet"),
     path("delete-pet/<int:mascota_id>/", delete_pet, name="delete_pet"),
-    path("get-owners/", get_owners, name="get_owners"),
 
     # Admin APIs
     path("consult-admin/", consult_admin, name="consult_admin"),
