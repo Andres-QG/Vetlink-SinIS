@@ -29,7 +29,7 @@ function Owner() {
         modifyComponent={ModifyClinicModal}
         rowsPerPage={rowsPerPage}
         columns={columns}
-        pkCol="mascota_id"
+        pkCol="clinica_id"
         visualIdentifierCol="clinica"
       />
     </>

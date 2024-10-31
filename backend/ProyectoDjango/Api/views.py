@@ -301,7 +301,8 @@ def update_clinic(request, clinica_id):
 def delete_clinic(request, clinica_id):
     try:
         clinica = Clinicas.objects.get(pk=clinica_id)
-        clinica.delete()
+        clinica.activo = False
+        clinica.save()
         return Response(
             {"message": "Clínica eliminada correctamente"}, status=status.HTTP_200_OK
         )
