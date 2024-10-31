@@ -50,6 +50,7 @@ const ConsultView = ({
 
       const response = await axios.get(fetchUrl, { params });
       const data = response.data;
+      console.log(data)
       setData(data.results);
       setTotalCount(data.count);
     } catch (error) {

@@ -20,7 +20,7 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 
-const ModifyClinicModal = ({ onSuccess, handleOpen, handleClose, selectedItem = undefined}) => {
+const ModifyClinicModal = ({ onSuccess, open, handleClose, selectedItem = undefined}) => {
   const initialFormData = {
     clinica_id: selectedItem.clinica_id || "",
     clinica: selectedItem?.clinica || "",
@@ -128,7 +128,7 @@ const ModifyClinicModal = ({ onSuccess, handleOpen, handleClose, selectedItem = 
     <>
       {selectedItem !== undefined ? (
         <Modal
-          open={handleOpen}
+          open={open}
           onClose={handleClose}
           aria-labelledby="modal-title"
           aria-describedby="modal-description"

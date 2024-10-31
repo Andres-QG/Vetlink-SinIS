@@ -203,6 +203,7 @@ def consult_clinics(request):
                 "direccion": clinicas.direccion,
                 "telefono": clinicas.telefono,
                 "dueño": clinicas.usuario_propietario.nombre,
+                "activo": clinicas.activo
             }
             for clinicas in result_page
         ]
@@ -211,85 +212,6 @@ def consult_clinics(request):
     except Exception as e:
         print(e)
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-@api_view(["POST"])
-def create_pet(request):
-    try:
-        usuario = request.data.get("usuario_cliente")
-
-        # Verificar la existencia del cliente
-        try:
-            usuario_cliente = Usuarios.objects.get(usuario=usuario)
-        except Usuarios.DoesNotExist:
-            return Response(
-                {"error": "Usuario no encontrado."}, status=status.HTTP_404_NOT_FOUND
-            )
-
-        data = request.data
-
-        # Verificar si se envía edad y no la fecha de nacimiento
-        edad = data.get("edad", None)
-        if edad:
-            try:
-                # Convertir la edad en fecha de nacimiento aproximada
-                edad = int(edad)
-                current_year = datetime.now().year
-                birth_year = current_year - edad
-                data["fecha_nacimiento"] = (
-                    f"{birth_year}-01-01"  # Se asigna el 1 de enero por defecto
-                )
-            except ValueError:
-                return Response(
-                    {"error": "La edad debe ser un número entero."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-        # Reemplazar el usuario_cliente por el objeto relacionado
-        data["usuario_cliente"] = usuario_cliente.usuario
-
-        data["activo"] = 1
-
-        # Serializar los datos y crear la mascota
-        serializer = MascotaSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-@csrf_exempt
-@api_view(["GET"])
-def get_user_role(request):
-    role = request.session.get("role")
-
-    print("Current session:", request.session.items())
-    if role:
-        return Response({"status": "success", "message": "Rol obtenido", "role": role})
-    else:
-        return Response({"status": "error", "message": "Usuario no ha iniciado sesión"})
-
-
-@api_view(["GET"])
-def get_owners(request):
-    owners = Usuarios.objects.filter(rol_id=1)
-    serializer = NameUsuariosSerializer(owners, many=True)
-    if serializer:
-        return Response(
-            {
-                "status": "success",
-                "message": "Propietarios obtenidos",
-                "owners": serializer.data,
-            }
-        )
-    else:
-        return Response(
-            {"status": "error", "message": "No se pudo obtener propietarios"}
-        )
-
 
 @api_view(["POST"])
 @transaction.atomic
@@ -389,6 +311,224 @@ def delete_clinic(request, clinica_id):
         )
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+def consult_citas(request):
+    search = request.GET.get('search', '')
+    column = request.GET.get('column', 'fecha')
+    order = request.GET.get('order', 'asc')
+
+    if column == "cliente":
+        column = "usuario_cliente__nombre"
+    elif column == "veterinario":
+        column = "usuario_veterinario__nombre"
+    elif column == "mascota":
+        column = "mascota__nombre"
+    
+    try:
+        citas = Citas.objects.all()
+
+        if search:
+            if column == "fecha":
+                citas = citas.filter(fecha__icontains=search)
+            else:
+                citas = citas.filter(**{f"{column}__icontains": search})
+        
+        citas = citas.order_by(f'-{column}' if order == 'desc' else column)
+
+        paginator = CustomPagination()
+        result_page = paginator.paginate_queryset(citas, request)
+        
+        serializer_data = [
+            {
+                "cita_id": cita.cita_id,
+                "cliente": cita.usuario_cliente.nombre,
+                "veterinario": cita.usuario_veterinario.nombre,
+                "mascota": cita.mascota.nombre,
+                "fecha": cita.fecha,
+                "hora": cita.hora,
+                "motivo": cita.motivo,
+                "estado": cita.estado,
+            }
+            for cita in result_page
+        ]
+
+        return paginator.get_paginated_response(serializer_data)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(["POST"])
+@transaction.atomic
+def add_cita(request):
+    try:
+        cliente_id = request.data.get("cliente_id")
+        veterinario_id = request.data.get("veterinario_id")
+        mascota_id = request.data.get("mascota_id")
+        fecha = request.data.get("fecha")
+        hora = request.data.get("hora")
+        motivo = request.data.get("motivo", "")
+        estado = request.data.get("estado", "Programada")  
+
+        cliente = Usuarios.objects.get(usuario=cliente_id)
+        veterinario = Usuarios.objects.get(usuario=veterinario_id)
+        mascota = Mascotas.objects.get(pk=mascota_id)
+
+        data = {
+            "usuario_cliente": cliente.usuario,
+            "usuario_veterinario": veterinario.usuario,
+            "mascota": mascota.mascota_id,
+            "fecha": fecha,
+            "hora": hora,
+            "motivo": motivo,
+            "estado": estado,
+        }
+
+        nuevaCita = CitasSerializer(data=data)
+        if nuevaCita.is_valid():
+            nuevaCita.save()
+            return Response(
+                {"message": "Cita agregada con éxito"},
+                status=status.HTTP_201_CREATED,
+            )
+        else:
+            return Response(
+                {"errors": nuevaCita.errors}, status=status.HTTP_400_BAD_REQUEST
+            )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(["PUT"])
+def update_cita(request, cita_id):
+    try:
+        cita = Citas.objects.get(pk=cita_id)
+
+        cliente_id = request.data.get("cliente_id")
+        veterinario_id = request.data.get("veterinario_id")
+        mascota_id = request.data.get("mascota_id")
+        fecha = request.data.get("fecha")
+        hora = request.data.get("hora")
+        motivo = request.data.get("motivo")
+        estado = request.data.get("estado")
+
+        if cliente_id:
+            cita.usuario_cliente = Usuarios.objects.get(usuario=cliente_id)
+        if veterinario_id:
+            cita.usuario_veterinario = Usuarios.objects.get(usuario=veterinario_id)
+        if mascota_id:
+            cita.mascota = Mascotas.objects.get(pk=mascota_id)
+        if fecha:
+            cita.fecha = fecha
+        if hora:
+            cita.hora = hora
+        if motivo:
+            cita.motivo = motivo
+        if estado:
+            cita.estado = estado
+
+        cita.save()
+        return Response(
+            {"message": "Cita actualizada con éxito."}, status=status.HTTP_200_OK
+        )
+
+    except Citas.DoesNotExist:
+        return Response(
+            {"error": "Cita no encontrada"}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(["DELETE"])
+def delete_cita(request, cita_id):
+    try:
+        cita = Citas.objects.get(pk=cita_id)
+        cita.delete()
+        return Response(
+            {"message": "Cita eliminada correctamente"}, status=status.HTTP_200_OK
+        )
+    except Citas.DoesNotExist:
+        return Response(
+            {"error": "Cita no encontrada"}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(["POST"])
+def create_pet(request):
+    try:
+        usuario = request.data.get("usuario_cliente")
+
+        # Verificar la existencia del cliente
+        try:
+            usuario_cliente = Usuarios.objects.get(usuario=usuario)
+        except Usuarios.DoesNotExist:
+            return Response(
+                {"error": "Usuario no encontrado."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        data = request.data
+
+        # Verificar si se envía edad y no la fecha de nacimiento
+        edad = data.get("edad", None)
+        if edad:
+            try:
+                # Convertir la edad en fecha de nacimiento aproximada
+                edad = int(edad)
+                current_year = datetime.now().year
+                birth_year = current_year - edad
+                data["fecha_nacimiento"] = (
+                    f"{birth_year}-01-01"  # Se asigna el 1 de enero por defecto
+                )
+            except ValueError:
+                return Response(
+                    {"error": "La edad debe ser un número entero."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        # Reemplazar el usuario_cliente por el objeto relacionado
+        data["usuario_cliente"] = usuario_cliente.usuario
+
+        data["activo"] = 1
+
+        # Serializar los datos y crear la mascota
+        serializer = MascotaSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@csrf_exempt
+@api_view(["GET"])
+def get_user_role(request):
+    role = request.session.get("role")
+
+    print("Current session:", request.session.items())
+    if role:
+        return Response({"status": "success", "message": "Rol obtenido", "role": role})
+    else:
+        return Response({"status": "error", "message": "Usuario no ha iniciado sesión"})
+
+
+@api_view(["GET"])
+def get_owners(request):
+    owners = Usuarios.objects.filter(rol_id=1)
+    serializer = NameUsuariosSerializer(owners, many=True)
+    if serializer:
+        return Response(
+            {
+                "status": "success",
+                "message": "Propietarios obtenidos",
+                "owners": serializer.data,
+            }
+        )
+    else:
+        return Response(
+            {"status": "error", "message": "No se pudo obtener propietarios"}
+        )
+
 
 
 @api_view(["GET"])
@@ -709,7 +849,7 @@ def consult_mascotas(request):
                 "raza": mascota.raza,
                 "fecha_nacimiento": mascota.fecha_nacimiento,
                 "usuario_cliente": mascota.usuario_cliente.usuario,
-                "activo": "activo" if mascota.activo == 1 else "inactivo",
+                "activo": mascota.activo,
             }
             for mascota in result_page
         ]
