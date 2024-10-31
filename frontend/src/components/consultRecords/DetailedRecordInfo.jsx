@@ -2,7 +2,6 @@ import PropTypes from "prop-types";
 import { Modal, Box, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import AssignmentIcon from "@mui/icons-material/Assignment";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import MonitorWeightIcon from "@mui/icons-material/MonitorWeight";
 import TreatmentIcon from "@mui/icons-material/MedicationLiquid";
 import VaccinesIcon from "@mui/icons-material/Vaccines";
@@ -43,52 +42,50 @@ const DetailedRecordInfo = ({ open, handleClose, selectedItem }) => {
         >
           <CloseIcon />
         </IconButton>
-        <h2 className="text-xl font-medium text-gray-700 mb-3 flex items-center">
+        <h2 className="text-xl font-bold flex items-center">
           <AssignmentIcon sx={{ mr: 1 }} />
           Expediente de consulta ID: {details.consulta_id} de{" "}
           {details.nombre_mascota}
         </h2>
-        <div className="mb-3 flex items-center text-gray-500 text-sm">
-          <CalendarTodayIcon sx={{ mr: 1 }} />
+        <div className="mb-3 ml-8 flex items-center text-gray-700 text-sm">
           Fecha: {details.fecha}
         </div>
         <div className="mb-8">
-          <h3 className="text-xl font-semibold flex items-center">
+          <h3 className="text-xl font-medium text-gray-700 flex items-center">
             <MonitorWeightIcon sx={{ mr: 1 }} />
-            Peso:
+            Peso: {details.peso} Kg
           </h3>
-          <p className="text-gray-700">{details.peso} Kg</p>
         </div>
         <div className="mb-8">
-          <h3 className="text-xl font-semibold flex items-center">
+          <h3 className="text-xl font-medium text-gray-700 flex items-center">
             <HealingIcon sx={{ mr: 1 }} />
             Síntomas presentados
           </h3>
           <ul className="list-disc list-inside text-gray-700 ml-7">
-            {details.sintomas.map((sintoma, index) => (
-              <li key={index}>{sintoma.trim()}</li>
+            {details.sintomas.map((sintoma) => (
+              <li key={sintoma.trim()}>{sintoma.trim()}</li>
             ))}
           </ul>
         </div>
         <div className="mb-8">
-          <h3 className="text-xl font-semibold flex items-center">
+          <h3 className="text-xl font-medium text-gray-700 flex items-center">
             <VaccinesIcon sx={{ mr: 1 }} />
             Vacunas suministradas
           </h3>
           <ul className="list-disc list-inside text-gray-700 ml-7">
-            {details.vacunas.map((vacuna, index) => (
-              <li key={index}>{vacuna.trim()}</li>
+            {details.vacunas.map((vacuna) => (
+              <li key={vacuna.trim()}>{vacuna.trim()}</li>
             ))}
           </ul>
         </div>
         <div className="mb-8">
-          <h3 className="text-xl font-semibold flex items-center">
+          <h3 className="text-xl font-medium text-gray-700 flex items-center">
             <TreatmentIcon sx={{ mr: 1 }} />
             Tratamientos recetados
           </h3>
           <ul className="list-disc list-inside text-gray-700 ml-7">
-            {details.tratamientos.map((tratamiento, index) => (
-              <li key={index}>{tratamiento.trim()}</li>
+            {details.tratamientos.map((tratamiento) => (
+              <li key={tratamiento.trim()}>{tratamiento.trim()}</li>
             ))}
           </ul>
         </div>

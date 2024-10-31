@@ -1026,50 +1026,65 @@ def consult_pet_records(request):
     order = request.GET.get("order", "asc")
 
     try:
-        with connection.cursor() as cursor:
-            returned_cursor = cursor.connection.cursor()
-            cursor.callproc("VETLINK.ConsultarExpedientes", [returned_cursor])
+        pet_records_list = fetch_pet_records_from_db()
 
-            pet_records = returned_cursor.fetchall()
+        if not pet_records_list:
+            return JsonResponse({'error': 'Expediente no encontrado'}, status=404)
 
-            if not pet_records:
-                return JsonResponse({'error': 'Expediente no encontrado'}, status=404)
+        pet_records_list = filter_and_sort_pet_records(pet_records_list, search, column, order)
 
-            pet_records_list = []
-            for entry in pet_records:
-                pet_record_data = {
-                    'consulta_id': entry[0],
-                    'mascota_id': entry[1],
-                    'nombre_mascota': entry[2],
-                    'usuario_cliente': entry[3],
-                    'fecha': entry[4],
-                    'diagnostico': entry[5],
-                    'peso': entry[6],
-                    'vacunas': entry[7],
-                    'sintomas': entry[8],
-                    'tratamientos': entry[9]
-                }
-                pet_records_list.append(pet_record_data)
+        paginator = CustomPagination()
+        result_page = paginator.paginate_queryset(pet_records_list, request)
+        return paginator.get_paginated_response(result_page)
 
-            # Filtrar por búsqueda
-            if search:
-                pet_records_list = [
-                    record for record in pet_records_list
-                    if search.lower() in str(record.get(column, "")).lower()
-                ]
-
-            # Ordenar resultados
-            pet_records_list.sort(
-                key=lambda x: x.get(column, ""),
-                reverse=(order == "desc")
-            )
-
-            paginator = CustomPagination()
-            result_page = paginator.paginate_queryset(pet_records_list, request)
-            return paginator.get_paginated_response(result_page)
-
+    except Mascotas.DoesNotExist:
+        return Response({'error': 'Mascota no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+    except ConsultaMascotas.DoesNotExist:
+        return Response({'error': 'Consulta no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+    except ValueError as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+def fetch_pet_records_from_db():
+    with connection.cursor() as cursor:
+        result_set_cursor = cursor.connection.cursor()
+        cursor.callproc("VETLINK.ConsultarExpedientes", [result_set_cursor])
+        pet_records = result_set_cursor.fetchall()
+
+    pet_records_list = []
+    for entry in pet_records:
+        pet_record_data = {
+            'consulta_id': entry[0],
+            'mascota_id': entry[1],
+            'nombre_mascota': entry[2],
+            'usuario_cliente': entry[3],
+            'fecha': entry[4],
+            'diagnostico': entry[5],
+            'peso': entry[6],
+            'vacunas': entry[7],
+            'sintomas': entry[8],
+            'tratamientos': entry[9]
+        }
+        pet_records_list.append(pet_record_data)
+
+    return pet_records_list
+
+
+def filter_and_sort_pet_records(pet_records_list, search, column, order):
+    if search:
+        pet_records_list = [
+            record for record in pet_records_list
+            if search.lower() in str(record.get(column, "")).lower()
+        ]
+
+    pet_records_list.sort(
+        key=lambda x: x.get(column, ""),
+        reverse=(order == "desc")
+    )
+
+    return pet_records_list
 
 
 @api_view(['POST'])
@@ -1138,17 +1153,12 @@ def add_pet_record(request):
         return Response({'error': str(e)}, status=500)
 
 @api_view(['DELETE'])
-def delete_pet_record(request, mascota_id, consulta_id):
+def delete_pet_record(request,consulta_id):
     try:
-        # Verificar si la mascota existe
-        mascota = Mascotas.objects.get(pk=mascota_id)
-        
-        # Verificar si la consulta existe
-        consulta = ConsultaMascotas.objects.get(pk=consulta_id, mascota=mascota)
         
         # Si ambas existen, proceder a eliminar el expediente
         with connection.cursor() as cursor:
-            cursor.callproc("VETLINK.Eliminar_Expediente", [mascota_id, consulta_id])
+            cursor.callproc("VETLINK.Eliminar_Expediente", [consulta_id])
         
         return Response({'message': 'Expediente eliminado correctamente'}, status=200)
     
