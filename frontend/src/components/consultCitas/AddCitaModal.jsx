@@ -9,6 +9,7 @@ import {
   CircularProgress,
   InputAdornment,
   MenuItem,
+  Autocomplete,
 } from "@mui/material";
 import { Close, Person, HealthAndSafety, AccessTime, LocalHospital } from "@mui/icons-material";
 import axios from "axios";
@@ -31,18 +32,27 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
   const [errors, setErrors] = useState({});
   const [clientes, setClientes] = useState([]);
   const [veterinarios, setVeterinarios] = useState([]);
+  const [loadingClients, setLoadingClients] = useState(true);
+  const [loadingVets, setLoadingVets] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoadingClients(true);
+        setLoadingVets(true);
+
         const [clientesResponse, veterinariosResponse] = await Promise.all([
           axios.get("http://localhost:8000/api/get-clients/"),
           axios.get("http://localhost:8000/api/get-vets/"),
         ]);
+
         setClientes(clientesResponse.data.clients || []);
         setVeterinarios(veterinariosResponse.data.vets || []);
       } catch (error) {
         console.error("Error fetching data:", error);
+      } finally {
+        setLoadingClients(false);
+        setLoadingVets(false);
       }
     };
     fetchData();
@@ -99,13 +109,8 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
     setErrors({});
   };
 
-  return (
-    <Modal
-      open={open}
-      onClose={handleClose}
-      aria-labelledby="modal-title"
-      aria-describedby="modal-description"
-    >
+   return (
+    <Modal open={open} onClose={handleClose} aria-labelledby="modal-title" aria-describedby="modal-description">
       <Box
         sx={{
           position: "absolute",
@@ -119,10 +124,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
           borderRadius: "10px",
         }}
       >
-        <IconButton
-          onClick={handleClose}
-          sx={{ position: "absolute", top: 8, right: 8 }}
-        >
+        <IconButton onClick={handleClose} sx={{ position: "absolute", top: 8, right: 8 }}>
           <Close />
         </IconButton>
 
@@ -139,72 +141,87 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
               borderBottom: "1px solid #ddd",
               paddingBottom: "10px",
             }}
-          >
-            Agregar Cita
-          </Typography>
+           >
+             Agregar Cita
+           </Typography>
 
-          <TextField
-            fullWidth
-            select
-            label="Cliente"
-            name="cliente"
-            value={formData.cliente}
-            onChange={handleChange}
-            sx={{ mb: 2 }}
-            required
-            error={!!errors.cliente}
-            helperText={errors.cliente}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Person />
-                </InputAdornment>
-              ),
-            }}
-          >
-            <MenuItem value="" disabled>
-              Selecciona un cliente
-            </MenuItem>
-            {Array.isArray(clientes) &&
-              clientes.map((cliente) => (
-                <MenuItem key={cliente.usuario} value={cliente.usuario}>
-                  {cliente.nombre}
-                </MenuItem>
-              ))}
-          </TextField>
+           <Autocomplete
+             options={clientes}
+             getOptionLabel={(option) => `${option.usuario ? option.usuario : ""}`}
+             value={formData.cliente}
+             onChange={(event, newValue) =>
+               setFormData({ ...formData, cliente: newValue ? newValue.usuario : "" })
+             }
+             loading={loadingClients}
+             renderInput={(params) => (
+               <TextField
+                 {...params}
+                 label="Cliente"
+                 variant="outlined"
+                 placeholder="Seleccione un cliente"
+                 fullWidth
+                 error={!!errors.cliente}
+                 helperText={errors.cliente}
+                 InputProps={{
+                   ...params.InputProps,
+                   startAdornment: (
+                     <InputAdornment position="start">
+                       <Person />
+                     </InputAdornment>
+                   ),
+                   endAdornment: (
+                     <>
+                       {loadingClients ? <CircularProgress color="inherit" size={20} /> : null}
+                       {params.InputProps.endAdornment}
+                     </>
+                   ),
+                 }}
+                 sx={{ mb: 2 }}
+               />
+             )}
+             sx={{ width: "100%" }}
+           />
 
-          <TextField
-            fullWidth
-            select
-            label="Veterinario"
-            name="veterinario"
-            value={formData.veterinario}
-            onChange={handleChange}
-            sx={{ mb: 2 }}
-            required
-            error={!!errors.veterinario}
-            helperText={errors.veterinario}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <HealthAndSafety />
-                </InputAdornment>
-              ),
-            }}
-          >
-            <MenuItem value="" disabled>
-              Selecciona un veterinario
-            </MenuItem>
-            {Array.isArray(veterinarios) &&
-              veterinarios.map((vet) => (
-                <MenuItem key={vet.usuario} value={vet.usuario}>
-                  {vet.nombre}
-                </MenuItem>
-              ))}
-          </TextField>
+           <Autocomplete
+             options={veterinarios}
+             getOptionLabel={(option) => `${option.usuario ? option.usuario : ""}`}
+             value={formData.veterinario}
+             onChange={(event, newValue) =>
+               setFormData({ ...formData, veterinario: newValue ? newValue.usuario : "" })
+             }
+             loading={loadingVets}
+             renderInput={(params) => (
+               <TextField
+                 {...params}
+                 label="Veterinario"
+                 placeholder="Seleccione un veterinario"
+                 variant="outlined"
+                 fullWidth
+                 error={!!errors.veterinario}
+                 helperText={errors.veterinario}
+                 InputProps={{
+                   ...params.InputProps,
+                   startAdornment: (
+                     <InputAdornment position="start">
+                       <HealthAndSafety />
+                     </InputAdornment>
+                   ),
+                   endAdornment: (
+                     <>
+                       {loadingVets ? <CircularProgress color="inherit" size={20} /> : null}
+                       {params.InputProps.endAdornment}
+                     </>
+                   ),
+                 }}
+                 sx={{ mb: 2 }}
+               />
+             )}
+             sx={{ width: "100%" }}
+           />
 
-          {/* MUI DatePicker with matching size */}
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
+
+
+           <LocalizationProvider dateAdapter={AdapterDateFns}>
             <DatePicker
               label="Fecha"
               value={formData.fecha}
@@ -265,10 +282,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
               sx={{
                 borderColor: "#00308F",
                 color: "#00308F",
-                "&:hover": {
-                  color: "#00246d",
-                  borderColor: "#00246d",
-                },
+                "&:hover": { color: "#00246d", borderColor: "#00246d" },
               }}
             >
               Limpiar
@@ -282,9 +296,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
               sx={{
                 minWidth: "160px",
                 backgroundColor: "#00308F",
-                "&:hover": {
-                  backgroundColor: "#00246d",
-                },
+                "&:hover": { backgroundColor: "#00246d" },
               }}
             >
               {loading ? "Agregando..." : "Agregar Cita"}
