@@ -17,6 +17,7 @@ const ConsultView = ({
   columns,
   pkCol,
   visualIdentifierCol,
+  rowsPerPage
 }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -25,7 +26,6 @@ const ConsultView = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [searchColumn, setSearchColumn] = useState(columns[0].field);
   const [order, setOrder] = useState("asc");
-  const rowsPerPage = 10;
   const [open, setOpen] = useState(false);
 
   const notify = useNotification();
@@ -66,7 +66,7 @@ const ConsultView = ({
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col">
       <div className="flex-grow">
         <div className="flex flex-col items-center justify-between mb-4 space-y-4 md:flex-row md:space-y-0">
           <h1 className="text-2xl font-semibold">{title}</h1>

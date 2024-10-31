@@ -20,7 +20,7 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 
-const AddClinicaModal = ({ open, onClose, onSuccess }) => {
+const AddClinicModal = ({ open, handleClose, onSuccess }) => {
   const initialFormData = {
     clinica: "",
     direccion: "",
@@ -45,12 +45,6 @@ const AddClinicaModal = ({ open, onClose, onSuccess }) => {
     fetchOwners();
   }, []);
 
-  const handleClose = () => {
-    setLoading(false);
-    setErrors([])
-    onClose()
-  }
-
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -70,6 +64,7 @@ const AddClinicaModal = ({ open, onClose, onSuccess }) => {
       handleClose()
       return true;
     } catch (error) {
+      console.log(error)
       onSuccess(
             "Datos inválidos. Revise los campos e intente nuevamente.",
             "error"
@@ -119,7 +114,7 @@ const AddClinicaModal = ({ open, onClose, onSuccess }) => {
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      handleClose={handleClose}
       aria-labelledby="modal-title"
       aria-describedby="modal-description"
     >
@@ -290,4 +285,4 @@ const AddClinicaModal = ({ open, onClose, onSuccess }) => {
   );
 };
 
-export default AddClinicaModal;
+export default AddClinicModal;

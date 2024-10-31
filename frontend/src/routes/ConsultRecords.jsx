@@ -8,6 +8,8 @@ const ConsultRecords = () => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
+  const rowsPerPage = 7
+
   const columns = [
     { field: "consulta_id", headerName: "ID", type: "text" },
     { field: "usuario_cliente", headerName: "Dueño", type: "text" },
@@ -26,6 +28,7 @@ const ConsultRecords = () => {
         addComponent={() => <div>Agregar Modal Placeholder</div>}
         modifyComponent={() => <div>Modificar Modal Placeholder</div>}
         detailedInfoComponent={DetailedRecordInfo}
+        rowsPerPage={rowsPerPage}
         columns={columns}
         pkCol="consulta_id"
         visualIdentifierCol="consulta_id"

@@ -19,7 +19,7 @@ from django.db import connection
 
 
 class CustomPagination(PageNumberPagination):
-    page_size = 10  # Número de registros por página
+    page_size = 7  # Número de registros por página
     page_size_query_param = (
         "page_size"  # Puedes ajustar el tamaño de la página desde la query
     )
@@ -300,6 +300,11 @@ def add_clinic(request):
         telefono = request.data.get("telefono")
         direccion = request.data.get("direccion")
 
+        print(clinica)
+        print(dueno)
+        print(telefono)
+        print(direccion)
+
         usuario = Usuarios.objects.get(nombre=dueno).usuario
 
         # Verificar si ya existe una clínica con el mismo nombre
@@ -315,6 +320,7 @@ def add_clinic(request):
             "telefono": telefono,
             "direccion": direccion,
             "usuario_propietario": usuario,
+            "activo": True,
         }
 
         # Validar con el serializador
@@ -327,6 +333,8 @@ def add_clinic(request):
                 status=status.HTTP_201_CREATED,
             )
         else:
+            print("NOT VALId")
+            print(nuevaClinica.errors)
             return Response(
                 {"errors": nuevaClinica.errors}, status=status.HTTP_400_BAD_REQUEST
             )
