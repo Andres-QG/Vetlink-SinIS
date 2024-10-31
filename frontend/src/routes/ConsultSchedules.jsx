@@ -2,6 +2,7 @@ import ConsultView from "../components/Consult/ConsultView";
 import AddSchedule from "../components/ConsultSchedules/AddSchedule";
 
 const ConsultSchedules = () => {
+  const rowsPerPage = 7;
   const columns = [
     { field: "usuario_veterinario", headerName: "Veterinario", type: "text" },
     { field: "clinica", headerName: "Clínica", type: "text" },
@@ -30,6 +31,7 @@ const ConsultSchedules = () => {
       fetchUrl="http://localhost:8000/api/consult-schedules/"
       addComponent={AddSchedule}
       deletionUrl="http://localhost:8000/api/delete-schedule"
+      rowsPerPage={rowsPerPage}
       columns={columns}
       pkCol="horario_id"
       visualIdentifierCol="dia"

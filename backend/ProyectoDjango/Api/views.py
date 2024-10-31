@@ -1432,7 +1432,7 @@ def consult_schedules(request):
                     "hora_inicio": schedule[3].strftime("%H:%M") if schedule[3] else None,
                     "hora_fin": schedule[4].strftime("%H:%M") if schedule[4] else None,
                     "clinica": Clinicas.objects.get(clinica_id=schedule[6]).nombre if schedule[6] else "Desconocida",
-                    "activo": "activo" if schedule[5] == 1 else "inactivo",
+                    "activo": True if schedule[5] == 1 else False,
                 }
                 schedules_list.append(schedule_data)
 
