@@ -375,7 +375,7 @@ const DashboardLayout = ({
               background: colorBgContainer,
               position: "fixed",
               height: "100%",
-              zIndex: 1000,
+              zIndex: 10,
             }}
           >
             <Menu
