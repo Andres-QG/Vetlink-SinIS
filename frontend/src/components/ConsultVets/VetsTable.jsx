@@ -65,9 +65,10 @@ const VetsTable = ({
   };
 
   const handleDeleteOrReactivate = async (vet) => {
-    console.log("handleDeleteOrReactivate llamado con:", vet);
+    // console.log("handleDeleteOrReactivate llamado con:", vet);
     if (vet.estado === "Activo") {
       // Desactivar veterinario
+
       handleOpenModal(vet);
     } else {
       // Reactivar veterinario
@@ -86,10 +87,10 @@ const VetsTable = ({
   const handleDelete = async () => {
     handleCloseModal();
     if (!selectedItem) return;
-
+    // console.log("Desactivando veterinario:", selectedItem.usuario);
     try {
       await axios.delete(
-        `http://127.0.0.1:8000/api/delete-vet/${selectedItem.usuario}/`
+        `http://127.0.0.1:8000/api/delete-client/${selectedItem.usuario}/`
       );
       fetchData();
     } catch (error) {
