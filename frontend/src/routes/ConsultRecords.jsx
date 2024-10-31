@@ -17,7 +17,6 @@ const ConsultRecords = () => {
     { field: "nombre_mascota", headerName: "Paciente", type: "text" },
     { field: "fecha", headerName: "Fecha", type: "text" },
     { field: "diagnostico", headerName: "Diagnóstico", type: "text" },
-    { field: "peso", headerName: "Peso", type: "text" },
   ];
 
   return (
@@ -25,7 +24,7 @@ const ConsultRecords = () => {
       <ConsultView
         title="Consultar Expedientes"
         fetchUrl="http://localhost:8000/api/consult-pet-records/"
-        deletionUrl="/api/delete_pet_record"
+        deletionUrl="http://localhost:8000/api/delete-pet-record"
         addComponent={() => <div>Agregar Modal Placeholder</div>}
         modifyComponent={() => <div>Modificar Modal Placeholder</div>}
         detailedInfoComponent={DetailedRecordInfo}
