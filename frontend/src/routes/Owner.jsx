@@ -1,4 +1,4 @@
-import ConsultView from "../components/Consult/ConsultView"
+import ConsultView from "../components/Consult/ConsultView";
 
 import AddClinicModal from "../components/consultClinics/AddClinicModal";
 import ModifyClinicModal from "../components/consultClinics/ModifyClinicModal";

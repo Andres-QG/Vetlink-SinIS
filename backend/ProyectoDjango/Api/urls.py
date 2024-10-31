@@ -52,4 +52,9 @@ urlpatterns = [
     path("add-cita/", add_cita, name="add_cita"),
     path("update-cita/<int:cita_id>/", update_cita, name="update_cita"),
     path("delete-cita/<int:cita_id>/", delete_cita, name="delete_cita"),
+    
+    # Horarios Veterinarios APIs
+    path('consult-schedules/', consult_schedules, name='consult_schedules'),
+    path('add-schedule/', add_vet_schedule, name='add_vet_schedule'),
+    path('autocomplete-vet/', autocomplete_vet, name='autocomplete_vet'),
 ]
