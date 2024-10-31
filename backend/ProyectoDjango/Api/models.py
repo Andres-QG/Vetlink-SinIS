@@ -270,6 +270,7 @@ class HorariosVeterinarios(models.Model):
     hora_inicio = models.DateField()
     hora_fin = models.DateField()
     activo = models.FloatField()
+    clinica = models.ForeignKey(Clinicas, models.DO_NOTHING)
 
     class Meta:
         managed = False

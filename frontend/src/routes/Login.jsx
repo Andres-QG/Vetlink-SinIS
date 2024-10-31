@@ -1,5 +1,3 @@
-import Header from "../components/Header";
-import Footer from "../components/Footer";
 import Loading from "../components/Loading";
 
 import eyeOnIcon from "../assets/icons/eye-on.png";
@@ -53,7 +51,6 @@ function Login() {
     message: "",
     severity: "",
   });
-
 
   const validate = () => {
     const newErrors = {};
@@ -143,7 +140,6 @@ function Login() {
         <Loading text={"Cargando..."} />
       ) : (
         <div className="flex flex-col min-h-screen">
-
           <main className="flex-grow">
             {alert.open && (
               <div className="flex items-center justify-center w-full mt-4 mb-4">

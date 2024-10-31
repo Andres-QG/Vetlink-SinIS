@@ -121,8 +121,10 @@ function App() {
               path="/consultSchedules"
               element={
                 <DashBoardLayout>
-                  <ProtectedRoute requiredRoles={[1, 2]}>
-                    <ConsultSchedules />
+                  <ProtectedRoute requiredRoles={[1, 2, 3]}>
+                    <NotificationProvider>
+                      <ConsultSchedules />
+                    </NotificationProvider>
                   </ProtectedRoute>
                 </DashBoardLayout>
               }

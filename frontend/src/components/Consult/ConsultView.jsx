@@ -48,7 +48,10 @@ const ConsultView = ({
         page_size: rowsPerPage,
       };
 
-      const response = await axios.get(fetchUrl, { params });
+      const response = await axios.get(fetchUrl, {
+        params,
+        withCredentials: true, // Habilita el envío de credenciales (cookies de sesión)
+      });
       const data = response.data;
       console.log(data)
       setData(data.results);

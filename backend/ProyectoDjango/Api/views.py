@@ -28,7 +28,6 @@ class CustomPagination(PageNumberPagination):
 
 @api_view(["POST"])
 def check_user_exists(request):
-    # Intentamos obtener 'usuario' y 'clave' desde 'formData' o directamente del cuerpo de la solicitud
     formData = request.data.get("formData")
     if formData:
         user = formData.get("usuario")
@@ -47,9 +46,15 @@ def check_user_exists(request):
         userResponse = Usuarios.objects.get(usuario=user)
 
         if check_password(password, userResponse.clave):
+            # Guardar el usuario y rol en la sesión
             request.session["user"] = userResponse.usuario
             request.session["role"] = userResponse.rol_id
-            print("Current session:", request.session.items())
+
+            # Si es administrador, también guardar el ID de la clínica en la sesión
+            if userResponse.rol_id == 2:
+                clinica_id = userResponse.clinica_id
+                request.session["clinica_id"] = clinica_id
+
             return Response(
                 {
                     "exists": True,
@@ -1413,3 +1418,172 @@ def update_pet_record(request, mascota_id, consulta_id):
     except Exception as e:
         # Manejo de errores de base de datos
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+def consult_schedules(request):
+    search = request.GET.get("search", "")
+    column = request.GET.get("column", "usuario_veterinario")
+    order = request.GET.get("order", "asc")
+
+    try:
+        # Obtener el rol y el usuario de la sesión
+        rol_id = request.session.get("role")
+        usuario = request.session.get("user")
+        clinica_id = request.session.get("clinica_id") if rol_id == 2 else None
+
+        if not rol_id or not usuario:
+            return Response({"error": "Usuario no autenticado."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        with connection.cursor() as cursor:
+            returned_cursor = cursor.connection.cursor()
+
+            # Configurar los parámetros según el rol
+            if rol_id == 1:
+                # Dueño puede ver todos los horarios
+                cursor.callproc('VETLINK.CONSULTAR_HORARIOS', [returned_cursor, None, None])
+            elif rol_id == 2:
+                # Administrador puede ver los horarios de su clínica
+                if not clinica_id:
+                    return Response({"error": "No se ha encontrado la clínica del administrador."}, status=status.HTTP_400_BAD_REQUEST)
+                cursor.callproc('VETLINK.CONSULTAR_HORARIOS', [returned_cursor, None, clinica_id])
+            elif rol_id == 3:
+                # Veterinario puede ver solo sus propios horarios, incluyendo la clínica
+                cursor.callproc('VETLINK.CONSULTAR_HORARIOS', [returned_cursor, usuario, clinica_id])
+            else:
+                return Response({"error": "No tiene permisos para consultar los horarios."}, status=status.HTTP_403_FORBIDDEN)
+
+            # Obtener los resultados del cursor de salida
+            schedules = returned_cursor.fetchall()
+
+            if not schedules:
+                return JsonResponse({'error': 'No se encontraron horarios.'}, status=404)
+
+            # Convertir los resultados en un formato adecuado para la respuesta
+            schedules_list = []
+            for schedule in schedules:
+                schedule_data = {
+                    "horario_id": schedule[0],
+                    "usuario_veterinario": schedule[1],
+                    "dia": schedule[2],
+                    "hora_inicio": schedule[3].strftime("%H:%M") if schedule[3] else None,
+                    "hora_fin": schedule[4].strftime("%H:%M") if schedule[4] else None,
+                    "clinica": Clinicas.objects.get(clinica_id=schedule[6]).nombre if schedule[6] else "Desconocida",
+                    "activo": True if schedule[5] == 1 else False,
+                }
+                schedules_list.append(schedule_data)
+
+            # Filtrar por búsqueda
+            if search:
+                schedules_list = [
+                    record for record in schedules_list
+                    if search.lower() in str(record.get(column, "")).lower()
+                ]
+
+            # Ordenar los resultados
+            schedules_list.sort(
+                key=lambda x: x.get(column, ""),
+                reverse=(order == "desc")
+            )
+
+            # Paginación
+            paginator = CustomPagination()
+            result_page = paginator.paginate_queryset(schedules_list, request)
+            return paginator.get_paginated_response(result_page)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+ 
+@api_view(["POST"])
+@transaction.atomic
+def add_vet_schedule(request):
+    try:
+        # Obtener los parámetros enviados en el cuerpo de la solicitud
+        usuario_veterinario = request.data.get("usuario_veterinario")
+        dia = request.data.get("dia")
+        hora_inicio = request.data.get("hora_inicio")
+        hora_fin = request.data.get("hora_fin")
+        clinica_id = request.data.get("clinica_id")
+
+        # Validar que todos los campos estén presentes
+        if not all([usuario_veterinario, dia, hora_inicio, hora_fin, clinica_id]):
+            return Response(
+                {"error": "Todos los campos son obligatorios."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Convertir horas a datetime para asegurar formato correcto
+        try:
+            hora_inicio_dt = datetime.strptime(hora_inicio, "%H:%M")
+            hora_fin_dt = datetime.strptime(hora_fin, "%H:%M")
+        except ValueError:
+            return Response(
+                {"error": "Formato de hora incorrecto. Use HH:MM."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Verificación de que la hora de fin es posterior a la hora de inicio
+        if hora_fin_dt <= hora_inicio_dt:
+            return Response(
+                {"error": "La hora de fin debe ser posterior a la hora de inicio."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Verificar si el usuario veterinario existe
+        if not Usuarios.objects.filter(usuario=usuario_veterinario, rol_id=3).exists():
+            return Response(
+                {"error": "El usuario veterinario especificado no existe."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Verificar si la clínica existe
+        if not Clinicas.objects.filter(clinica_id=clinica_id).exists():
+            return Response(
+                {"error": "La clínica especificada no existe."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Llamar al procedimiento almacenado para agregar el horario
+        with connection.cursor() as cursor:
+            cursor.callproc('VETLINK.AGREGAR_HORARIO_VETERINARIO', [
+                usuario_veterinario, dia, hora_inicio_dt, hora_fin_dt, clinica_id
+            ])
+
+        return Response(
+            {"message": "Horario agregado exitosamente."},
+            status=status.HTTP_201_CREATED
+        )
+
+    except Exception as e:
+        # Manejar cualquier error que ocurra
+        print(f"Error al agregar horario: {str(e)}")  # Esto imprime el error en la consola
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+def autocomplete_vet(request):
+    search = request.GET.get("search", "")
+
+    try:
+        # Filtrar veterinarios (rol = 3) que coincidan con la búsqueda
+        usuarios_veterinarios = Usuarios.objects.filter(
+            rol=3, usuario__icontains=search
+        ).order_by("usuario")[:5]  # Limitar a los primeros resultados
+
+        # Serializar la información relevante para el autocompletado
+        serializer_data = [
+            {
+                "usuario": usuario.usuario,
+                "nombre": usuario.nombre,
+                "apellido1": usuario.apellido1,
+                "apellido2": usuario.apellido2,
+            }
+            for usuario in usuarios_veterinarios
+        ]
+
+        return Response(serializer_data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -178,7 +178,7 @@ const DashboardLayout = ({
       },
     ];
 
-    if (role === 1 || role === 2) {
+    if (role <= 3) {
       items.push({
         key: "sub1",
         icon: <SearchIcon />,
@@ -189,12 +189,6 @@ const DashboardLayout = ({
             icon: <CalendarIcon />,
             label: "Horarios",
             onClick: () => handleClick("consultSchedules"),
-          },
-          {
-            key: "consultclients",
-            icon: <ClientsIcon />,
-            label: "Clientes",
-            onClick: () => handleClick("consultclients"),
           },
           {
             key: "consultpets",
@@ -208,18 +202,29 @@ const DashboardLayout = ({
             label: "Expedientes",
             onClick: () => handleClick("consultrecords"),
           },
-          {
-            key: "consultvets",
-            icon: <VetsIcon />,
-            label: "Veterinarios",
-            onClick: () => handleClick("consultvets"),
-          },
-          {
-            key: "consultCitas",
-            icon: <CalendarMonthIcon />,
-            label: "Citas",
-            onClick: () => handleClick("appointments"),
-          },
+          
+          ...(role === 1 || role === 2
+            ? [
+                {
+                  key: "consultclients",
+                  icon: <ClientsIcon />,
+                  label: "Clientes",
+                  onClick: () => handleClick("consultclients"),
+                },
+              {
+                key: "consultvets",
+                icon: <VetsIcon />,
+                label: "Veterinarios",
+                onClick: () => handleClick("consultvets"),
+              },
+              {
+                key: "consultCitas",
+                icon: <CalendarMonthIcon />,
+                label: "Citas",
+                onClick: () => handleClick("appointments"),
+              },
+            ]
+            : []),
           ...(role === 1
             ? [
                 {
