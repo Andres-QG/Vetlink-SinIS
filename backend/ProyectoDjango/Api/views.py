@@ -864,7 +864,7 @@ def update_pet(request, mascota_id):
 @api_view(["GET"])
 def consult_mascotas(request):
     search = request.GET.get("search", "")
-    column = request.GET.get("column", "nombre")
+    column = request.GET.get("column", "mascota_id")
     order = request.GET.get("order", "asc")
 
     try:
@@ -1340,6 +1340,28 @@ def add_pet_record(request):
         return Response({'error': 'Mascota no encontrada'}, status=404)
     except Exception as e:
         return Response({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+def consult_vaccines(request):
+    search = request.GET.get("search", "")
+    column = request.GET.get("column", "nombre")
+    order = request.GET.get("order", "asc")
+
+    try:
+        vaccines = Vacunas.objects.all()
+        if search:
+            kwargs = {f"{column}__icontains": search}
+            vaccines = vaccines.filter(**kwargs)
+
+        vaccines = vaccines.order_by(f"-{column}" if order == "desc" else column)
+
+        paginator = CustomPagination()
+        result_page = paginator.paginate_queryset(vaccines, request)
+        serializer = VacunasSerializer(result_page, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['DELETE'])
 def delete_pet_record(request,consulta_id):

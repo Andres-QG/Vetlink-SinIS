@@ -1,14 +1,9 @@
-import { useState } from "react";
 import ConsultView from "../components/Consult/ConsultView";
 import DetailedRecordInfo from "../components/consultRecords/DetailedRecordInfo";
+import AddRecord from "../components/consultRecords/AddRecord";
 
 const ConsultRecords = () => {
-  const [open, setOpen] = useState(false);
-
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-
-  const rowsPerPage = 7
+  const rowsPerPage = 7;
 
   const columns = [
     { field: "consulta_id", headerName: "ID", type: "text" },
@@ -25,7 +20,7 @@ const ConsultRecords = () => {
         title="Consultar Expedientes"
         fetchUrl="http://localhost:8000/api/consult-pet-records/"
         deletionUrl="http://localhost:8000/api/delete-pet-record"
-        addComponent={() => <div>Agregar Modal Placeholder</div>}
+        addComponent={AddRecord}
         modifyComponent={() => <div>Modificar Modal Placeholder</div>}
         detailedInfoComponent={DetailedRecordInfo}
         rowsPerPage={rowsPerPage}

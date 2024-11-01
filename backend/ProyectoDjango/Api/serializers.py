@@ -48,3 +48,8 @@ class CitasSerializer(serializers.ModelSerializer):
     class Meta:
         model = Citas
         fields = "__all__"
+
+class VacunasSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Vacunas
+        fields = "__all__"
