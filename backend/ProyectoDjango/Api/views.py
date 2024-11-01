@@ -1422,29 +1422,24 @@ def consult_treatments(request):
         return Response([], status=status.HTTP_200_OK)
 
 
-@api_view(["DELETE"])
-def delete_pet_record(request, consulta_id):
+@api_view(['DELETE'])
+def delete_pet_record(request,consulta_id):
     try:
-        # Verificar si la mascota existe
-        mascota = Mascotas.objects.get(pk=mascota_id)
-
-        # Verificar si la consulta existe
-        consulta = ConsultaMascotas.objects.get(pk=consulta_id, mascota=mascota)
-
+        
         # Si ambas existen, proceder a eliminar el expediente
         with connection.cursor() as cursor:
-            cursor.callproc("VETLINK.Eliminar_Expediente", [mascota_id, consulta_id])
-
-        return Response({"message": "Expediente eliminado correctamente"}, status=200)
-
+            cursor.callproc("VETLINK.Eliminar_Expediente", [consulta_id])
+        
+        return Response({'message': 'Expediente eliminado correctamente'}, status=200)
+    
     except Mascotas.DoesNotExist:
-        return Response({"error": "Mascota no encontrada"}, status=404)
-
+        return Response({'error': 'Mascota no encontrada'}, status=404)
+    
     except ConsultaMascotas.DoesNotExist:
-        return Response({"error": "Consulta no encontrada"}, status=404)
-
+        return Response({'error': 'Consulta no encontrada'}, status=404)
+    
     except Exception as e:
-        return Response({"error": str(e)}, status=500)
+        return Response({'error': str(e)}, status=500)
 
 
 @api_view(["PUT"])

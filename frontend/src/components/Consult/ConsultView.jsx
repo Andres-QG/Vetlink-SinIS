@@ -17,7 +17,8 @@ const ConsultView = ({
   columns,
   pkCol,
   visualIdentifierCol,
-  rowsPerPage
+  rowsPerPage,
+  otherData,
 }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -53,7 +54,7 @@ const ConsultView = ({
         withCredentials: true, // Habilita el envío de credenciales (cookies de sesión)
       });
       const data = response.data;
-      console.log(data)
+      console.log(data);
       setData(data.results);
       setTotalCount(data.count);
     } catch (error) {
@@ -104,6 +105,7 @@ const ConsultView = ({
         ) : (
           <GeneralTable
             data={data}
+            otherData={otherData}
             columns={columns}
             totalCount={totalCount}
             rowsPerPage={rowsPerPage}
@@ -127,6 +129,7 @@ const ConsultView = ({
               handleClose();
               await fetchData();
             }}
+            otherData={otherData}
           />
         )}
       </div>

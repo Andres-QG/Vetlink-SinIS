@@ -25,6 +25,7 @@ import { Edit, Delete, Info } from "@mui/icons-material";
 
 const GeneralTable = ({
   data,
+  otherData,
   columns,
   totalCount,
   page,
@@ -133,9 +134,14 @@ const GeneralTable = ({
                         <strong>{col.headerName}:</strong>{" "}
                         {col.type === "chip" ? (
                           <Chip
-                            label={item[col.field] === true ? "Activo" : "Inactivo"}
+                            label={
+                              item[col.field] === true ? "Activo" : "Inactivo"
+                            }
                             style={{
-                              backgroundColor: item[col.field] === true ? col.chipColors?.["activo"] : col.chipColors?.["inactivo"] || "gray",
+                              backgroundColor:
+                                item[col.field] === true
+                                  ? col.chipColors?.["activo"]
+                                  : col.chipColors?.["inactivo"] || "gray",
                             }}
                           />
                         ) : (
@@ -240,11 +246,16 @@ const GeneralTable = ({
                         >
                           {col.type === "chip" ? (
                             <Chip
-                              label={item[col.field] === true ? "Activo" : "Inactivo"}
+                              label={
+                                item[col.field] === true ? "Activo" : "Inactivo"
+                              }
                               style={{
                                 position: "relative",
                                 left: "-8px",
-                                backgroundColor: item[col.field] === true ? col.chipColors?.["activo"] : col.chipColors?.["inactivo"] || "gray",
+                                backgroundColor:
+                                  item[col.field] === true
+                                    ? col.chipColors?.["activo"]
+                                    : col.chipColors?.["inactivo"] || "gray",
                               }}
                             />
                           ) : (
@@ -353,6 +364,7 @@ const GeneralTable = ({
             await fetchData();
           }}
           selectedItem={selectedItem}
+          otherData={otherData}
         />
       )}
       {/*Modal de detalles*/}
