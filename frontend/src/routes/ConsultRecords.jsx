@@ -3,6 +3,7 @@ import axios from "axios";
 import ConsultView from "../components/Consult/ConsultView";
 import DetailedRecordInfo from "../components/consultRecords/DetailedRecordInfo";
 import AddRecord from "../components/consultRecords/AddRecord";
+import ModifyRecord from "../components/consultRecords/ModifyRecord";
 
 const ConsultRecords = () => {
   const rowsPerPage = 7;
@@ -81,7 +82,7 @@ const ConsultRecords = () => {
       fetchUrl="http://localhost:8000/api/consult-pet-records/"
       deletionUrl="http://localhost:8000/api/delete-pet-record"
       addComponent={AddRecord}
-      modifyComponent={() => <div>Modificar Modal Placeholder</div>}
+      modifyComponent={ModifyRecord}
       detailedInfoComponent={DetailedRecordInfo}
       rowsPerPage={rowsPerPage}
       columns={columns}
