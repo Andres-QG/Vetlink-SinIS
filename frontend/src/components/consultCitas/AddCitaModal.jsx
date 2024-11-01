@@ -8,19 +8,27 @@ import {
   IconButton,
   CircularProgress,
   InputAdornment,
-  MenuItem,
   Autocomplete,
 } from "@mui/material";
-import { Close, Person, HealthAndSafety, AccessTime, LocalHospital } from "@mui/icons-material";
+import {
+  Close,
+  Person as PersonIcon,
+  HealthAndSafety as HealthAndSafetyIcon,
+  AccessTime as AccessTimeIcon,
+  LocalHospital as LocalHospitalIcon,
+} from "@mui/icons-material";
+import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import axios from "axios";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { enGB } from "date-fns/locale"; // Import locale for dd/MM/yyyy format
 
 const AddCitaModal = ({ open, handleClose, onSuccess }) => {
   const initialFormData = {
-    cliente: "",
-    veterinario: "",
+    cliente: null,
+    veterinario: null,
     mascota: "",
     fecha: null,
     hora: "",
@@ -35,6 +43,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
   const [loadingClients, setLoadingClients] = useState(true);
   const [loadingVets, setLoadingVets] = useState(true);
 
+  // Fetch client and vet data
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -58,6 +67,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
     fetchData();
   }, []);
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -70,19 +80,18 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
     try {
       await axios.post("http://localhost:8000/api/add-cita/", formData);
       onSuccess("Cita agregada correctamente", "success");
-      setLoading(false);
       handleClose();
     } catch (error) {
-      console.log(error);
+      console.error(error);
       onSuccess("Error al agregar cita.", "error");
+    } finally {
       setLoading(false);
-      handleClose();
     }
   };
 
+  // Validation function
   const validate = () => {
     const newErrors = {};
-
     if (!formData.cliente) newErrors.cliente = "Cliente requerido.";
     if (!formData.veterinario) newErrors.veterinario = "Veterinario requerido.";
     if (!formData.mascota) newErrors.mascota = "Mascota requerida.";
@@ -93,23 +102,23 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Generic input change handler
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Date change handler for DatePicker
   const handleDateChange = (newDate) => {
     setFormData({ ...formData, fecha: newDate });
   };
 
+  // Clear form data
   const handleClear = () => {
     setFormData(initialFormData);
     setErrors({});
   };
 
-   return (
+  return (
     <Modal open={open} onClose={handleClose} aria-labelledby="modal-title" aria-describedby="modal-description">
       <Box
         sx={{
@@ -141,91 +150,90 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
               borderBottom: "1px solid #ddd",
               paddingBottom: "10px",
             }}
-           >
-             Agregar Cita
-           </Typography>
+          >
+            Agregar Cita
+          </Typography>
 
-           <Autocomplete
-             options={clientes}
-             getOptionLabel={(option) => `${option.usuario ? option.usuario : ""}`}
-             value={formData.cliente}
-             onChange={(event, newValue) =>
-               setFormData({ ...formData, cliente: newValue ? newValue.usuario : "" })
-             }
-             loading={loadingClients}
-             renderInput={(params) => (
-               <TextField
-                 {...params}
-                 label="Cliente"
-                 variant="outlined"
-                 placeholder="Seleccione un cliente"
-                 fullWidth
-                 error={!!errors.cliente}
-                 helperText={errors.cliente}
-                 InputProps={{
-                   ...params.InputProps,
-                   startAdornment: (
-                     <InputAdornment position="start">
-                       <Person />
-                     </InputAdornment>
-                   ),
-                   endAdornment: (
-                     <>
-                       {loadingClients ? <CircularProgress color="inherit" size={20} /> : null}
-                       {params.InputProps.endAdornment}
-                     </>
-                   ),
-                 }}
-                 sx={{ mb: 2 }}
-               />
-             )}
-             sx={{ width: "100%" }}
-           />
+          {/* Cliente Field */}
+          <Autocomplete
+            options={clientes}
+            getOptionLabel={(option) => option.usuario || ""}
+            value={formData.cliente}
+            onChange={(event, newValue) => setFormData({ ...formData, cliente: newValue })}
+            loading={loadingClients}
+            sx={{ width: "100%" }} // Set width here
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Cliente"
+                placeholder="Seleccione un cliente"
+                fullWidth
+                error={!!errors.cliente}
+                helperText={errors.cliente}
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PersonIcon fontSize="small" className="relative left-[0.35rem]"/>
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <>
+                      {loadingClients ? <CircularProgress color="inherit" size={20} /> : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+                sx={{ mb: 2 }}
+              />
+            )}
+          />
 
-           <Autocomplete
-             options={veterinarios}
-             getOptionLabel={(option) => `${option.usuario ? option.usuario : ""}`}
-             value={formData.veterinario}
-             onChange={(event, newValue) =>
-               setFormData({ ...formData, veterinario: newValue ? newValue.usuario : "" })
-             }
-             loading={loadingVets}
-             renderInput={(params) => (
-               <TextField
-                 {...params}
-                 label="Veterinario"
-                 placeholder="Seleccione un veterinario"
-                 variant="outlined"
-                 fullWidth
-                 error={!!errors.veterinario}
-                 helperText={errors.veterinario}
-                 InputProps={{
-                   ...params.InputProps,
-                   startAdornment: (
-                     <InputAdornment position="start">
-                       <HealthAndSafety />
-                     </InputAdornment>
-                   ),
-                   endAdornment: (
-                     <>
-                       {loadingVets ? <CircularProgress color="inherit" size={20} /> : null}
-                       {params.InputProps.endAdornment}
-                     </>
-                   ),
-                 }}
-                 sx={{ mb: 2 }}
-               />
-             )}
-             sx={{ width: "100%" }}
-           />
+          {/* Veterinario Field */}
+          <Autocomplete
+            options={veterinarios}
+            getOptionLabel={(option) => option.usuario || ""}
+            value={formData.veterinario}
+            onChange={(event, newValue) => setFormData({ ...formData, veterinario: newValue })}
+            loading={loadingVets}
+            sx={{ width: "100%" }} // Set width here
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Veterinario"
+                placeholder="Seleccione un veterinario"
+                fullWidth
+                error={!!errors.veterinario}
+                helperText={errors.veterinario}
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <HealthAndSafetyIcon fontSize="small" className="relative left-[0.35rem]" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <>
+                      {loadingVets ? <CircularProgress color="inherit" size={20} /> : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+                sx={{ mb: 2 }}
+              />
+            )}
+          />
 
-
-
-           <LocalizationProvider dateAdapter={AdapterDateFns}>
+          {/* Fecha Field */}
+          <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={enGB}>
             <DatePicker
               label="Fecha"
               value={formData.fecha}
               onChange={handleDateChange}
+              format="dd/MM/yyyy"
+              slots={{
+                openPickerIcon: ArrowDropDownIcon,
+              }}
               slotProps={{
                 textField: {
                   fullWidth: true,
@@ -233,11 +241,20 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
                   error: !!errors.fecha,
                   helperText: errors.fecha,
                   sx: { mb: 2 },
+                  InputProps: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <CalendarMonthRoundedIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  },
                 },
               }}
+              sx={{ width: "100%" }}
             />
           </LocalizationProvider>
 
+          {/* Hora Field */}
           <TextField
             fullWidth
             label="Hora"
@@ -251,12 +268,13 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <AccessTime />
+                  <AccessTimeIcon fontSize="small" />
                 </InputAdornment>
               ),
             }}
           />
 
+          {/* Motivo Field */}
           <TextField
             fullWidth
             label="Motivo"
@@ -267,7 +285,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <LocalHospital />
+                  <LocalHospitalIcon fontSize="small" />
                 </InputAdornment>
               ),
             }}
