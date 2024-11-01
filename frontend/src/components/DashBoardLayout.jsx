@@ -29,6 +29,8 @@ import CalendarIcon from "@mui/icons-material/Event";
 import ClientsIcon from "@mui/icons-material/Group";
 import PetsIconAlt from "@mui/icons-material/Pets";
 import VetsIcon from "@mui/icons-material/MedicalServices";
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+
 
 const { Header, Content, Sider, Footer } = Layout;
 
@@ -176,7 +178,7 @@ const DashboardLayout = ({
       },
     ];
 
-    if (role === 1 || role === 2) {
+    if (role <= 3) {
       items.push({
         key: "sub1",
         icon: <SearchIcon />,
@@ -187,12 +189,6 @@ const DashboardLayout = ({
             icon: <CalendarIcon />,
             label: "Horarios",
             onClick: () => handleClick("consultSchedules"),
-          },
-          {
-            key: "consultclients",
-            icon: <ClientsIcon />,
-            label: "Clientes",
-            onClick: () => handleClick("consultclients"),
           },
           {
             key: "consultpets",
@@ -206,19 +202,36 @@ const DashboardLayout = ({
             label: "Expedientes",
             onClick: () => handleClick("consultrecords"),
           },
-          {
-            key: "consultvets",
-            icon: <VetsIcon />,
-            label: "Veterinarios",
-            onClick: () => handleClick("consultvets"),
-          },
+          
+          ...(role === 1 || role === 2
+            ? [
+                {
+                  key: "consultclients",
+                  icon: <ClientsIcon />,
+                  label: "Clientes",
+                  onClick: () => handleClick("consultclients"),
+                },
+              {
+                key: "consultvets",
+                icon: <VetsIcon />,
+                label: "Veterinarios",
+                onClick: () => handleClick("consultvets"),
+              },
+              {
+                key: "consultCitas",
+                icon: <CalendarMonthIcon />,
+                label: "Citas",
+                onClick: () => handleClick("appointments"),
+              },
+            ]
+            : []),
           ...(role === 1
             ? [
                 {
                   key: "consultClinics",
                   icon: <ClinicIcon />,
                   label: "Clínicas",
-                  onClick: () => handleClick("Owner"),
+                  onClick: () => handleClick("clinics"),
                 },
                 {
                   key: "consultAdmins",
@@ -226,6 +239,7 @@ const DashboardLayout = ({
                   label: "Administradores",
                   onClick: () => handleClick("consultAdmins"),
                 },
+                
               ]
             : []),
         ],
@@ -361,7 +375,7 @@ const DashboardLayout = ({
               background: colorBgContainer,
               position: "fixed",
               height: "100%",
-              zIndex: 1000,
+              zIndex: 10,
             }}
           >
             <Menu

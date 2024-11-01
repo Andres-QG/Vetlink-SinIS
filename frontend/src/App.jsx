@@ -24,6 +24,7 @@ import ConsultMyPets from "./routes/ConsultMyPets";
 import DashBoardLayout from "./components/DashBoardLayout";
 import Dashboard from "./routes/Dashboard";
 import { NotificationProvider } from "./components/Notification";
+import ConsultCitas from "./routes/ConsultCitas";
 
 function App() {
   return (
@@ -120,8 +121,10 @@ function App() {
               path="/consultSchedules"
               element={
                 <DashBoardLayout>
-                  <ProtectedRoute requiredRoles={[1, 2]}>
-                    <ConsultSchedules />
+                  <ProtectedRoute requiredRoles={[1, 2, 3]}>
+                    <NotificationProvider>
+                      <ConsultSchedules />
+                    </NotificationProvider>
                   </ProtectedRoute>
                 </DashBoardLayout>
               }
@@ -193,15 +196,30 @@ function App() {
 
             {/* Owner Page */}
             <Route
-              path="/owner"
+              path="/clinics"
               element={
                 <DashBoardLayout>
                   <ProtectedRoute requiredRoles={[1]}>
-                    <Owner />
+                    <NotificationProvider>
+                      <Owner />
+                    </NotificationProvider>
                   </ProtectedRoute>
                 </DashBoardLayout>
               }
             />
+            <Route
+              path="/appointments"
+              element={
+                <DashBoardLayout>
+                  <ProtectedRoute requiredRoles={[1]}>
+                    <NotificationProvider>
+                      <ConsultCitas />
+                    </NotificationProvider>
+                  </ProtectedRoute>
+                </DashBoardLayout>
+              }
+            />
+
 
             {/* Error Page */}
             <Route

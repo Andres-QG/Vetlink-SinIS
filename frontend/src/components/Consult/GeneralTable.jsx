@@ -133,11 +133,9 @@ const GeneralTable = ({
                         <strong>{col.headerName}:</strong>{" "}
                         {col.type === "chip" ? (
                           <Chip
-                            label={item[col.field]}
+                            label={item[col.field] === true ? "Activo" : "Inactivo"}
                             style={{
-                              backgroundColor:
-                                col.chipColors?.[item[col.field]] ||
-                                "gray" /*default*/,
+                              backgroundColor: item[col.field] === true ? col.chipColors?.["activo"] : col.chipColors?.["inactivo"] || "gray",
                             }}
                           />
                         ) : (
@@ -242,11 +240,11 @@ const GeneralTable = ({
                         >
                           {col.type === "chip" ? (
                             <Chip
-                              label={item[col.field]}
+                              label={item[col.field] === true ? "Activo" : "Inactivo"}
                               style={{
-                                backgroundColor:
-                                  col.chipColors?.[item[col.field]] ||
-                                  "gray" /*default*/,
+                                position: "relative",
+                                left: "-8px",
+                                backgroundColor: item[col.field] === true ? col.chipColors?.["activo"] : col.chipColors?.["inactivo"] || "gray",
                               }}
                             />
                           ) : (

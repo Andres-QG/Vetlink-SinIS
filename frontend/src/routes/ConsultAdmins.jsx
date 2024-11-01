@@ -6,8 +6,6 @@ import SearchBar from "../components/Consult/GeneralizedSearchBar";
 import ModifyAdminModal from "../components/ConsultAdmins/ModifyAdminModal";
 import DeleteAdminModal from "../components/ConsultAdmins/DeleteAdminModal";
 import axios from "axios";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
 import AddAdminModal from "../components/ConsultAdmins/AddAdminModal";
 
 const ConsultAdmins = () => {

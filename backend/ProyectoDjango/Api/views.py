@@ -19,7 +19,7 @@ from django.db import connection
 
 
 class CustomPagination(PageNumberPagination):
-    page_size = 10  # Número de registros por página
+    page_size = 7  # Número de registros por página
     page_size_query_param = (
         "page_size"  # Puedes ajustar el tamaño de la página desde la query
     )
@@ -28,7 +28,6 @@ class CustomPagination(PageNumberPagination):
 
 @api_view(["POST"])
 def check_user_exists(request):
-    # Intentamos obtener 'usuario' y 'clave' desde 'formData' o directamente del cuerpo de la solicitud
     formData = request.data.get("formData")
     if formData:
         user = formData.get("usuario")
@@ -47,9 +46,15 @@ def check_user_exists(request):
         userResponse = Usuarios.objects.get(usuario=user)
 
         if check_password(password, userResponse.clave):
+            # Guardar el usuario y rol en la sesión
             request.session["user"] = userResponse.usuario
             request.session["role"] = userResponse.rol_id
-            print("Current session:", request.session.items())
+
+            # Si es administrador, también guardar el ID de la clínica en la sesión
+            if userResponse.rol_id == 2:
+                clinica_id = userResponse.clinica_id
+                request.session["clinica_id"] = clinica_id
+
             return Response(
                 {
                     "exists": True,
@@ -203,7 +208,7 @@ def consult_clinics(request):
                 "direccion": clinicas.direccion,
                 "telefono": clinicas.telefono,
                 "dueño": clinicas.usuario_propietario.nombre,
-                "estado": clinicas.activo,
+                "activo": clinicas.activo,
             }
             for clinicas in result_page
         ]
@@ -211,6 +216,252 @@ def consult_clinics(request):
         return paginator.get_paginated_response(serializer_data)
     except Exception as e:
         print(e)
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["POST"])
+@transaction.atomic
+def add_clinic(request):
+    try:
+        clinica = request.data.get("clinica")
+        dueno = request.data.get("usuario")
+        telefono = request.data.get("telefono")
+        direccion = request.data.get("direccion")
+
+        print(clinica)
+        print(dueno)
+        print(telefono)
+        print(direccion)
+
+        usuario = Usuarios.objects.get(nombre=dueno).usuario
+
+        # Verificar si ya existe una clínica con el mismo nombre
+        if Clinicas.objects.filter(nombre=clinica).exists():
+            return Response(
+                {"error": "Ya hay una clínica con este nombre."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Preparar datos para el serializador
+        data = {
+            "nombre": clinica,
+            "telefono": telefono,
+            "direccion": direccion,
+            "usuario_propietario": usuario,
+            "activo": True,
+        }
+
+        # Validar con el serializador
+        nuevaClinica = ClinicasSerializer(data=data)
+
+        if nuevaClinica.is_valid():
+            nuevaClinica.save()  # Guardar si es válido
+            return Response(
+                {"message": "Clínica agregada con éxito"},
+                status=status.HTTP_201_CREATED,
+            )
+        else:
+            print("NOT VALId")
+            print(nuevaClinica.errors)
+            return Response(
+                {"errors": nuevaClinica.errors}, status=status.HTTP_400_BAD_REQUEST
+            )
+    except Exception as e:
+        print(e)
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["PUT"])
+def update_clinic(request, clinica_id):
+    try:
+        clin = Clinicas.objects.get(pk=clinica_id)  # Buscar clínica por el id
+
+        # No permitimos modificar la llave primaria (usuario)
+        clinica_nombre = request.data.get("clinica")
+        direccion = request.data.get("direccion")
+        telefono = request.data.get("telefono")
+        dueno = request.data.get("usuario")
+
+        try:
+            ownerUser = Usuarios.objects.get(usuario=dueno)
+        except Usuarios.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=404)
+
+        # Actualizar los datos de la clínica
+        clin.nombre = clinica_nombre
+        clin.direccion = direccion
+        clin.telefono = telefono
+        clin.usuario_propietario = ownerUser
+        clin.save()
+
+        return Response(
+            {"message": "Clínica actualizada con éxito."}, status=status.HTTP_200_OK
+        )
+
+    except Exception as e:
+        print(f"Error actualizando clínica: {str(e)}")
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["DELETE"])
+def delete_clinic(request, clinica_id):
+    try:
+        clinica = Clinicas.objects.get(pk=clinica_id)
+        clinica.activo = False
+        clinica.save()
+        return Response(
+            {"message": "Clínica eliminada correctamente"}, status=status.HTTP_200_OK
+        )
+    except Clinicas.DoesNotExist:
+        return Response(
+            {"error": "Clínica no encontrada"}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+def consult_citas(request):
+    search = request.GET.get("search", "")
+    column = request.GET.get("column", "fecha")
+    order = request.GET.get("order", "asc")
+
+    if column == "cliente":
+        column = "usuario_cliente__nombre"
+    elif column == "veterinario":
+        column = "usuario_veterinario__nombre"
+    elif column == "mascota":
+        column = "mascota__nombre"
+
+    try:
+        citas = Citas.objects.all()
+
+        if search:
+            if column == "fecha":
+                citas = citas.filter(fecha__icontains=search)
+            else:
+                citas = citas.filter(**{f"{column}__icontains": search})
+
+        citas = citas.order_by(f"-{column}" if order == "desc" else column)
+
+        paginator = CustomPagination()
+        result_page = paginator.paginate_queryset(citas, request)
+
+        serializer_data = [
+            {
+                "cita_id": cita.cita_id,
+                "cliente": cita.usuario_cliente.nombre,
+                "veterinario": cita.usuario_veterinario.nombre,
+                "mascota": cita.mascota.nombre,
+                "fecha": cita.fecha,
+                "hora": cita.hora,
+                "motivo": cita.motivo,
+                "estado": cita.estado,
+            }
+            for cita in result_page
+        ]
+
+        return paginator.get_paginated_response(serializer_data)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["POST"])
+@transaction.atomic
+def add_cita(request):
+    try:
+        cliente_id = request.data.get("cliente_id")
+        veterinario_id = request.data.get("veterinario_id")
+        mascota_id = request.data.get("mascota_id")
+        fecha = request.data.get("fecha")
+        hora = request.data.get("hora")
+        motivo = request.data.get("motivo", "")
+        estado = request.data.get("estado", "Programada")
+
+        cliente = Usuarios.objects.get(usuario=cliente_id)
+        veterinario = Usuarios.objects.get(usuario=veterinario_id)
+        mascota = Mascotas.objects.get(pk=mascota_id)
+
+        data = {
+            "usuario_cliente": cliente.usuario,
+            "usuario_veterinario": veterinario.usuario,
+            "mascota": mascota.mascota_id,
+            "fecha": fecha,
+            "hora": hora,
+            "motivo": motivo,
+            "estado": estado,
+        }
+
+        nuevaCita = CitasSerializer(data=data)
+        if nuevaCita.is_valid():
+            nuevaCita.save()
+            return Response(
+                {"message": "Cita agregada con éxito"},
+                status=status.HTTP_201_CREATED,
+            )
+        else:
+            return Response(
+                {"errors": nuevaCita.errors}, status=status.HTTP_400_BAD_REQUEST
+            )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["PUT"])
+def update_cita(request, cita_id):
+    try:
+        cita = Citas.objects.get(pk=cita_id)
+
+        cliente_id = request.data.get("cliente_id")
+        veterinario_id = request.data.get("veterinario_id")
+        mascota_id = request.data.get("mascota_id")
+        fecha = request.data.get("fecha")
+        hora = request.data.get("hora")
+        motivo = request.data.get("motivo")
+        estado = request.data.get("estado")
+
+        if cliente_id:
+            cita.usuario_cliente = Usuarios.objects.get(usuario=cliente_id)
+        if veterinario_id:
+            cita.usuario_veterinario = Usuarios.objects.get(usuario=veterinario_id)
+        if mascota_id:
+            cita.mascota = Mascotas.objects.get(pk=mascota_id)
+        if fecha:
+            cita.fecha = fecha
+        if hora:
+            cita.hora = hora
+        if motivo:
+            cita.motivo = motivo
+        if estado:
+            cita.estado = estado
+
+        cita.save()
+        return Response(
+            {"message": "Cita actualizada con éxito."}, status=status.HTTP_200_OK
+        )
+
+    except Citas.DoesNotExist:
+        return Response(
+            {"error": "Cita no encontrada"}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["DELETE"])
+def delete_cita(request, cita_id):
+    try:
+        cita = Citas.objects.get(pk=cita_id)
+        cita.activo = False
+        cita.save()
+        return Response(
+            {"message": "Cita eliminada correctamente"}, status=status.HTTP_200_OK
+        )
+    except Citas.DoesNotExist:
+        return Response(
+            {"error": "Cita no encontrada"}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -272,6 +523,44 @@ def get_user_role(request):
         return Response({"status": "success", "message": "Rol obtenido", "role": role})
     else:
         return Response({"status": "error", "message": "Usuario no ha iniciado sesión"})
+
+
+@api_view(["GET"])
+def get_clients(request):
+    clients = Usuarios.objects.filter(
+        rol__nombre="Cliente"
+    )  # Assuming "Cliente" represents clients in the 'Roles' table
+    serializer = NameUsuariosSerializer(clients, many=True)
+    if serializer:
+        return Response(
+            {
+                "status": "success",
+                "message": "Clientes obtenidos",
+                "clients": serializer.data,
+            }
+        )
+    else:
+        return Response({"status": "error", "message": "No se pudo obtener clientes"})
+
+
+@api_view(["GET"])
+def get_vets(request):
+    vets = Usuarios.objects.filter(
+        rol__nombre="Veterinario"
+    )  # Assuming "Veterinario" represents veterinarians
+    serializer = NameUsuariosSerializer(vets, many=True)
+    if serializer:
+        return Response(
+            {
+                "status": "success",
+                "message": "Veterinarios obtenidos",
+                "vets": serializer.data,
+            }
+        )
+    else:
+        return Response(
+            {"status": "error", "message": "No se pudo obtener veterinarios"}
+        )
 
 
 @api_view(["GET"])
@@ -655,7 +944,7 @@ def consult_mascotas(request):
                 "raza": mascota.raza,
                 "fecha_nacimiento": mascota.fecha_nacimiento,
                 "usuario_cliente": mascota.usuario_cliente.usuario,
-                "activo": "activo" if mascota.activo == 1 else "inactivo",
+                "activo": mascota.activo,
             }
             for mascota in result_page
         ]
@@ -1035,48 +1324,57 @@ def consult_pet_records(request):
     order = request.GET.get("order", "asc")
 
     try:
-        with connection.cursor() as cursor:
-            returned_cursor = cursor.connection.cursor()
-            cursor.callproc("VETLINK.ConsultarExpedientes", [returned_cursor])
+        pet_records_list = fetch_pet_records_from_db()
 
-            pet_records = returned_cursor.fetchall()
+        if not pet_records_list:
+            return JsonResponse({"error": "Expediente no encontrado"}, status=404)
 
-            if not pet_records:
-                return JsonResponse({"error": "Expediente no encontrado"}, status=404)
+        if not pet_records:
+            return JsonResponse({"error": "Expediente no encontrado"}, status=404)
 
-            pet_records_list = []
-            for entry in pet_records:
-                pet_record_data = {
-                    "consulta_id": entry[0],
-                    "mascota_id": entry[1],
-                    "nombre_mascota": entry[2],
-                    "usuario_cliente": entry[3],
-                    "fecha": entry[4],
-                    "diagnostico": entry[5],
-                    "peso": entry[6],
-                    "vacunas": entry[7],
-                    "sintomas": entry[8],
-                    "tratamientos": entry[9],
-                }
-                pet_records_list.append(pet_record_data)
+        pet_records_list = []
+        for entry in pet_records:
+            pet_record_data = {
+                "consulta_id": entry[0],
+                "mascota_id": entry[1],
+                "nombre_mascota": entry[2],
+                "usuario_cliente": entry[3],
+                "fecha": entry[4],
+                "diagnostico": entry[5],
+                "peso": entry[6],
+                "vacunas": entry[7],
+                "sintomas": entry[8],
+                "tratamientos": entry[9],
+            }
+            pet_records_list.append(pet_record_data)
 
-            # Filtrar por búsqueda
-            if search:
-                pet_records_list = [
-                    record
-                    for record in pet_records_list
-                    if search.lower() in str(record.get(column, "")).lower()
-                ]
+        # Filtrar por búsqueda
+        if search:
+            pet_records_list = [
+                record
+                for record in pet_records_list
+                if search.lower() in str(record.get(column, "")).lower()
+            ]
 
-            # Ordenar resultados
-            pet_records_list.sort(
-                key=lambda x: x.get(column, ""), reverse=(order == "desc")
-            )
+        # Ordenar resultados
+        pet_records_list.sort(
+            key=lambda x: x.get(column, ""), reverse=(order == "desc")
+        )
 
-            paginator = CustomPagination()
-            result_page = paginator.paginate_queryset(pet_records_list, request)
-            return paginator.get_paginated_response(result_page)
+        paginator = CustomPagination()
+        result_page = paginator.paginate_queryset(pet_records_list, request)
+        return paginator.get_paginated_response(result_page)
 
+    except Mascotas.DoesNotExist:
+        return Response(
+            {"error": "Mascota no encontrada"}, status=status.HTTP_404_NOT_FOUND
+        )
+    except ConsultaMascotas.DoesNotExist:
+        return Response(
+            {"error": "Consulta no encontrada"}, status=status.HTTP_404_NOT_FOUND
+        )
+    except ValueError as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -1258,6 +1556,103 @@ def reactivate_user(request, usuario):
         return Response(
             {"error": "Usuario no encontrado."}, status=status.HTTP_404_NOT_FOUND
         )
+    return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+def consult_schedules(request):
+    search = request.GET.get("search", "")
+    column = request.GET.get("column", "usuario_veterinario")
+    order = request.GET.get("order", "asc")
+
+    try:
+        # Obtener el rol y el usuario de la sesión
+        rol_id = request.session.get("role")
+        usuario = request.session.get("user")
+        clinica_id = request.session.get("clinica_id") if rol_id == 2 else None
+
+        if not rol_id or not usuario:
+            return Response(
+                {"error": "Usuario no autenticado."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        with connection.cursor() as cursor:
+            returned_cursor = cursor.connection.cursor()
+
+            # Configurar los parámetros según el rol
+            if rol_id == 1:
+                # Dueño puede ver todos los horarios
+                cursor.callproc(
+                    "VETLINK.CONSULTAR_HORARIOS", [returned_cursor, None, None]
+                )
+            elif rol_id == 2:
+                # Administrador puede ver los horarios de su clínica
+                if not clinica_id:
+                    return Response(
+                        {"error": "No se ha encontrado la clínica del administrador."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                cursor.callproc(
+                    "VETLINK.CONSULTAR_HORARIOS", [returned_cursor, None, clinica_id]
+                )
+            elif rol_id == 3:
+                # Veterinario puede ver solo sus propios horarios, incluyendo la clínica
+                cursor.callproc(
+                    "VETLINK.CONSULTAR_HORARIOS", [returned_cursor, usuario, clinica_id]
+                )
+            else:
+                return Response(
+                    {"error": "No tiene permisos para consultar los horarios."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            # Obtener los resultados del cursor de salida
+            schedules = returned_cursor.fetchall()
+
+            if not schedules:
+                return JsonResponse(
+                    {"error": "No se encontraron horarios."}, status=404
+                )
+
+            # Convertir los resultados en un formato adecuado para la respuesta
+            schedules_list = []
+            for schedule in schedules:
+                schedule_data = {
+                    "horario_id": schedule[0],
+                    "usuario_veterinario": schedule[1],
+                    "dia": schedule[2],
+                    "hora_inicio": (
+                        schedule[3].strftime("%H:%M") if schedule[3] else None
+                    ),
+                    "hora_fin": schedule[4].strftime("%H:%M") if schedule[4] else None,
+                    "clinica": (
+                        Clinicas.objects.get(clinica_id=schedule[6]).nombre
+                        if schedule[6]
+                        else "Desconocida"
+                    ),
+                    "activo": True if schedule[5] == 1 else False,
+                }
+                schedules_list.append(schedule_data)
+
+            # Filtrar por búsqueda
+            if search:
+                schedules_list = [
+                    record
+                    for record in schedules_list
+                    if search.lower() in str(record.get(column, "")).lower()
+                ]
+
+            # Ordenar los resultados
+            schedules_list.sort(
+                key=lambda x: x.get(column, ""), reverse=(order == "desc")
+            )
+
+            # Paginación
+            paginator = CustomPagination()
+            result_page = paginator.paginate_queryset(schedules_list, request)
+            return paginator.get_paginated_response(result_page)
+
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -1294,5 +1689,103 @@ def reactivate_pet(request, mascota_id):
         return Response(
             {"error": "Mascota no encontrada."}, status=status.HTTP_404_NOT_FOUND
         )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["POST"])
+@transaction.atomic
+def add_vet_schedule(request):
+    try:
+        # Obtener los parámetros enviados en el cuerpo de la solicitud
+        usuario_veterinario = request.data.get("usuario_veterinario")
+        dia = request.data.get("dia")
+        hora_inicio = request.data.get("hora_inicio")
+        hora_fin = request.data.get("hora_fin")
+        clinica_id = request.data.get("clinica_id")
+
+        # Validar que todos los campos estén presentes
+        if not all([usuario_veterinario, dia, hora_inicio, hora_fin, clinica_id]):
+            return Response(
+                {"error": "Todos los campos son obligatorios."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Convertir horas a datetime para asegurar formato correcto
+        try:
+            hora_inicio_dt = datetime.strptime(hora_inicio, "%H:%M")
+            hora_fin_dt = datetime.strptime(hora_fin, "%H:%M")
+        except ValueError:
+            return Response(
+                {"error": "Formato de hora incorrecto. Use HH:MM."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Verificación de que la hora de fin es posterior a la hora de inicio
+        if hora_fin_dt <= hora_inicio_dt:
+            return Response(
+                {"error": "La hora de fin debe ser posterior a la hora de inicio."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Verificar si el usuario veterinario existe
+        if not Usuarios.objects.filter(usuario=usuario_veterinario, rol_id=3).exists():
+            return Response(
+                {"error": "El usuario veterinario especificado no existe."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Verificar si la clínica existe
+        if not Clinicas.objects.filter(clinica_id=clinica_id).exists():
+            return Response(
+                {"error": "La clínica especificada no existe."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Llamar al procedimiento almacenado para agregar el horario
+        with connection.cursor() as cursor:
+            cursor.callproc(
+                "VETLINK.AGREGAR_HORARIO_VETERINARIO",
+                [usuario_veterinario, dia, hora_inicio_dt, hora_fin_dt, clinica_id],
+            )
+
+        return Response(
+            {"message": "Horario agregado exitosamente."},
+            status=status.HTTP_201_CREATED,
+        )
+
+    except Exception as e:
+        # Manejar cualquier error que ocurra
+        print(
+            f"Error al agregar horario: {str(e)}"
+        )  # Esto imprime el error en la consola
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+def autocomplete_vet(request):
+    search = request.GET.get("search", "")
+
+    try:
+        # Filtrar veterinarios (rol = 3) que coincidan con la búsqueda
+        usuarios_veterinarios = Usuarios.objects.filter(
+            rol=3, usuario__icontains=search
+        ).order_by("usuario")[
+            :5
+        ]  # Limitar a los primeros resultados
+
+        # Serializar la información relevante para el autocompletado
+        serializer_data = [
+            {
+                "usuario": usuario.usuario,
+                "nombre": usuario.nombre,
+                "apellido1": usuario.apellido1,
+                "apellido2": usuario.apellido2,
+            }
+            for usuario in usuarios_veterinarios
+        ]
+
+        return Response(serializer_data, status=status.HTTP_200_OK)
+
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
