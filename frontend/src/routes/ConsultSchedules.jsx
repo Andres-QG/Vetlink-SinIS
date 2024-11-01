@@ -1,5 +1,6 @@
 import ConsultView from "../components/Consult/ConsultView";
 import AddSchedule from "../components/ConsultSchedules/AddSchedule";
+import ModifySchedule from "../components/ConsultSchedules/ModifySchedule";
 
 const ConsultSchedules = () => {
   const rowsPerPage = 7;
@@ -30,7 +31,8 @@ const ConsultSchedules = () => {
       title="Consultar Horarios"
       fetchUrl="http://localhost:8000/api/consult-schedules/"
       addComponent={AddSchedule}
-      deletionUrl="http://localhost:8000/api/delete-schedule"
+      modifyComponent={ModifySchedule}
+      deletionUrl="http://localhost:8000/api/delete-vet-schedule"
       rowsPerPage={rowsPerPage}
       columns={columns}
       pkCol="horario_id"
