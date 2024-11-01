@@ -59,4 +59,12 @@ urlpatterns = [
     path("consult-schedules/", consult_schedules, name="consult_schedules"),
     path("add-schedule/", add_vet_schedule, name="add_vet_schedule"),
     path("autocomplete-vet/", autocomplete_vet, name="autocomplete_vet"),
+    # Reactivate APIs
+    path("reactivate-user/<str:usuario>/", reactivate_user, name="reactivate_user"),
+    path("reactivate-pet/<int:mascota_id>/", reactivate_pet, name="reactivate_pet"),
+    path(
+        "reactivate-clinic/<int:clinica_id>/",
+        reactivate_clinic,
+        name="reactivate_clinic",
+    ),
 ]
