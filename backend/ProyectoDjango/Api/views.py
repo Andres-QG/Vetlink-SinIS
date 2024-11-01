@@ -2067,3 +2067,39 @@ def add_servicio(request):
             {"error": str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+        
+@api_view(['GET'])
+def consult_my_pets(request):
+    try:
+        # Obtener el usuario y rol de la sesión
+        usuario = request.session.get('user')
+        rol_id = request.session.get('role')
+
+        if not usuario or not rol_id:
+            return Response({'error': 'Usuario no autenticado.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        # Verificar que el rol sea de cliente (por ejemplo, rol_id == 4)
+        if rol_id != 4:
+            return Response({'error': 'No tiene permisos para consultar esta información.'}, status=status.HTTP_403_FORBIDDEN)
+
+        with connection.cursor() as cursor:
+            out_cursor = cursor.connection.cursor()
+            cursor.callproc('VETLINK.CONSULTAR_MIS_MASCOTAS', [usuario, out_cursor])
+
+            # Obtener los nombres de las columnas
+            columns = [col[0] for col in out_cursor.description]
+            pets = [dict(zip(columns, row)) for row in out_cursor.fetchall()]
+
+            if not pets:
+                return Response({'message': 'No tienes mascotas registradas.'}, status=status.HTTP_200_OK)
+
+            # Convertir FECHA_NACIMIENTO de cadena a fecha si es necesario
+            for pet in pets:
+                if pet['FECHA_NACIMIENTO']:
+                    pet['FECHA_NACIMIENTO'] = pet['FECHA_NACIMIENTO']
+
+            return Response({'results': pets}, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        print(f'Error en consult_my_pets: {str(e)}')
+        return Response({'error': 'Error al consultar las mascotas.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

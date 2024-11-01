@@ -84,4 +84,7 @@ urlpatterns = [
         reactivate_service,
         name="reactivate_service",
     ),
+    
+    # Mascotas Cliente APIs
+    path("consult-my-pets/", consult_my_pets, name="consult_my_pets"),
 ]
