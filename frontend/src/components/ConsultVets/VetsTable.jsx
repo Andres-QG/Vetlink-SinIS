@@ -17,8 +17,9 @@ import {
   Card,
   CardContent,
   CardActions,
+  Chip,
 } from "@mui/material";
-import { Edit, Delete } from "@mui/icons-material";
+import { Edit, Delete, Restore } from "@mui/icons-material";
 
 const VetsTable = ({
   data,
@@ -28,7 +29,7 @@ const VetsTable = ({
   rowsPerPage,
   onPageChange,
   fetchData,
-  onEditVet, // Recibir la función de edición
+  onEditVet,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -63,18 +64,56 @@ const VetsTable = ({
     setSelectedItem(null);
   };
 
+  const handleDeleteOrReactivate = async (vet) => {
+    // console.log("handleDeleteOrReactivate llamado con:", vet);
+    if (vet.estado === "Activo") {
+      // Desactivar veterinario
+
+      handleOpenModal(vet);
+    } else {
+      // Reactivar veterinario
+      try {
+        // console.log("Reactivando usuario:", vet.usuario);
+        await axios.put(
+          `http://127.0.0.1:8000/api/reactivate-user/${vet.usuario}/`
+        );
+        fetchData();
+      } catch (error) {
+        console.error("Error al reactivar veterinario:", error);
+      }
+    }
+  };
+
   const handleDelete = async () => {
     handleCloseModal();
     if (!selectedItem) return;
-
+    // console.log("Desactivando veterinario:", selectedItem.usuario);
     try {
       await axios.delete(
-        `http://localhost:8000/api/delete-client/${selectedItem.usuario}/`
+        `http://127.0.0.1:8000/api/delete-client/${selectedItem.usuario}/`
       );
       fetchData();
     } catch (error) {
-      console.error("Failed to delete vet:", error);
+      console.error("Error al desactivar veterinario:", error);
     }
+  };
+
+  const renderEstadoChip = (estado) => {
+    const color =
+      estado === "Activo" ? "rgba(184,230,215,255)" : "rgba(255,124,125,255)";
+    const label = estado === "Activo" ? "Activo" : "Inactivo";
+    return (
+      <Chip
+        label={label}
+        sx={{
+          backgroundColor: color,
+          color: "black",
+          width: "80px",
+          display: "flex",
+          justifyContent: "center",
+        }}
+      />
+    );
   };
 
   return (
@@ -85,18 +124,39 @@ const VetsTable = ({
             {data.map((item) => (
               <Card key={item.id} style={{ marginBottom: "10px" }}>
                 <CardContent>
-                  {columns.map((col) => (
-                    <Typography key={col.field} variant="body2" component="p">
-                      <strong>{col.headerName}:</strong> {item[col.field]}
+                  {columns.map(
+                    (col) =>
+                      col.headerName && (
+                        <Typography
+                          key={col.field}
+                          variant="body2"
+                          component="p">
+                          <strong>{col.headerName}:</strong> {item[col.field]}
+                        </Typography>
+                      )
+                  )}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}>
+                    <Typography variant="body2" component="p">
+                      <strong>Estado:</strong>
                     </Typography>
-                  ))}
+                    {renderEstadoChip(item.estado)}
+                  </div>
                 </CardContent>
                 <CardActions>
                   <IconButton onClick={() => onEditVet(item)}>
-                    <Edit />
+                    <Edit fontSize="small" />
                   </IconButton>
-                  <IconButton onClick={() => handleOpenModal(item)}>
-                    <Delete />
+                  <IconButton onClick={() => handleDeleteOrReactivate(item)}>
+                    {item.estado === "Activo" ? (
+                      <Delete fontSize="small" />
+                    ) : (
+                      <Restore fontSize="small" />
+                    )}
                   </IconButton>
                 </CardActions>
               </Card>
@@ -110,7 +170,7 @@ const VetsTable = ({
               labelDisplayedRows={({ from, to, count }) =>
                 `${from}-${to} de ${count !== -1 ? count : `más de ${to}`}`
               }
-              rowsPerPageOptions={[]} // Eliminar la opción de cambiar el número de filas por página
+              rowsPerPageOptions={[]}
               showFirstButton={true}
               showLastButton={true}
               getItemAriaLabel={getItemAriaLabel}
@@ -129,6 +189,10 @@ const VetsTable = ({
                 ))}
                 <TableCell
                   style={{ fontWeight: "bold", backgroundColor: "#f0f0f0" }}>
+                  Estado
+                </TableCell>
+                <TableCell
+                  style={{ fontWeight: "bold", backgroundColor: "#f0f0f0" }}>
                   Acciones
                 </TableCell>
               </TableRow>
@@ -136,24 +200,31 @@ const VetsTable = ({
             <TableBody>
               {data.map((item) => (
                 <TableRow key={`row-${item.id}`}>
-                  {columns.map((col, index) => (
+                  {columns.map((col) => (
                     <TableCell key={`cell-${item.id}-${col.field}`}>
                       {item[col.field]}
                     </TableCell>
                   ))}
+                  <TableCell key={`estado-${item.id}`}>
+                    {renderEstadoChip(item.estado)}
+                  </TableCell>
                   <TableCell key={`actions-${item.id}`}>
                     <IconButton onClick={() => onEditVet(item)}>
-                      <Edit />
+                      <Edit fontSize="small" />
                     </IconButton>
-                    <IconButton onClick={() => handleOpenModal(item)}>
-                      <Delete />
+                    <IconButton onClick={() => handleDeleteOrReactivate(item)}>
+                      {item.estado === "Activo" ? (
+                        <Delete fontSize="small" />
+                      ) : (
+                        <Restore fontSize="small" />
+                      )}
                     </IconButton>
                   </TableCell>
                 </TableRow>
               ))}
               {data.length === 0 && (
                 <TableRow key="empty-row">
-                  <TableCell colSpan={columns.length + 1} align="center">
+                  <TableCell colSpan={columns.length + 2} align="center">
                     No hay datos disponibles
                   </TableCell>
                 </TableRow>
@@ -161,7 +232,7 @@ const VetsTable = ({
             </TableBody>
             <TableRow>
               <TableCell
-                colSpan={columns.length + 1}
+                colSpan={columns.length + 2}
                 sx={{ borderBottom: "none", padding: "8px 0" }}>
                 <TablePagination
                   component="div"
@@ -172,7 +243,7 @@ const VetsTable = ({
                   labelDisplayedRows={({ from, to, count }) =>
                     `${from}-${to} de ${count !== -1 ? count : `más de ${to}`}`
                   }
-                  rowsPerPageOptions={[]} // Eliminar la opción de cambiar el número de filas por página
+                  rowsPerPageOptions={[]}
                   showFirstButton={true}
                   showLastButton={true}
                   getItemAriaLabel={getItemAriaLabel}
@@ -188,15 +259,15 @@ const VetsTable = ({
           className="bg-white p-6 rounded-lg shadow-lg"
           style={{ width: 400, margin: "auto", marginTop: "10%" }}>
           <Typography variant="h6" component="h2">
-            ¿Estás seguro de que deseas eliminar este elemento?
+            ¿Estás seguro de que deseas desactivar este veterinario?
           </Typography>
           <Typography sx={{ mt: 2 }}>
-            Esta acción no se puede deshacer. El elemento será eliminado
-            permanentemente.
+            Esta acción desactivará al veterinario. Podrás reactivarlo más
+            adelante si lo deseas.
           </Typography>
           <Box mt={4} display="flex" justifyContent="space-between">
             <Button variant="contained" color="error" onClick={handleDelete}>
-              Eliminar
+              Desactivar
             </Button>
             <Button variant="outlined" onClick={handleCloseModal}>
               Cancelar

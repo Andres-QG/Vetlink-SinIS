@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState, useEffect, forwardRef } from "react";
+import { useState, useEffect, forwardRef, useContext } from "react";
 import PropTypes from "prop-types";
 import {
   TextField,
@@ -15,6 +15,8 @@ import {
   CircularProgress,
   Modal,
   Autocomplete,
+  Typography,
+  Divider,
 } from "@mui/material";
 import { LocalizationProvider, TimeField } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -26,9 +28,10 @@ import {
   AccessTime as TimeIcon,
 } from "@mui/icons-material";
 import dayjs from "dayjs";
+import { AuthContext } from "../../context/AuthContext";
 
 const AddSchedule = forwardRef(({ open, handleClose, onSuccess }, ref) => {
-  AddSchedule.displayName = "AddSchedule";
+  const { role } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     usuario_veterinario: "",
     dia: "",
@@ -36,158 +39,137 @@ const AddSchedule = forwardRef(({ open, handleClose, onSuccess }, ref) => {
     hora_fin: dayjs(),
     clinica_id: "",
   });
-
   const [veterinarios, setVeterinarios] = useState([]);
   const [clinicas, setClinicas] = useState([]);
-  const [loadingVets, setLoadingVets] = useState(false);
-  const [loadingClinics, setLoadingClinics] = useState(false);
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [loadingVets, setLoadingVets] = useState(false);
+  const [loadingClinic, setLoadingClinic] = useState(false);
 
   useEffect(() => {
-    if (formData.usuario_veterinario.length > 2) {
-      fetchVeterinarios(formData.usuario_veterinario);
-    }
+    if (formData.usuario_veterinario.length >= 0) fetchVeterinarios();
   }, [formData.usuario_veterinario]);
 
-  const fetchVeterinarios = async (searchTerm) => {
+  useEffect(() => {
+    if (role === 2) {
+      fetchAdminClinic();
+    } else {
+      fetchAllClinics();
+    }
+  }, [role]);
+
+  const fetchVeterinarios = async () => {
     setLoadingVets(true);
     try {
-      const response = await axios.get(
-        `http://localhost:8000/api/autocomplete-vet/?search=${searchTerm}`
+      const { data } = await axios.get(
+        `http://localhost:8000/api/autocomplete-vet/?search=${formData.usuario_veterinario}`
       );
-      if (response.status === 200) {
-        setVeterinarios(response.data || []);
-      }
+      setVeterinarios(data || []);
     } catch (error) {
       console.error("Error fetching veterinarios", error);
+    } finally {
+      setLoadingVets(false);
     }
-    setLoadingVets(false);
   };
 
-  const fetchClinics = async () => {
-    setLoadingClinics(true);
+  const fetchAllClinics = async () => {
     try {
-      const response = await axios.get(
+      const { data } = await axios.get(
         "http://localhost:8000/api/consult-clinics/"
       );
-      if (response.status === 200) {
-        setClinicas(response.data.results || []); // Se ajusta al formato de paginación de la API
-      }
+      setClinicas(data.results || []);
     } catch (error) {
       console.error("Error fetching clinics", error);
     }
-    setLoadingClinics(false);
   };
 
-  useEffect(() => {
-    fetchClinics();
-  }, []);
+  const fetchAdminClinic = async () => {
+    setLoadingClinic(true);
+    try {
+      const { data } = await axios.get(
+        "http://localhost:8000/api/get-admin-clinic/",
+        { withCredentials: true }
+      );
+      setClinicas([data]);
+      setFormData((prev) => ({ ...prev, clinica_id: data.clinica_id }));
+    } catch (error) {
+      console.error("Error fetching admin clinic", error);
+    } finally {
+      setLoadingClinic(false);
+    }
+  };
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleVetChange = (event, newValue) => {
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       usuario_veterinario: newValue ? newValue.usuario : "",
-    });
-  };
-
-  const handleClinicChange = (event) => {
-    setFormData({
-      ...formData,
-      clinica_id: event.target.value,
-    });
+    }));
   };
 
   const validateForm = () => {
     const newErrors = {};
-
-    if (!formData.usuario_veterinario) {
+    if (!formData.usuario_veterinario)
       newErrors.usuario_veterinario = "Usuario veterinario es obligatorio";
-    }
-    if (!formData.dia) {
-      newErrors.dia = "Día es obligatorio";
-    }
-    if (!formData.hora_inicio) {
+    if (!formData.dia) newErrors.dia = "Día es obligatorio";
+    if (!formData.hora_inicio)
       newErrors.hora_inicio = "Hora de inicio es obligatoria";
-    }
-    if (!formData.hora_fin) {
-      newErrors.hora_fin = "Hora de fin es obligatoria";
-    }
-    if (!formData.clinica_id) {
+    if (!formData.hora_fin) newErrors.hora_fin = "Hora de fin es obligatoria";
+    if (!formData.clinica_id)
       newErrors.clinica_id = "ID de la clínica es obligatorio";
-    }
+    if (formData.hora_inicio.isAfter(formData.hora_fin))
+      newErrors.hora_fin =
+        "La hora de fin debe ser posterior a la hora de inicio";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const [loading, setLoading] = useState(false);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
+
     setLoading(true);
-
-    const formDataToSend = prepareFormData();
-
-    try {
-      await sendFormData(formDataToSend);
-    } catch (error) {
-      handleError(error);
-    }
-
-    setLoading(false);
-    console.log("Datos enviados:", formDataToSend);
-  };
-
-  const prepareFormData = () => {
-    return {
+    const formDataToSend = {
       usuario_veterinario: formData.usuario_veterinario,
       dia: formData.dia,
       hora_inicio: formData.hora_inicio.format("HH:mm"),
       hora_fin: formData.hora_fin.format("HH:mm"),
       clinica_id: formData.clinica_id,
     };
-  };
 
-  const sendFormData = async (formDataToSend) => {
-    const response = await axios.post(
-      "http://localhost:8000/api/add-schedule/",
-      formDataToSend,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (response.status === 201) {
-      onSuccess("Horario agregado exitosamente.", "success");
+    try {
+      const { status } = await axios.post(
+        "http://localhost:8000/api/add-schedule/",
+        formDataToSend,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      if (status === 201)
+        onSuccess("Horario agregado exitosamente.", "success");
+    } catch (error) {
+      handleError(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleError = (error) => {
-    if (error.response) {
-      if (error.response.status === 404) {
-        onSuccess("Usuario o clínica no encontrados.", "error");
-      } else if (error.response.status === 400) {
-        onSuccess(
-          "Datos inválidos. Revise los campos e intente nuevamente.",
-          "error"
-        );
-      } else if (error.response.status === 500) {
-        onSuccess("Error interno del servidor. Inténtelo más tarde.", "error");
-      }
+    const { data, status } = error.response || {};
+    if (status === 409 && data?.error === "Horario conflictivo") {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        hora_inicio: "Este horario se superpone con otro existente.",
+      }));
     } else {
-      onSuccess("Error desconocido. Inténtelo más tarde.", "error");
+      onSuccess(
+        data?.error || "Error desconocido. Inténtelo más tarde.",
+        "error"
+      );
     }
   };
 
@@ -211,35 +193,47 @@ const AddSchedule = forwardRef(({ open, handleClose, onSuccess }, ref) => {
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          p: 3,
+          p: { xs: 2, sm: 3 },
           borderRadius: 2,
           boxShadow: 3,
           bgcolor: "#fff",
-          width: "100%",
+          width: "90%",
           maxWidth: "500px",
           mx: "auto",
         }}
       >
-        <form onSubmit={handleSubmit}>
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            mb={2}
-          >
-            <h2>Agregar Horario</h2>
-            <IconButton onClick={handleClose}>
-              <CloseIcon />
-            </IconButton>
-          </Stack>
+        <IconButton
+          onClick={handleClose}
+          sx={{ position: "absolute", top: "8px", right: "8px" }}
+        >
+          <CloseIcon />
+        </IconButton>
+        <Typography
+          id="modal-title"
+          variant="h6"
+          component="h2"
+          sx={{
+            textAlign: "center",
+            fontWeight: "bold",
+            color: "#333",
+            mb: 1,
+          }}
+        >
+          Agregar Horario
+        </Typography>
+        <Divider sx={{ mb: 2 }} />
 
+        <form onSubmit={handleSubmit}>
           <Autocomplete
             options={veterinarios}
             getOptionLabel={(option) =>
               `${option.usuario} - ${option.nombre} ${option.apellido1}`
             }
             onInputChange={(event, newValue) => {
-              setFormData({ ...formData, usuario_veterinario: newValue });
+              setFormData((prev) => ({
+                ...prev,
+                usuario_veterinario: newValue,
+              }));
             }}
             onChange={handleVetChange}
             loading={loadingVets}
@@ -260,9 +254,9 @@ const AddSchedule = forwardRef(({ open, handleClose, onSuccess }, ref) => {
                   ),
                   endAdornment: (
                     <>
-                      {loadingVets ? (
+                      {loadingVets && (
                         <CircularProgress color="inherit" size={20} />
-                      ) : null}
+                      )}
                       {params.InputProps.endAdornment}
                     </>
                   ),
@@ -270,6 +264,12 @@ const AddSchedule = forwardRef(({ open, handleClose, onSuccess }, ref) => {
                 sx={{ mb: 2 }}
               />
             )}
+            ListboxProps={{
+              style: {
+                maxHeight: "200px",
+                overflow: "auto",
+              },
+            }}
           />
 
           <FormControl fullWidth sx={{ mb: 2 }}>
@@ -278,22 +278,29 @@ const AddSchedule = forwardRef(({ open, handleClose, onSuccess }, ref) => {
               label="Clínica"
               name="clinica_id"
               value={formData.clinica_id}
-              onChange={handleClinicChange}
+              onChange={handleChange}
               error={!!errors.clinica_id}
-              MenuProps={{
-                PaperProps: { style: { maxHeight: 200 } }, // Altura con scroll para ver 5 clínicas
-              }}
               startAdornment={
                 <InputAdornment position="start">
                   <ClinicIcon />
                 </InputAdornment>
               }
+              MenuProps={{
+                PaperProps: { style: { maxHeight: 200 } },
+              }}
+              disabled={role === 2}
             >
-              {clinicas.map((clinica) => (
-                <MenuItem key={clinica.clinica_id} value={clinica.clinica_id}>
-                  {clinica.clinica}
+              {loadingClinic ? (
+                <MenuItem disabled>
+                  <CircularProgress size={20} />
                 </MenuItem>
-              ))}
+              ) : (
+                clinicas.map((clinica) => (
+                  <MenuItem key={clinica.clinica_id} value={clinica.clinica_id}>
+                    {clinica.clinica}
+                  </MenuItem>
+                ))
+              )}
             </Select>
           </FormControl>
 
@@ -311,13 +318,19 @@ const AddSchedule = forwardRef(({ open, handleClose, onSuccess }, ref) => {
                 </InputAdornment>
               }
             >
-              <MenuItem value="Lunes">Lunes</MenuItem>
-              <MenuItem value="Martes">Martes</MenuItem>
-              <MenuItem value="Miércoles">Miércoles</MenuItem>
-              <MenuItem value="Jueves">Jueves</MenuItem>
-              <MenuItem value="Viernes">Viernes</MenuItem>
-              <MenuItem value="Sábado">Sábado</MenuItem>
-              <MenuItem value="Domingo">Domingo</MenuItem>
+              {[
+                "Lunes",
+                "Martes",
+                "Miércoles",
+                "Jueves",
+                "Viernes",
+                "Sábado",
+                "Domingo",
+              ].map((day) => (
+                <MenuItem key={day} value={day}>
+                  {day}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
 
@@ -326,7 +339,7 @@ const AddSchedule = forwardRef(({ open, handleClose, onSuccess }, ref) => {
               label="Hora Inicio"
               value={formData.hora_inicio}
               onChange={(newValue) =>
-                setFormData({ ...formData, hora_inicio: newValue })
+                setFormData((prev) => ({ ...prev, hora_inicio: newValue }))
               }
               format="HH:mm"
               fullWidth
@@ -341,12 +354,11 @@ const AddSchedule = forwardRef(({ open, handleClose, onSuccess }, ref) => {
               }}
               sx={{ mb: 2 }}
             />
-
             <TimeField
               label="Hora Fin"
               value={formData.hora_fin}
               onChange={(newValue) =>
-                setFormData({ ...formData, hora_fin: newValue })
+                setFormData((prev) => ({ ...prev, hora_fin: newValue }))
               }
               format="HH:mm"
               fullWidth
@@ -366,22 +378,13 @@ const AddSchedule = forwardRef(({ open, handleClose, onSuccess }, ref) => {
           <Stack
             direction="row"
             spacing={2}
-            sx={{
-              width: "100%",
-              justifyContent: "center",
-              alignItems: "center",
-              mx: "auto",
-            }}
+            sx={{ justifyContent: "center", mx: "auto" }}
           >
             <Button
               variant="outlined"
               onClick={handleClear}
               fullWidth
-              size="medium"
-              sx={{
-                borderColor: "#00308F",
-                color: "#00308F",
-              }}
+              sx={{ borderColor: "#00308F", color: "#00308F" }}
             >
               Limpiar
             </Button>
@@ -389,14 +392,11 @@ const AddSchedule = forwardRef(({ open, handleClose, onSuccess }, ref) => {
               variant="contained"
               onClick={handleSubmit}
               fullWidth
-              size="medium"
               disabled={loading}
               startIcon={loading && <CircularProgress size={20} />}
               sx={{
                 backgroundColor: "#00308F",
-                "&:hover": {
-                  backgroundColor: "#00246d",
-                },
+                "&:hover": { backgroundColor: "#00246d" },
               }}
             >
               {loading ? "Agregando..." : "Agregar Horario"}
@@ -407,6 +407,8 @@ const AddSchedule = forwardRef(({ open, handleClose, onSuccess }, ref) => {
     </Modal>
   );
 });
+
+AddSchedule.displayName = "AddSchedule";
 
 AddSchedule.propTypes = {
   open: PropTypes.bool.isRequired,

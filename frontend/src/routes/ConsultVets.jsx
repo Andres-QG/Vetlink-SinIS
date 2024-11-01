@@ -129,6 +129,7 @@ const ConsultVets = () => {
       apellidos: `${vet.apellido1} ${vet.apellido2}`,
       clinica: vet.clinica ? vet.clinica.nombre : "",
       especialidad: vet.especialidad ? vet.especialidad.nombre : "",
+      estado: vet.estado ? "Activo" : "Inactivo",
     }));
   };
 
@@ -151,8 +152,7 @@ const ConsultVets = () => {
                 marginBottom: { xs: "-4px", md: "0px" },
                 marginRight: { xs: "0px", md: "10px" },
                 width: { xs: "100%", md: "auto" },
-              }}
-            >
+              }}>
               Agregar Veterinario
             </Button>
             <GeneralizedSearchBar
@@ -201,12 +201,10 @@ const ConsultVets = () => {
         open={snackbarOpen}
         autoHideDuration={4000}
         onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>
         <Alert
           onClose={() => setSnackbarOpen(false)}
-          severity={snackbarSeverity}
-        >
+          severity={snackbarSeverity}>
           {snackbarMessage}
         </Alert>
       </Snackbar>

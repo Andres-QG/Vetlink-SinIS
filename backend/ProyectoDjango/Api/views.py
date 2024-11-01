@@ -178,26 +178,26 @@ def check_new_pass(request):
     return Response({"exists": True, "status": "success"}, status=status.HTTP_200_OK)
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 def consult_clinics(request):
-    search = request.GET.get('search', '')
-    column = request.GET.get('column', 'nombre')
-    order = request.GET.get('order', 'asc')
+    search = request.GET.get("search", "")
+    column = request.GET.get("column", "nombre")
+    order = request.GET.get("order", "asc")
 
-    if (column == "clinica"):
+    if column == "clinica":
         column = "nombre"
-    if (column == "dueño"):
+    if column == "dueño":
         column = "usuario_propietario"
 
     try:
         clinicas = Clinicas.objects.all()
         if search:
             # Para otras columnas, utiliza el filtrado dinámico basado en kwargs
-            kwargs = {f'{column}__icontains': search}
+            kwargs = {f"{column}__icontains": search}
             clinicas = clinicas.filter(**kwargs)
 
         # Ordenamiento de resultados
-        clinicas = clinicas.order_by(f'-{column}' if order == 'desc' else column)
+        clinicas = clinicas.order_by(f"-{column}" if order == "desc" else column)
 
         paginator = CustomPagination()
         result_page = paginator.paginate_queryset(clinicas, request)
@@ -208,7 +208,7 @@ def consult_clinics(request):
                 "direccion": clinicas.direccion,
                 "telefono": clinicas.telefono,
                 "dueño": clinicas.usuario_propietario.nombre,
-                "activo": clinicas.activo
+                "activo": clinicas.activo,
             }
             for clinicas in result_page
         ]
@@ -216,7 +216,8 @@ def consult_clinics(request):
         return paginator.get_paginated_response(serializer_data)
     except Exception as e:
         print(e)
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(["POST"])
 @transaction.atomic
@@ -318,11 +319,12 @@ def delete_clinic(request, clinica_id):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@api_view(['GET'])
+
+@api_view(["GET"])
 def consult_citas(request):
-    search = request.GET.get('search', '')
-    column = request.GET.get('column', 'fecha')
-    order = request.GET.get('order', 'asc')
+    search = request.GET.get("search", "")
+    column = request.GET.get("column", "fecha")
+    order = request.GET.get("order", "asc")
 
     if column == "cliente":
         column = "usuario_cliente__nombre"
@@ -330,7 +332,7 @@ def consult_citas(request):
         column = "usuario_veterinario__nombre"
     elif column == "mascota":
         column = "mascota__nombre"
-    
+
     try:
         citas = Citas.objects.all()
 
@@ -339,12 +341,12 @@ def consult_citas(request):
                 citas = citas.filter(fecha__icontains=search)
             else:
                 citas = citas.filter(**{f"{column}__icontains": search})
-        
-        citas = citas.order_by(f'-{column}' if order == 'desc' else column)
+
+        citas = citas.order_by(f"-{column}" if order == "desc" else column)
 
         paginator = CustomPagination()
         result_page = paginator.paginate_queryset(citas, request)
-        
+
         serializer_data = [
             {
                 "cita_id": cita.cita_id,
@@ -361,7 +363,8 @@ def consult_citas(request):
 
         return paginator.get_paginated_response(serializer_data)
     except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(["POST"])
 @transaction.atomic
@@ -373,7 +376,7 @@ def add_cita(request):
         fecha = request.data.get("fecha")
         hora = request.data.get("hora")
         motivo = request.data.get("motivo", "")
-        estado = request.data.get("estado", "Programada")  
+        estado = request.data.get("estado", "Programada")
 
         cliente = Usuarios.objects.get(usuario=cliente_id)
         veterinario = Usuarios.objects.get(usuario=veterinario_id)
@@ -402,6 +405,7 @@ def add_cita(request):
             )
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(["PUT"])
 def update_cita(request, cita_id):
@@ -443,6 +447,7 @@ def update_cita(request, cita_id):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 @api_view(["DELETE"])
 def delete_cita(request, cita_id):
     try:
@@ -458,6 +463,7 @@ def delete_cita(request, cita_id):
         )
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(["POST"])
 def create_pet(request):
@@ -518,9 +524,12 @@ def get_user_role(request):
     else:
         return Response({"status": "error", "message": "Usuario no ha iniciado sesión"})
 
+
 @api_view(["GET"])
 def get_clients(request):
-    clients = Usuarios.objects.filter(rol__nombre="Cliente")  # Assuming "Cliente" represents clients in the 'Roles' table
+    clients = Usuarios.objects.filter(
+        rol__nombre="Cliente"
+    )  # Assuming "Cliente" represents clients in the 'Roles' table
     serializer = NameUsuariosSerializer(clients, many=True)
     if serializer:
         return Response(
@@ -531,14 +540,14 @@ def get_clients(request):
             }
         )
     else:
-        return Response(
-            {"status": "error", "message": "No se pudo obtener clientes"}
-        )
+        return Response({"status": "error", "message": "No se pudo obtener clientes"})
 
 
 @api_view(["GET"])
 def get_vets(request):
-    vets = Usuarios.objects.filter(rol__nombre="Veterinario")  # Assuming "Veterinario" represents veterinarians
+    vets = Usuarios.objects.filter(
+        rol__nombre="Veterinario"
+    )  # Assuming "Veterinario" represents veterinarians
     serializer = NameUsuariosSerializer(vets, many=True)
     if serializer:
         return Response(
@@ -552,6 +561,7 @@ def get_vets(request):
         return Response(
             {"status": "error", "message": "No se pudo obtener veterinarios"}
         )
+
 
 @api_view(["GET"])
 def get_owners(request):
@@ -570,6 +580,81 @@ def get_owners(request):
             {"status": "error", "message": "No se pudo obtener propietarios"}
         )
 
+
+@api_view(["POST"])
+@transaction.atomic
+def add_clinic(request):
+    try:
+        clinica = request.data.get("clinica")
+        dueno = request.data.get("usuario")
+        telefono = request.data.get("telefono")
+        direccion = request.data.get("direccion")
+
+        usuario = Usuarios.objects.get(nombre=dueno).usuario
+
+        # Verificar si ya existe una clínica con el mismo nombre
+        if Clinicas.objects.filter(nombre=clinica).exists():
+            return Response(
+                {"error": "Ya hay una clínica con este nombre."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Preparar datos para el serializador
+        data = {
+            "nombre": clinica,
+            "telefono": telefono,
+            "direccion": direccion,
+            "usuario_propietario": usuario,
+        }
+
+        # Validar con el serializador
+        nuevaClinica = ClinicasSerializer(data=data)
+
+        if nuevaClinica.is_valid():
+            nuevaClinica.save()  # Guardar si es válido
+            return Response(
+                {"message": "Clínica agregada con éxito"},
+                status=status.HTTP_201_CREATED,
+            )
+        else:
+            return Response(
+                {"errors": nuevaClinica.errors}, status=status.HTTP_400_BAD_REQUEST
+            )
+    except Exception as e:
+        print(e)
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["PUT"])
+def update_clinic(request, clinica_id):
+    try:
+        clin = Clinicas.objects.get(pk=clinica_id)  # Buscar clínica por el id
+
+        # No permitimos modificar la llave primaria (usuario)
+        clinica_nombre = request.data.get("clinica")
+        direccion = request.data.get("direccion")
+        telefono = request.data.get("telefono")
+        dueno = request.data.get("usuario")
+
+        try:
+            ownerUser = Usuarios.objects.get(usuario=dueno)
+        except Usuarios.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=404)
+
+        # Actualizar los datos de la clínica
+        clin.nombre = clinica_nombre
+        clin.direccion = direccion
+        clin.telefono = telefono
+        clin.usuario_propietario = ownerUser
+        clin.save()
+
+        return Response(
+            {"message": "Clínica actualizada con éxito."}, status=status.HTTP_200_OK
+        )
+
+    except Exception as e:
+        print(f"Error actualizando clínica: {str(e)}")
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(["GET"])
@@ -612,6 +697,7 @@ def consult_client(request):
                 "apellidos": f"{usuario.apellido1} {usuario.apellido2}",
                 "telefono": usuario.telefono,
                 "correo": usuario.correo,
+                "estado": usuario.activo,
             }
             for usuario in result_page
         ]
@@ -768,44 +854,12 @@ def update_client(request, usuario):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@api_view(["DELETE"])
-def delete_client(request, usuario):
-    try:
-        user = Usuarios.objects.get(usuario=usuario)
-        user.delete()
-        return Response(
-            {"message": "Usuario eliminado con éxito."}, status=status.HTTP_200_OK
-        )
-    except Usuarios.DoesNotExist:
-        return Response(
-            {"error": "Usuario no encontrado."}, status=status.HTTP_404_NOT_FOUND
-        )
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
 @api_view(["POST"])
 def log_out(request):
     logout(request)
     return Response(
         {"status": "success", "message": "Usuario desconectado exitosamente"}
     )
-
-
-@api_view(["DELETE"])
-def delete_pet(request, mascota_id):
-    try:
-        mascota = Mascotas.objects.get(pk=mascota_id)
-        mascota.delete()
-        return Response(
-            {"message": "Mascota eliminada correctamente"}, status=status.HTTP_200_OK
-        )
-    except Mascotas.DoesNotExist:
-        return Response(
-            {"error": "Mascota no encontrada"}, status=status.HTTP_404_NOT_FOUND
-        )
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(["PUT"])
@@ -944,6 +998,7 @@ def consult_admin(request):
                 "correo": usuario.correo,
                 "clinica": usuario.clinica.nombre if usuario.clinica else None,
                 "clinica_id": usuario.clinica.clinica_id if usuario.clinica else None,
+                "estado": usuario.activo,
             }
             for usuario in result_page
         ]
@@ -1054,22 +1109,6 @@ def update_admin(request, usuario):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@api_view(["DELETE"])
-def delete_admin(request, usuario):
-    try:
-        admin = Usuarios.objects.get(usuario=usuario)
-        admin.delete()
-        return Response(
-            {"message": "Administrador eliminado con éxito."}, status=status.HTTP_200_OK
-        )
-    except Usuarios.DoesNotExist:
-        return Response(
-            {"error": "Administrador no encontrado."}, status=status.HTTP_404_NOT_FOUND
-        )
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
 @api_view(["GET"])
 def consult_vet(request):
     search = request.GET.get("search", "")
@@ -1099,6 +1138,7 @@ def consult_vet(request):
                 "apellido2": usuario.apellido2,
                 "telefono": usuario.telefono,
                 "correo": usuario.correo,
+                "estado": usuario.activo,
                 "especialidad": (
                     {
                         "id": usuario.especialidad.especialidad_id,
@@ -1208,7 +1248,76 @@ def update_vet(request, usuario):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@api_view(['GET'])
+@api_view(["DELETE"])
+def delete_client(request, usuario):
+    try:
+        user = Usuarios.objects.get(usuario=usuario)
+        user.activo = False
+        user.save()
+        return Response(
+            {"message": "Usuario desactivado con éxito."}, status=status.HTTP_200_OK
+        )
+    except Usuarios.DoesNotExist:
+        return Response(
+            {"error": "Usuario no encontrado."}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["DELETE"])
+def delete_clinic(request, clinica_id):
+    try:
+        clinica = Clinicas.objects.get(pk=clinica_id)
+        clinica.activo = False
+        clinica.save()
+        return Response(
+            {"message": "Clínica desactivada correctamente."}, status=status.HTTP_200_OK
+        )
+    except Clinicas.DoesNotExist:
+        return Response(
+            {"error": "Clínica no encontrada."}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["DELETE"])
+def delete_pet(request, mascota_id):
+    try:
+        mascota = Mascotas.objects.get(pk=mascota_id)
+        mascota.activo = False
+        mascota.save()
+        return Response(
+            {"message": "Mascota desactivada correctamente."}, status=status.HTTP_200_OK
+        )
+    except Mascotas.DoesNotExist:
+        return Response(
+            {"error": "Mascota no encontrada."}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["DELETE"])
+def delete_admin(request, usuario):
+    try:
+        admin = Usuarios.objects.get(usuario=usuario)
+        admin.activo = False
+        admin.save()
+        return Response(
+            {"message": "Administrador desactivado con éxito."},
+            status=status.HTTP_200_OK,
+        )
+    except Usuarios.DoesNotExist:
+        return Response(
+            {"error": "Administrador no encontrado."}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
 def consult_pet_records(request):
     search = request.GET.get("search", "")
     column = request.GET.get("column", "nombre_mascota")
@@ -1218,128 +1327,119 @@ def consult_pet_records(request):
         pet_records_list = fetch_pet_records_from_db()
 
         if not pet_records_list:
-            return JsonResponse({'error': 'Expediente no encontrado'}, status=404)
+            return JsonResponse({"error": "Expediente no encontrado"}, status=404)
 
-        pet_records_list = filter_and_sort_pet_records(pet_records_list, search, column, order)
+        if not pet_records:
+            return JsonResponse({"error": "Expediente no encontrado"}, status=404)
+
+        pet_records_list = []
+        for entry in pet_records:
+            pet_record_data = {
+                "consulta_id": entry[0],
+                "mascota_id": entry[1],
+                "nombre_mascota": entry[2],
+                "usuario_cliente": entry[3],
+                "fecha": entry[4],
+                "diagnostico": entry[5],
+                "peso": entry[6],
+                "vacunas": entry[7],
+                "sintomas": entry[8],
+                "tratamientos": entry[9],
+            }
+            pet_records_list.append(pet_record_data)
+
+        # Filtrar por búsqueda
+        if search:
+            pet_records_list = [
+                record
+                for record in pet_records_list
+                if search.lower() in str(record.get(column, "")).lower()
+            ]
+
+        # Ordenar resultados
+        pet_records_list.sort(
+            key=lambda x: x.get(column, ""), reverse=(order == "desc")
+        )
 
         paginator = CustomPagination()
         result_page = paginator.paginate_queryset(pet_records_list, request)
         return paginator.get_paginated_response(result_page)
 
     except Mascotas.DoesNotExist:
-        return Response({'error': 'Mascota no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {"error": "Mascota no encontrada"}, status=status.HTTP_404_NOT_FOUND
+        )
     except ConsultaMascotas.DoesNotExist:
-        return Response({'error': 'Consulta no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {"error": "Consulta no encontrada"}, status=status.HTTP_404_NOT_FOUND
+        )
     except ValueError as e:
-        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-def fetch_pet_records_from_db():
-    with connection.cursor() as cursor:
-        result_set_cursor = cursor.connection.cursor()
-        cursor.callproc("VETLINK.ConsultarExpedientes", [result_set_cursor])
-        pet_records = result_set_cursor.fetchall()
-
-    pet_records_list = []
-    for entry in pet_records:
-        pet_record_data = {
-            'consulta_id': entry[0],
-            'mascota_id': entry[1],
-            'nombre_mascota': entry[2],
-            'usuario_cliente': entry[3],
-            'fecha': entry[4],
-            'diagnostico': entry[5],
-            'peso': entry[6],
-            'vacunas': entry[7],
-            'sintomas': entry[8],
-            'tratamientos': entry[9]
-        }
-        pet_records_list.append(pet_record_data)
-
-    return pet_records_list
-
-
-def filter_and_sort_pet_records(pet_records_list, search, column, order):
-    if search:
-        pet_records_list = [
-            record for record in pet_records_list
-            if search.lower() in str(record.get(column, "")).lower()
-        ]
-
-    pet_records_list.sort(
-        key=lambda x: x.get(column, ""),
-        reverse=(order == "desc")
-    )
-
-    return pet_records_list
-
-
-@api_view(['POST'])
+@api_view(["POST"])
 def add_pet_record(request):
     serializer = ExpedienteSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=400)
 
-    mascota_id = serializer.validated_data['mascota_id']
-    fecha = serializer.validated_data['fecha']
-    diagnostico = serializer.validated_data['diagnostico']
-    peso = serializer.validated_data['peso']
-    vacunas = serializer.validated_data['vacunas']  # String separado por comas
-    sintomas = serializer.validated_data['sintomas']  # String separado por comas
-    tratamientos = serializer.validated_data['tratamientos']  # String separado por comas
+    mascota_id = serializer.validated_data["mascota_id"]
+    fecha = serializer.validated_data["fecha"]
+    diagnostico = serializer.validated_data["diagnostico"]
+    peso = serializer.validated_data["peso"]
+    vacunas = serializer.validated_data["vacunas"]  # String separado por comas
+    sintomas = serializer.validated_data["sintomas"]  # String separado por comas
+    tratamientos = serializer.validated_data[
+        "tratamientos"
+    ]  # String separado por comas
 
     try:
         # Verificar si la mascota existe
         if not Mascotas.objects.filter(pk=mascota_id).exists():
-            return Response({'error': 'Mascota no encontrada'}, status=404)
+            return Response({"error": "Mascota no encontrada"}, status=404)
 
         # Verificar si todas las vacunas existen
-        vacunas_list = [vacuna.strip().lower() for vacuna in vacunas.split(',')]
+        vacunas_list = [vacuna.strip().lower() for vacuna in vacunas.split(",")]
         for vacuna in vacunas_list:
             if not Vacunas.objects.filter(nombre__iexact=vacuna).exists():
                 return Response(
-                    {'error': f'Vacuna con nombre {vacuna} no encontrada'},
-                    status=404
+                    {"error": f"Vacuna con nombre {vacuna} no encontrada"}, status=404
                 )
 
         # Verificar si todos los síntomas existen
-        sintomas_list = [sintoma.strip().lower() for sintoma in sintomas.split(',')]
+        sintomas_list = [sintoma.strip().lower() for sintoma in sintomas.split(",")]
         for sintoma in sintomas_list:
             if not Sintomas.objects.filter(nombre__iexact=sintoma).exists():
                 return Response(
-                    {'error': f'Síntoma con nombre {sintoma} no encontrado'},
-                    status=404
+                    {"error": f"Síntoma con nombre {sintoma} no encontrado"}, status=404
                 )
 
         # Verificar si todos los tratamientos existen
-        tratamientos_list = [tratamiento.strip().lower() for tratamiento in tratamientos.split(',')]
+        tratamientos_list = [
+            tratamiento.strip().lower() for tratamiento in tratamientos.split(",")
+        ]
         for tratamiento in tratamientos_list:
             if not Tratamientos.objects.filter(nombre__iexact=tratamiento).exists():
                 return Response(
-                    {'error': f'Tratamiento con nombre {tratamiento} no encontrado'},
-                    status=404
+                    {"error": f"Tratamiento con nombre {tratamiento} no encontrado"},
+                    status=404,
                 )
 
         # Proceder a agregar el expediente
         with connection.cursor() as cursor:
-            cursor.callproc('VETLINK.Agregar_Expediente', [
-                mascota_id,
-                fecha,
-                diagnostico,
-                peso,
-                vacunas,
-                sintomas,
-                tratamientos
-            ])
+            cursor.callproc(
+                "VETLINK.Agregar_Expediente",
+                [mascota_id, fecha, diagnostico, peso, vacunas, sintomas, tratamientos],
+            )
 
-        return Response({'message': 'Expediente agregado correctamente'}, status=201)
+        return Response({"message": "Expediente agregado correctamente"}, status=201)
 
     except Mascotas.DoesNotExist:
-        return Response({'error': 'Mascota no encontrada'}, status=404)
+        return Response({"error": "Mascota no encontrada"}, status=404)
     except Exception as e:
-        return Response({'error': str(e)}, status=500)
+        return Response({"error": str(e)}, status=500)
 
 @api_view(['GET'])
 def consult_vaccines(request):
@@ -1366,82 +1466,121 @@ def consult_vaccines(request):
 @api_view(['DELETE'])
 def delete_pet_record(request,consulta_id):
     try:
-        
+        # Verificar si la mascota existe
+        mascota = Mascotas.objects.get(pk=mascota_id)
+
+        # Verificar si la consulta existe
+        consulta = ConsultaMascotas.objects.get(pk=consulta_id, mascota=mascota)
+
         # Si ambas existen, proceder a eliminar el expediente
         with connection.cursor() as cursor:
-            cursor.callproc("VETLINK.Eliminar_Expediente", [consulta_id])
-        
-        return Response({'message': 'Expediente eliminado correctamente'}, status=200)
-    
+            cursor.callproc("VETLINK.Eliminar_Expediente", [mascota_id, consulta_id])
+
+        return Response({"message": "Expediente eliminado correctamente"}, status=200)
+
     except Mascotas.DoesNotExist:
-        return Response({'error': 'Mascota no encontrada'}, status=404)
-    
+        return Response({"error": "Mascota no encontrada"}, status=404)
+
     except ConsultaMascotas.DoesNotExist:
-        return Response({'error': 'Consulta no encontrada'}, status=404)
-    
+        return Response({"error": "Consulta no encontrada"}, status=404)
+
     except Exception as e:
-        return Response({'error': str(e)}, status=500)
+        return Response({"error": str(e)}, status=500)
 
 
-@api_view(['PUT'])
+@api_view(["PUT"])
 def update_pet_record(request, mascota_id, consulta_id):
-    diagnostico = request.data.get('diagnostico')
-    peso = request.data.get('peso')
-    vacunas = request.data.get('vacunas')  # Se espera una cadena con vacunas separadas por coma
-    sintomas = request.data.get('sintomas')  # Se espera una cadena con síntomas separados por coma
-    tratamientos = request.data.get('tratamientos')  # Se espera una cadena con tratamientos separados por coma
+    diagnostico = request.data.get("diagnostico")
+    peso = request.data.get("peso")
+    vacunas = request.data.get(
+        "vacunas"
+    )  # Se espera una cadena con vacunas separadas por coma
+    sintomas = request.data.get(
+        "sintomas"
+    )  # Se espera una cadena con síntomas separados por coma
+    tratamientos = request.data.get(
+        "tratamientos"
+    )  # Se espera una cadena con tratamientos separados por coma
 
     # Validar los datos necesarios
     if not all([diagnostico, peso, vacunas, sintomas, tratamientos]):
-        return Response({'error': 'Todos los campos son obligatorios.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"error": "Todos los campos son obligatorios."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     try:
         # Normalizar y verificar si todas las vacunas existen
-        vacunas_list = [vacuna.strip().lower() for vacuna in vacunas.split(',')]
+        vacunas_list = [vacuna.strip().lower() for vacuna in vacunas.split(",")]
         for vacuna in vacunas_list:
             if not Vacunas.objects.filter(nombre__iexact=vacuna).exists():
                 return Response(
-                    {'error': f'Vacuna con nombre {vacuna} no encontrada'},
-                    status=status.HTTP_404_NOT_FOUND
+                    {"error": f"Vacuna con nombre {vacuna} no encontrada"},
+                    status=status.HTTP_404_NOT_FOUND,
                 )
 
         # Normalizar y verificar si todos los síntomas existen
-        sintomas_list = [sintoma.strip().lower() for sintoma in sintomas.split(',')]
+        sintomas_list = [sintoma.strip().lower() for sintoma in sintomas.split(",")]
         for sintoma in sintomas_list:
             if not Sintomas.objects.filter(nombre__iexact=sintoma).exists():
                 return Response(
-                    {'error': f'Síntoma con nombre {sintoma} no encontrado'},
-                    status=status.HTTP_404_NOT_FOUND
+                    {"error": f"Síntoma con nombre {sintoma} no encontrado"},
+                    status=status.HTTP_404_NOT_FOUND,
                 )
 
         # Normalizar y verificar si todos los tratamientos existen
-        tratamientos_list = [tratamiento.strip().lower() for tratamiento in tratamientos.split(',')]
+        tratamientos_list = [
+            tratamiento.strip().lower() for tratamiento in tratamientos.split(",")
+        ]
         for tratamiento in tratamientos_list:
             if not Tratamientos.objects.filter(nombre__iexact=tratamiento).exists():
                 return Response(
-                    {'error': f'Tratamiento con nombre {tratamiento} no encontrado'},
-                    status=status.HTTP_404_NOT_FOUND
+                    {"error": f"Tratamiento con nombre {tratamiento} no encontrado"},
+                    status=status.HTTP_404_NOT_FOUND,
                 )
 
         with connection.cursor() as cursor:
-            cursor.callproc("VETLINK.Modificar_Expediente", [
-                mascota_id, 
-                consulta_id, 
-                diagnostico, 
-                peso, 
-                vacunas, 
-                sintomas, 
-                tratamientos
-            ])
+            cursor.callproc(
+                "VETLINK.Modificar_Expediente",
+                [
+                    mascota_id,
+                    consulta_id,
+                    diagnostico,
+                    peso,
+                    vacunas,
+                    sintomas,
+                    tratamientos,
+                ],
+            )
 
         # Respuesta exitosa si todo se realizó correctamente
-        return Response({'message': 'Expediente modificado correctamente'}, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "Expediente modificado correctamente"},
+            status=status.HTTP_200_OK,
+        )
 
     except Exception as e:
         # Manejo de errores de base de datos
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@api_view(['GET'])
+
+@api_view(["PUT"])
+def reactivate_user(request, usuario):
+    try:
+        user = Usuarios.objects.get(usuario=usuario)
+        user.activo = True
+        user.save()
+        return Response(
+            {"message": "Usuario reactivado con éxito."}, status=status.HTTP_200_OK
+        )
+    except Usuarios.DoesNotExist:
+        return Response(
+            {"error": "Usuario no encontrado."}, status=status.HTTP_404_NOT_FOUND
+        )
+    return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
 def consult_schedules(request):
     search = request.GET.get("search", "")
     column = request.GET.get("column", "usuario_veterinario")
@@ -1451,10 +1590,14 @@ def consult_schedules(request):
         # Obtener el rol y el usuario de la sesión
         rol_id = request.session.get("role")
         usuario = request.session.get("user")
+        # Obtener la clínica del administrador
         clinica_id = request.session.get("clinica_id") if rol_id == 2 else None
 
         if not rol_id or not usuario:
-            return Response({"error": "Usuario no autenticado."}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"error": "Usuario no autenticado."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         with connection.cursor() as cursor:
             returned_cursor = cursor.connection.cursor()
@@ -1462,34 +1605,55 @@ def consult_schedules(request):
             # Configurar los parámetros según el rol
             if rol_id == 1:
                 # Dueño puede ver todos los horarios
-                cursor.callproc('VETLINK.CONSULTAR_HORARIOS', [returned_cursor, None, None])
+                cursor.callproc(
+                    "VETLINK.CONSULTAR_HORARIOS", [returned_cursor, None, None]
+                )
             elif rol_id == 2:
                 # Administrador puede ver los horarios de su clínica
                 if not clinica_id:
-                    return Response({"error": "No se ha encontrado la clínica del administrador."}, status=status.HTTP_400_BAD_REQUEST)
-                cursor.callproc('VETLINK.CONSULTAR_HORARIOS', [returned_cursor, None, clinica_id])
+                    return Response(
+                        {"error": "No se ha encontrado la clínica del administrador."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                cursor.callproc(
+                    "VETLINK.CONSULTAR_HORARIOS", [returned_cursor, None, clinica_id]
+                )
             elif rol_id == 3:
                 # Veterinario puede ver solo sus propios horarios, incluyendo la clínica
-                cursor.callproc('VETLINK.CONSULTAR_HORARIOS', [returned_cursor, usuario, clinica_id])
+                cursor.callproc(
+                    "VETLINK.CONSULTAR_HORARIOS", [returned_cursor, usuario, clinica_id]
+                )
             else:
-                return Response({"error": "No tiene permisos para consultar los horarios."}, status=status.HTTP_403_FORBIDDEN)
+                return Response(
+                    {"error": "No tiene permisos para consultar los horarios."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
 
             # Obtener los resultados del cursor de salida
             schedules = returned_cursor.fetchall()
 
             if not schedules:
-                return JsonResponse({'error': 'No se encontraron horarios.'}, status=404)
+                return JsonResponse(
+                    {"error": "No se encontraron horarios."}, status=404
+                )
 
             # Convertir los resultados en un formato adecuado para la respuesta
             schedules_list = []
             for schedule in schedules:
+                try:
+                    clinica_nombre = Clinicas.objects.get(clinica_id=schedule[6]).nombre if schedule[6] else "Desconocida"
+                except Clinicas.DoesNotExist:
+                    clinica_nombre = "Clínica no encontrada"
+
                 schedule_data = {
                     "horario_id": schedule[0],
                     "usuario_veterinario": schedule[1],
                     "dia": schedule[2],
-                    "hora_inicio": schedule[3].strftime("%H:%M") if schedule[3] else None,
+                    "hora_inicio": (
+                        schedule[3].strftime("%H:%M") if schedule[3] else None
+                    ),
                     "hora_fin": schedule[4].strftime("%H:%M") if schedule[4] else None,
-                    "clinica": Clinicas.objects.get(clinica_id=schedule[6]).nombre if schedule[6] else "Desconocida",
+                    "clinica": clinica_nombre,
                     "activo": True if schedule[5] == 1 else False,
                 }
                 schedules_list.append(schedule_data)
@@ -1497,14 +1661,14 @@ def consult_schedules(request):
             # Filtrar por búsqueda
             if search:
                 schedules_list = [
-                    record for record in schedules_list
+                    record
+                    for record in schedules_list
                     if search.lower() in str(record.get(column, "")).lower()
                 ]
 
             # Ordenar los resultados
             schedules_list.sort(
-                key=lambda x: x.get(column, ""),
-                reverse=(order == "desc")
+                key=lambda x: x.get(column, ""), reverse=(order == "desc")
             )
 
             # Paginación
@@ -1513,11 +1677,50 @@ def consult_schedules(request):
             return paginator.get_paginated_response(result_page)
 
     except Exception as e:
+        # Log para el servidor y respuesta detallada para el usuario
+        print(f"Error en consult_schedules: {str(e)}")
+        if "ORACLE error" in str(e):
+            return Response({"error": "Error en la base de datos, por favor intente más tarde."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"error": "Error desconocido en el servidor."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+@api_view(["PUT"])
+def reactivate_clinic(request, clinica_id):
+    try:
+        clinica = Clinicas.objects.get(pk=clinica_id)
+        clinica.activo = True
+        clinica.save()
+        return Response(
+            {"message": "Clínica reactivada con éxito."},
+            status=status.HTTP_200_OK,
+        )
+    except Clinicas.DoesNotExist:
+        return Response(
+            {"error": "Clínica no encontrada."}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@api_view(["PUT"])
+def reactivate_pet(request, mascota_id):
+    try:
+        mascota = Mascotas.objects.get(pk=mascota_id)
+        mascota.activo = True
+        mascota.save()
+        return Response(
+            {"message": "Mascota reactivada con éxito."},
+            status=status.HTTP_200_OK,
+        )
+    except Mascotas.DoesNotExist:
+        return Response(
+            {"error": "Mascota no encontrada."}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
- 
+
 @api_view(["POST"])
 @transaction.atomic
 def add_vet_schedule(request):
@@ -1533,7 +1736,7 @@ def add_vet_schedule(request):
         if not all([usuario_veterinario, dia, hora_inicio, hora_fin, clinica_id]):
             return Response(
                 {"error": "Todos los campos son obligatorios."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         # Convertir horas a datetime para asegurar formato correcto
@@ -1543,44 +1746,47 @@ def add_vet_schedule(request):
         except ValueError:
             return Response(
                 {"error": "Formato de hora incorrecto. Use HH:MM."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         # Verificación de que la hora de fin es posterior a la hora de inicio
         if hora_fin_dt <= hora_inicio_dt:
             return Response(
                 {"error": "La hora de fin debe ser posterior a la hora de inicio."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         # Verificar si el usuario veterinario existe
         if not Usuarios.objects.filter(usuario=usuario_veterinario, rol_id=3).exists():
             return Response(
                 {"error": "El usuario veterinario especificado no existe."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         # Verificar si la clínica existe
         if not Clinicas.objects.filter(clinica_id=clinica_id).exists():
             return Response(
                 {"error": "La clínica especificada no existe."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         # Llamar al procedimiento almacenado para agregar el horario
         with connection.cursor() as cursor:
-            cursor.callproc('VETLINK.AGREGAR_HORARIO_VETERINARIO', [
-                usuario_veterinario, dia, hora_inicio_dt, hora_fin_dt, clinica_id
-            ])
+            cursor.callproc(
+                "VETLINK.AGREGAR_HORARIO_VETERINARIO",
+                [usuario_veterinario, dia, hora_inicio_dt, hora_fin_dt, clinica_id],
+            )
 
         return Response(
             {"message": "Horario agregado exitosamente."},
-            status=status.HTTP_201_CREATED
+            status=status.HTTP_201_CREATED,
         )
 
     except Exception as e:
         # Manejar cualquier error que ocurra
-        print(f"Error al agregar horario: {str(e)}")  # Esto imprime el error en la consola
+        print(
+            f"Error al agregar horario: {str(e)}"
+        )  # Esto imprime el error en la consola
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -1592,7 +1798,7 @@ def autocomplete_vet(request):
         # Filtrar veterinarios (rol = 3) que coincidan con la búsqueda
         usuarios_veterinarios = Usuarios.objects.filter(
             rol=3, usuario__icontains=search
-        ).order_by("usuario")[:5]  # Limitar a los primeros resultados
+        ).order_by("usuario")
 
         # Serializar la información relevante para el autocompletado
         serializer_data = [
@@ -1609,3 +1815,42 @@ def autocomplete_vet(request):
 
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+def get_admin_clinic(request):
+    try:
+        # Obtener el rol y el ID del usuario de la sesión
+        rol_id = request.session.get("role")
+        usuario_id = request.session.get("user")
+
+        # Validar que el rol sea de administrador (role_id == 2)
+        if rol_id != 2:
+            return Response(
+                {"error": "No tiene permisos para acceder a esta información."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Obtener el usuario administrador
+        usuario = Usuarios.objects.filter(usuario=usuario_id, rol=2).first()
+        
+        # Verificar si el usuario y la clínica existen
+        if not usuario or not usuario.clinica:
+            return Response(
+                {"error": "No se encontró la clínica para este administrador."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Devolver la información de la clínica asociada
+        clinica_data = {
+            "clinica_id": usuario.clinica.clinica_id,
+            "clinica": usuario.clinica.nombre,
+        }
+        return Response(clinica_data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc())  # Para registrar el error completo
+        return Response(
+            {"error": f"Error al obtener la clínica: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
