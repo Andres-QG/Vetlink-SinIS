@@ -581,82 +581,6 @@ def get_owners(request):
         )
 
 
-@api_view(["POST"])
-@transaction.atomic
-def add_clinic(request):
-    try:
-        clinica = request.data.get("clinica")
-        dueno = request.data.get("usuario")
-        telefono = request.data.get("telefono")
-        direccion = request.data.get("direccion")
-
-        usuario = Usuarios.objects.get(nombre=dueno).usuario
-
-        # Verificar si ya existe una clínica con el mismo nombre
-        if Clinicas.objects.filter(nombre=clinica).exists():
-            return Response(
-                {"error": "Ya hay una clínica con este nombre."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Preparar datos para el serializador
-        data = {
-            "nombre": clinica,
-            "telefono": telefono,
-            "direccion": direccion,
-            "usuario_propietario": usuario,
-        }
-
-        # Validar con el serializador
-        nuevaClinica = ClinicasSerializer(data=data)
-
-        if nuevaClinica.is_valid():
-            nuevaClinica.save()  # Guardar si es válido
-            return Response(
-                {"message": "Clínica agregada con éxito"},
-                status=status.HTTP_201_CREATED,
-            )
-        else:
-            return Response(
-                {"errors": nuevaClinica.errors}, status=status.HTTP_400_BAD_REQUEST
-            )
-    except Exception as e:
-        print(e)
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-@api_view(["PUT"])
-def update_clinic(request, clinica_id):
-    try:
-        clin = Clinicas.objects.get(pk=clinica_id)  # Buscar clínica por el id
-
-        # No permitimos modificar la llave primaria (usuario)
-        clinica_nombre = request.data.get("clinica")
-        direccion = request.data.get("direccion")
-        telefono = request.data.get("telefono")
-        dueno = request.data.get("usuario")
-
-        try:
-            ownerUser = Usuarios.objects.get(usuario=dueno)
-        except Usuarios.DoesNotExist:
-            return Response({"error": "Usuario no encontrado"}, status=404)
-
-        # Actualizar los datos de la clínica
-        clin.nombre = clinica_nombre
-        clin.direccion = direccion
-        clin.telefono = telefono
-        clin.usuario_propietario = ownerUser
-        clin.save()
-
-        return Response(
-            {"message": "Clínica actualizada con éxito."}, status=status.HTTP_200_OK
-        )
-
-    except Exception as e:
-        print(f"Error actualizando clínica: {str(e)}")
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
 @api_view(["GET"])
 def consult_client(request):
     search = request.GET.get("search", "")
@@ -1266,23 +1190,6 @@ def delete_client(request, usuario):
 
 
 @api_view(["DELETE"])
-def delete_clinic(request, clinica_id):
-    try:
-        clinica = Clinicas.objects.get(pk=clinica_id)
-        clinica.activo = False
-        clinica.save()
-        return Response(
-            {"message": "Clínica desactivada correctamente."}, status=status.HTTP_200_OK
-        )
-    except Clinicas.DoesNotExist:
-        return Response(
-            {"error": "Clínica no encontrada."}, status=status.HTTP_404_NOT_FOUND
-        )
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-@api_view(["DELETE"])
 def delete_pet(request, mascota_id):
     try:
         mascota = Mascotas.objects.get(pk=mascota_id)
@@ -1329,36 +1236,8 @@ def consult_pet_records(request):
         if not pet_records_list:
             return JsonResponse({"error": "Expediente no encontrado"}, status=404)
 
-        if not pet_records:
-            return JsonResponse({"error": "Expediente no encontrado"}, status=404)
-
-        pet_records_list = []
-        for entry in pet_records:
-            pet_record_data = {
-                "consulta_id": entry[0],
-                "mascota_id": entry[1],
-                "nombre_mascota": entry[2],
-                "usuario_cliente": entry[3],
-                "fecha": entry[4],
-                "diagnostico": entry[5],
-                "peso": entry[6],
-                "vacunas": entry[7],
-                "sintomas": entry[8],
-                "tratamientos": entry[9],
-            }
-            pet_records_list.append(pet_record_data)
-
-        # Filtrar por búsqueda
-        if search:
-            pet_records_list = [
-                record
-                for record in pet_records_list
-                if search.lower() in str(record.get(column, "")).lower()
-            ]
-
-        # Ordenar resultados
-        pet_records_list.sort(
-            key=lambda x: x.get(column, ""), reverse=(order == "desc")
+        pet_records_list = filter_and_sort_pet_records(
+            pet_records_list, search, column, order
         )
 
         paginator = CustomPagination()
@@ -1377,6 +1256,44 @@ def consult_pet_records(request):
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+def fetch_pet_records_from_db():
+    with connection.cursor() as cursor:
+        result_set_cursor = cursor.connection.cursor()
+        cursor.callproc("VETLINK.ConsultarExpedientes", [result_set_cursor])
+        pet_records = result_set_cursor.fetchall()
+
+    pet_records_list = []
+    for entry in pet_records:
+        pet_record_data = {
+            "consulta_id": entry[0],
+            "mascota_id": entry[1],
+            "nombre_mascota": entry[2],
+            "usuario_cliente": entry[3],
+            "fecha": entry[4],
+            "diagnostico": entry[5],
+            "peso": entry[6],
+            "vacunas": entry[7],
+            "sintomas": entry[8],
+            "tratamientos": entry[9],
+        }
+        pet_records_list.append(pet_record_data)
+
+    return pet_records_list
+
+
+def filter_and_sort_pet_records(pet_records_list, search, column, order):
+    if search:
+        pet_records_list = [
+            record
+            for record in pet_records_list
+            if search.lower() in str(record.get(column, "")).lower()
+        ]
+
+    pet_records_list.sort(key=lambda x: x.get(column, ""), reverse=(order == "desc"))
+
+    return pet_records_list
 
 
 @api_view(["POST"])
@@ -1441,7 +1358,8 @@ def add_pet_record(request):
     except Exception as e:
         return Response({"error": str(e)}, status=500)
 
-@api_view(['GET'])
+
+@api_view(["GET"])
 def consult_vaccines(request):
     search = request.GET.get("search", "")
     column = request.GET.get("column", "nombre")
@@ -1463,8 +1381,9 @@ def consult_vaccines(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@api_view(['DELETE'])
-def delete_pet_record(request,consulta_id):
+
+@api_view(["DELETE"])
+def delete_pet_record(request, consulta_id):
     try:
         # Verificar si la mascota existe
         mascota = Mascotas.objects.get(pk=mascota_id)
@@ -1642,7 +1561,11 @@ def consult_schedules(request):
             schedules_list = []
             for schedule in schedules:
                 try:
-                    clinica_nombre = Clinicas.objects.get(clinica_id=schedule[6]).nombre if schedule[6] else "Desconocida"
+                    clinica_nombre = (
+                        Clinicas.objects.get(clinica_id=schedule[6]).nombre
+                        if schedule[6]
+                        else "Desconocida"
+                    )
                 except Clinicas.DoesNotExist:
                     clinica_nombre = "Clínica no encontrada"
 
@@ -1681,9 +1604,14 @@ def consult_schedules(request):
         # Log para el servidor y respuesta detallada para el usuario
         print(f"Error en consult_schedules: {str(e)}")
         if "ORACLE error" in str(e):
-            return Response({"error": "Error en la base de datos, por favor intente más tarde."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        return Response({"error": "Error desconocido en el servidor."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+            return Response(
+                {"error": "Error en la base de datos, por favor intente más tarde."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        return Response(
+            {"error": "Error desconocido en el servidor."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 
 @api_view(["PUT"])
@@ -1817,7 +1745,8 @@ def autocomplete_vet(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@api_view(['GET'])
+
+@api_view(["GET"])
 def get_admin_clinic(request):
     try:
         # Obtener el rol y el ID del usuario de la sesión
@@ -1828,17 +1757,17 @@ def get_admin_clinic(request):
         if rol_id != 2:
             return Response(
                 {"error": "No tiene permisos para acceder a esta información."},
-                status=status.HTTP_403_FORBIDDEN
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         # Obtener el usuario administrador
         usuario = Usuarios.objects.filter(usuario=usuario_id, rol=2).first()
-        
+
         # Verificar si el usuario y la clínica existen
         if not usuario or not usuario.clinica:
             return Response(
                 {"error": "No se encontró la clínica para este administrador."},
-                status=status.HTTP_404_NOT_FOUND
+                status=status.HTTP_404_NOT_FOUND,
             )
 
         # Devolver la información de la clínica asociada
@@ -1850,8 +1779,9 @@ def get_admin_clinic(request):
 
     except Exception as e:
         import traceback
+
         print(traceback.format_exc())  # Para registrar el error completo
         return Response(
             {"error": f"Error al obtener la clínica: {str(e)}"},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
