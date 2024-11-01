@@ -1373,13 +1373,53 @@ def consult_vaccines(request):
 
         vaccines = vaccines.order_by(f"-{column}" if order == "desc" else column)
 
-        paginator = CustomPagination()
-        result_page = paginator.paginate_queryset(vaccines, request)
-        serializer = VacunasSerializer(result_page, many=True)
-
-        return paginator.get_paginated_response(serializer.data)
+        serializer = VacunasSerializer(vaccines, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        print(f"Error fetching vaccines: {str(e)}")
+        return Response([], status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+def consult_symptoms(request):
+    search = request.GET.get("search", "")
+    column = request.GET.get("column", "nombre")
+    order = request.GET.get("order", "asc")
+
+    try:
+        symptoms = Sintomas.objects.all()
+        if search:
+            kwargs = {f"{column}__icontains": search}
+            symptoms = symptoms.filter(**kwargs)
+
+        symptoms = symptoms.order_by(f"-{column}" if order == "desc" else column)
+
+        serializer = SintomasSerializer(symptoms, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Exception as e:
+        print(f"Error fetching symptoms: {str(e)}")
+        return Response([], status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+def consult_treatments(request):
+    search = request.GET.get("search", "")
+    column = request.GET.get("column", "nombre")
+    order = request.GET.get("order", "asc")
+
+    try:
+        treatments = Tratamientos.objects.all()
+        if search:
+            kwargs = {f"{column}__icontains": search}
+            treatments = treatments.filter(**kwargs)
+
+        treatments = treatments.order_by(f"-{column}" if order == "desc" else column)
+
+        serializer = TratamientosSerializer(treatments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Exception as e:
+        print(f"Error fetching treatments: {str(e)}")
+        return Response([], status=status.HTTP_200_OK)
 
 
 @api_view(["DELETE"])
