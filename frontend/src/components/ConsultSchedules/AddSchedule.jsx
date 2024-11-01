@@ -45,6 +45,7 @@ const AddSchedule = forwardRef(({ open, handleClose, onSuccess }, ref) => {
   const [loading, setLoading] = useState(false);
   const [loadingVets, setLoadingVets] = useState(false);
   const [loadingClinic, setLoadingClinic] = useState(false);
+  const [autocompleteValue, setAutocompleteValue] = useState(null);
 
   useEffect(() => {
     if (formData.usuario_veterinario.length >= 0) fetchVeterinarios();
@@ -104,6 +105,7 @@ const AddSchedule = forwardRef(({ open, handleClose, onSuccess }, ref) => {
   };
 
   const handleVetChange = (event, newValue) => {
+    setAutocompleteValue(newValue);
     setFormData((prev) => ({
       ...prev,
       usuario_veterinario: newValue ? newValue.usuario : "",
@@ -159,12 +161,16 @@ const AddSchedule = forwardRef(({ open, handleClose, onSuccess }, ref) => {
   };
 
   const handleError = (error) => {
-    const { data, status } = error.response || {};
-    if (status === 409 && data?.error === "Horario conflictivo") {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        hora_inicio: "Este horario se superpone con otro existente.",
-      }));
+    const { status, data } = error.response || {};
+
+    if (status === 500 && data?.error) {
+      // Extraer solo la primera línea o la parte de "ORA-20001"
+      const shortError = data.error.includes("ORA-20001")
+        ? "Conflicto de horarios detectado."
+        : data.error.split("\n")[0];
+
+      // Mostrar el error general sin asociarlo a un campo específico
+      onSuccess(shortError, "error");
     } else {
       onSuccess(
         data?.error || "Error desconocido. Inténtelo más tarde.",
@@ -174,13 +180,15 @@ const AddSchedule = forwardRef(({ open, handleClose, onSuccess }, ref) => {
   };
 
   const handleClear = () => {
-    setFormData({
+    setAutocompleteValue(null); // Limpiar Autocomplete
+    setFormData((prev) => ({
+      ...prev,
       usuario_veterinario: "",
       dia: "",
       hora_inicio: dayjs(),
       hora_fin: dayjs(),
-      clinica_id: "",
-    });
+      ...(role !== 2 && { clinica_id: "" }),
+    }));
     setErrors({});
   };
 
@@ -236,6 +244,7 @@ const AddSchedule = forwardRef(({ open, handleClose, onSuccess }, ref) => {
               }));
             }}
             onChange={handleVetChange}
+            value={autocompleteValue} // Aplicar el estado para limpiar Autocomplete
             loading={loadingVets}
             renderInput={(params) => (
               <TextField
@@ -302,6 +311,11 @@ const AddSchedule = forwardRef(({ open, handleClose, onSuccess }, ref) => {
                 ))
               )}
             </Select>
+            {!!errors.clinica_id && (
+              <Typography color="error" variant="caption">
+                {errors.clinica_id}
+              </Typography>
+            )}
           </FormControl>
 
           <FormControl fullWidth sx={{ mb: 2 }}>
@@ -332,6 +346,11 @@ const AddSchedule = forwardRef(({ open, handleClose, onSuccess }, ref) => {
                 </MenuItem>
               ))}
             </Select>
+            {!!errors.dia && (
+              <Typography color="error" variant="caption">
+                {errors.dia}
+              </Typography>
+            )}
           </FormControl>
 
           <LocalizationProvider dateAdapter={AdapterDayjs}>

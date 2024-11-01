@@ -1539,9 +1539,9 @@ def consult_schedules(request):
                     "VETLINK.CONSULTAR_HORARIOS", [returned_cursor, None, clinica_id]
                 )
             elif rol_id == 3:
-                # Veterinario puede ver solo sus propios horarios, incluyendo la clínica
+                # Veterinario puede ver solo sus propios horarios
                 cursor.callproc(
-                    "VETLINK.CONSULTAR_HORARIOS", [returned_cursor, usuario, clinica_id]
+                    "VETLINK.CONSULTAR_HORARIOS", [returned_cursor, usuario, None]
                 )
             else:
                 return Response(
@@ -1550,35 +1550,37 @@ def consult_schedules(request):
                 )
 
             # Obtener los resultados del cursor de salida
-            schedules = returned_cursor.fetchall()
+            columns = [col[0] for col in returned_cursor.description]
+            schedules = [dict(zip(columns, row)) for row in returned_cursor.fetchall()]
 
             if not schedules:
                 return JsonResponse(
                     {"error": "No se encontraron horarios."}, status=404
                 )
 
-            # Convertir los resultados en un formato adecuado para la respuesta
+            # Procesar los datos y agregar campos adicionales si es necesario
             schedules_list = []
             for schedule in schedules:
+                # Obtener el nombre de la clínica
                 try:
                     clinica_nombre = (
-                        Clinicas.objects.get(clinica_id=schedule[6]).nombre
-                        if schedule[6]
+                        Clinicas.objects.get(clinica_id=schedule['CLINICA_ID']).nombre
+                        if schedule['CLINICA_ID']
                         else "Desconocida"
                     )
                 except Clinicas.DoesNotExist:
                     clinica_nombre = "Clínica no encontrada"
 
                 schedule_data = {
-                    "horario_id": schedule[0],
-                    "usuario_veterinario": schedule[1],
-                    "dia": schedule[2],
-                    "hora_inicio": (
-                        schedule[3].strftime("%H:%M") if schedule[3] else None
-                    ),
-                    "hora_fin": schedule[4].strftime("%H:%M") if schedule[4] else None,
+                    "horario_id": schedule['HORARIO_ID'],
+                    "usuario_veterinario": schedule['USUARIO_VETERINARIO'],
+                    "nombre_veterinario": schedule['NOMBRE_VETERINARIO'],  # Nuevo campo
+                    "dia": schedule['DIA'],
+                    "hora_inicio": schedule['HORA_INICIO'],
+                    "hora_fin": schedule['HORA_FIN'],
+                    "clinica_id": schedule['CLINICA_ID'],  # Nuevo campo
                     "clinica": clinica_nombre,
-                    "activo": True if schedule[5] == 1 else False,
+                    "activo": True if schedule['ACTIVO'] == 1 else False,
                 }
                 schedules_list.append(schedule_data)
 
@@ -1783,5 +1785,250 @@ def get_admin_clinic(request):
         print(traceback.format_exc())  # Para registrar el error completo
         return Response(
             {"error": f"Error al obtener la clínica: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
+@api_view(["PUT"])
+@transaction.atomic
+def modify_vet_schedule(request, horario_id):
+    try:
+        # Obtener los parámetros enviados en el cuerpo de la solicitud
+        usuario_veterinario = request.data.get("usuario_veterinario")
+        dia = request.data.get("dia")
+        hora_inicio = request.data.get("hora_inicio")
+        hora_fin = request.data.get("hora_fin")
+        clinica_id = request.data.get("clinica_id")
+
+        # Validar que todos los campos estén presentes
+        if not all([usuario_veterinario, dia, hora_inicio, hora_fin, clinica_id]):
+            return Response(
+                {"error": "Todos los campos son obligatorios."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Convertir horas a datetime para asegurar formato correcto
+        try:
+            hora_inicio_dt = datetime.strptime(hora_inicio, "%H:%M")
+            hora_fin_dt = datetime.strptime(hora_fin, "%H:%M")
+        except ValueError:
+            return Response(
+                {"error": "Formato de hora incorrecto. Use HH:MM."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Verificación de que la hora de fin es posterior a la hora de inicio
+        if hora_fin_dt <= hora_inicio_dt:
+            return Response(
+                {"error": "La hora de fin debe ser posterior a la hora de inicio."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Verificar si el horario existe
+        if not HorariosVeterinarios.objects.filter(horario_id=horario_id).exists():
+            return Response(
+                {"error": "El horario especificado no existe."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Verificar si el usuario veterinario existe
+        if not Usuarios.objects.filter(usuario=usuario_veterinario, rol_id=3).exists():
+            return Response(
+                {"error": "El usuario veterinario especificado no existe."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Verificar si la clínica existe
+        if not Clinicas.objects.filter(clinica_id=clinica_id).exists():
+            return Response(
+                {"error": "La clínica especificada no existe."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Llamar al procedimiento almacenado para modificar el horario
+        with connection.cursor() as cursor:
+            cursor.callproc(
+                "VETLINK.MODIFICAR_HORARIO_VETERINARIO",
+                [
+                    horario_id,
+                    usuario_veterinario,
+                    dia,
+                    hora_inicio_dt,
+                    hora_fin_dt,
+                    clinica_id,
+                ],
+            )
+
+        return Response(
+            {"message": "Horario modificado exitosamente."},
+            status=status.HTTP_200_OK,
+        )
+
+    except Exception as e:
+        # Manejar cualquier error que ocurra
+        print(f"Error al modificar horario: {str(e)}")
+        return Response(
+            {"error": f"Error al modificar el horario: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+        
+@api_view(['DELETE'])
+def delete_vet_schedule(request, horario_id):
+    try:
+        with connection.cursor() as cursor:
+            # Llamar al procedimiento almacenado
+            cursor.callproc('VETLINK.ELIMINAR_HORARIO_VETERINARIO', [horario_id])
+
+        return Response({'message': 'Horario eliminado exitosamente.'}, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        error_message = str(e)
+        if 'ORA-20001' in error_message:
+            # Error personalizado desde el procedimiento almacenado
+            return Response({'error': error_message.split('ORA-20001: ')[-1]}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            # Otro error
+            return Response({'error': 'Error al eliminar el horario.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    
+
+
+
+@api_view(["GET"])
+def consult_services(request):
+    search = request.GET.get("search", "")
+    column = request.GET.get("column", "nombre")
+    order = request.GET.get("order", "asc")
+
+    try:
+        servicios = Servicios.objects.all()
+        if search:
+            kwargs = {f"{column}__icontains": search}
+            servicios = servicios.filter(**kwargs)
+
+        # Ordenamiento de resultados
+        servicios = servicios.order_by(f"-{column}" if order == "desc" else column)
+
+        serializer_data = [
+            {
+                "servicio_id": servicio.servicio_id,
+                "nombre": servicio.nombre,
+                "descripcion": servicio.descripcion,
+                "numero_sesiones": servicio.numero_sesiones,
+                "minutos_sesion": servicio.minutos_sesion,
+                "costo": servicio.costo,
+                "activo": servicio.activo,
+                "imagen": servicio.dir_imagen,
+            }
+            for servicio in servicios
+        ]
+
+        return Response(serializer_data, status=status.HTTP_200_OK)
+    except Exception as e:
+        print(e)
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["PUT"])
+def update_servicio(request, servicio_id):
+    try:
+        servicio = Servicios.objects.get(pk=servicio_id)
+        nombre = request.data.get("nombre")
+        descripcion = request.data.get("descripcion")
+        numero_sesiones = request.data.get("numero_sesiones")
+        minutos_sesion = request.data.get("minutos_sesion")
+        costo = request.data.get("costo")
+
+        # Actualizar los datos del servicio
+        if nombre:
+            servicio.nombre = nombre
+        if descripcion:
+            servicio.descripcion = descripcion
+        if numero_sesiones:
+            servicio.numero_sesiones = numero_sesiones
+        if minutos_sesion:
+            servicio.minutos_sesion = minutos_sesion
+        if costo:
+            servicio.costo = costo
+
+        servicio.save()
+        return Response(
+            {"message": "Servicio actualizado con éxito."},
+            status=status.HTTP_200_OK,
+        )
+    except Servicios.DoesNotExist:
+        return Response(
+            {"error": "Servicio no encontrado."}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["DELETE"])
+def delete_service(request, servicio_id):
+    try:
+        servicio = Servicios.objects.get(pk=servicio_id)
+        servicio.activo = False
+        servicio.save()
+        return Response(
+            {"message": "Servicio desactivado correctamente."},
+            status=status.HTTP_200_OK,
+        )
+    except Servicios.DoesNotExist:
+        return Response(
+            {"error": "Servicio no encontrado."}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["PUT"])
+def reactivate_service(request, servicio_id):
+    try:
+        servicio = Servicios.objects.get(pk=servicio_id)
+        servicio.activo = True
+        servicio.save()
+        return Response(
+            {"message": "Servicio reactivado con éxito."}, status=status.HTTP_200_OK
+        )
+    except Servicios.DoesNotExist:
+        return Response(
+            {"error": "Servicio no encontrado."}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["POST"])
+def add_servicio(request):
+    try:
+        nombre = request.data.get("nombre")
+        descripcion = request.data.get("descripcion")
+        numero_sesiones = request.data.get("numero_sesiones", 1)
+        minutos_sesion = request.data.get("minutos_sesion")
+        costo = request.data.get("costo")
+        activo = True  # Asumimos que el servicio se crea como activo por defecto
+
+        # Generar automáticamente dir_imagen
+        dir_imagen = f"./src/assets/img/Services_{nombre}.jpg"
+
+        nuevo_servicio = Servicios(
+            nombre=nombre,
+            descripcion=descripcion,
+            numero_sesiones=numero_sesiones,
+            minutos_sesion=minutos_sesion,
+            costo=costo,
+            activo=activo,
+            dir_imagen=dir_imagen,
+        )
+        nuevo_servicio.save()
+        return Response(
+            {"message": "Servicio agregado con éxito."},
+            status=status.HTTP_201_CREATED,
+        )
+    except Exception as e:
+        print(e)
+        return Response(
+            {"error": str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
