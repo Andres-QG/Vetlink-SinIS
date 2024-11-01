@@ -128,7 +128,7 @@ const ModifyRecord = forwardRef(
 
     const sendFormData = async (formDataToSend) => {
       const response = await axios.put(
-        `http://localhost:8000/api/update-pet-record/${selectedItem.id}/`,
+        `http://localhost:8000/api/update-pet-record/${selectedItem.mascota_id}/${selectedItem.consulta_id}/`,
         formDataToSend,
         {
           headers: {

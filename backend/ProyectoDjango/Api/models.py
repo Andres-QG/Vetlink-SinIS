@@ -278,7 +278,7 @@ class HorariosVeterinarios(models.Model):
 
 
 class Mascotas(models.Model):
-    mascota_id = models.FloatField(primary_key=True, db_comment='Este campo es la llave primaria de la tabla. Almacena un identificador ·nico para cada mascota. Este valor debe ser ·nico y permite distinguir cada mascota de manera clara.')
+    mascota_id = models.AutoField(primary_key=True, db_comment='Este campo es la llave primaria de la tabla. Almacena un identificador ·nico para cada mascota. Este valor debe ser ·nico y permite distinguir cada mascota de manera clara.')
     usuario_cliente = models.ForeignKey('Usuarios', models.DO_NOTHING, db_column='usuario_cliente', db_comment='Este campo es una llave forßnea que hace referencia al usuario cliente que posee la mascota. Permite vincular la mascota con el cliente correspondiente en el sistema.')
     nombre = models.CharField(max_length=30, blank=True, null=True, db_comment='Este campo es una llave forßnea que almacena el n·mero de cÚdula del cliente. Es ·til para identificar al cliente de manera oficial y asegurar que la mascota pertenece a Úl.')
     fecha_nacimiento = models.DateField(blank=True, null=True, db_comment='Este campo almacena la fecha de nacimiento de la mascota. Es relevante para determinar la edad y estado de salud de la mascota, asÝ como para el seguimiento de su cuidado.')
