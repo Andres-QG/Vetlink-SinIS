@@ -32,7 +32,7 @@ const ConsultSchedules = () => {
       fetchUrl="http://localhost:8000/api/consult-schedules/"
       addComponent={AddSchedule}
       modifyComponent={ModifySchedule}
-      deletionUrl="http://localhost:8000/api/delete-schedule"
+      deletionUrl="http://localhost:8000/api/delete-vet-schedule"
       rowsPerPage={rowsPerPage}
       columns={columns}
       pkCol="horario_id"

@@ -53,17 +53,20 @@ urlpatterns = [
 
     # Vacunas
     path("consult-vaccines/", consult_vaccines, name="consult_vaccines"),
+    
     # Citas APIs
     path("consult-citas/", consult_citas, name="consult_citas"),
     path("add-cita/", add_cita, name="add_cita"),
     path("update-cita/<int:cita_id>/", update_cita, name="update_cita"),
     path("delete-cita/<int:cita_id>/", delete_cita, name="delete_cita"),
+    
     # Horarios Veterinarios APIs
     path("consult-schedules/", consult_schedules, name="consult_schedules"),
     path("add-schedule/", add_vet_schedule, name="add_vet_schedule"),
     path("autocomplete-vet/", autocomplete_vet, name="autocomplete_vet"),
     path('get-admin-clinic/', get_admin_clinic, name='get_admin_clinic'),
     path("modify-vet-schedule/<int:horario_id>/", modify_vet_schedule, name="modify_vet_schedule"),
+    path('delete-vet-schedule/<int:horario_id>/', delete_vet_schedule, name='delete_vet_schedule'),
     
     # Reactivate APIs
     path("reactivate-user/<str:usuario>/", reactivate_user, name="reactivate_user"),

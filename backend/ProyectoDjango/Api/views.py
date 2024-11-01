@@ -1872,5 +1872,23 @@ def modify_vet_schedule(request, horario_id):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
         
+@api_view(['DELETE'])
+def delete_vet_schedule(request, horario_id):
+    try:
+        with connection.cursor() as cursor:
+            # Llamar al procedimiento almacenado
+            cursor.callproc('VETLINK.ELIMINAR_HORARIO_VETERINARIO', [horario_id])
+
+        return Response({'message': 'Horario eliminado exitosamente.'}, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        error_message = str(e)
+        if 'ORA-20001' in error_message:
+            # Error personalizado desde el procedimiento almacenado
+            return Response({'error': error_message.split('ORA-20001: ')[-1]}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            # Otro error
+            return Response({'error': 'Error al eliminar el horario.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
     
 
