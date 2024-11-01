@@ -50,7 +50,6 @@ urlpatterns = [
         delete_pet_record,
         name="delete_pet_record",
     ),
-
     # Vacunas
     path("consult-vaccines/", consult_vaccines, name="consult_vaccines"),
     # Citas APIs
@@ -62,7 +61,7 @@ urlpatterns = [
     path("consult-schedules/", consult_schedules, name="consult_schedules"),
     path("add-schedule/", add_vet_schedule, name="add_vet_schedule"),
     path("autocomplete-vet/", autocomplete_vet, name="autocomplete_vet"),
-    path('get-admin-clinic/', get_admin_clinic, name='get_admin_clinic'),
+    path("get-admin-clinic/", get_admin_clinic, name="get_admin_clinic"),
     # Reactivate APIs
     path("reactivate-user/<str:usuario>/", reactivate_user, name="reactivate_user"),
     path("reactivate-pet/<int:mascota_id>/", reactivate_pet, name="reactivate_pet"),
@@ -70,5 +69,15 @@ urlpatterns = [
         "reactivate-clinic/<int:clinica_id>/",
         reactivate_clinic,
         name="reactivate_clinic",
+    ),
+    # Services APIs
+    path("add-service/", add_servicio, name="add_servicio"),
+    path("consult-services/", consult_services, name="consult_services"),
+    path("update-service/<int:servicio_id>/", update_servicio, name="update_servicio"),
+    path("delete-service/<int:servicio_id>/", delete_service, name="delete_service"),
+    path(
+        "reactivate-service/<int:servicio_id>/",
+        reactivate_service,
+        name="reactivate_service",
     ),
 ]

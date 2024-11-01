@@ -1785,3 +1785,143 @@ def get_admin_clinic(request):
             {"error": f"Error al obtener la clínica: {str(e)}"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
+
+@api_view(["GET"])
+def consult_services(request):
+    search = request.GET.get("search", "")
+    column = request.GET.get("column", "nombre")
+    order = request.GET.get("order", "asc")
+
+    try:
+        servicios = Servicios.objects.all()
+        if search:
+            kwargs = {f"{column}__icontains": search}
+            servicios = servicios.filter(**kwargs)
+
+        # Ordenamiento de resultados
+        servicios = servicios.order_by(f"-{column}" if order == "desc" else column)
+
+        serializer_data = [
+            {
+                "servicio_id": servicio.servicio_id,
+                "nombre": servicio.nombre,
+                "descripcion": servicio.descripcion,
+                "numero_sesiones": servicio.numero_sesiones,
+                "minutos_sesion": servicio.minutos_sesion,
+                "costo": servicio.costo,
+                "activo": servicio.activo,
+                "imagen": servicio.dir_imagen,
+            }
+            for servicio in servicios
+        ]
+
+        return Response(serializer_data, status=status.HTTP_200_OK)
+    except Exception as e:
+        print(e)
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["PUT"])
+def update_servicio(request, servicio_id):
+    try:
+        servicio = Servicios.objects.get(pk=servicio_id)
+        nombre = request.data.get("nombre")
+        descripcion = request.data.get("descripcion")
+        numero_sesiones = request.data.get("numero_sesiones")
+        minutos_sesion = request.data.get("minutos_sesion")
+        costo = request.data.get("costo")
+
+        # Actualizar los datos del servicio
+        if nombre:
+            servicio.nombre = nombre
+        if descripcion:
+            servicio.descripcion = descripcion
+        if numero_sesiones:
+            servicio.numero_sesiones = numero_sesiones
+        if minutos_sesion:
+            servicio.minutos_sesion = minutos_sesion
+        if costo:
+            servicio.costo = costo
+
+        servicio.save()
+        return Response(
+            {"message": "Servicio actualizado con éxito."},
+            status=status.HTTP_200_OK,
+        )
+    except Servicios.DoesNotExist:
+        return Response(
+            {"error": "Servicio no encontrado."}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["DELETE"])
+def delete_service(request, servicio_id):
+    try:
+        servicio = Servicios.objects.get(pk=servicio_id)
+        servicio.activo = False
+        servicio.save()
+        return Response(
+            {"message": "Servicio desactivado correctamente."},
+            status=status.HTTP_200_OK,
+        )
+    except Servicios.DoesNotExist:
+        return Response(
+            {"error": "Servicio no encontrado."}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["PUT"])
+def reactivate_service(request, servicio_id):
+    try:
+        servicio = Servicios.objects.get(pk=servicio_id)
+        servicio.activo = True
+        servicio.save()
+        return Response(
+            {"message": "Servicio reactivado con éxito."}, status=status.HTTP_200_OK
+        )
+    except Servicios.DoesNotExist:
+        return Response(
+            {"error": "Servicio no encontrado."}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["POST"])
+def add_servicio(request):
+    try:
+        nombre = request.data.get("nombre")
+        descripcion = request.data.get("descripcion")
+        numero_sesiones = request.data.get("numero_sesiones", 1)
+        minutos_sesion = request.data.get("minutos_sesion")
+        costo = request.data.get("costo")
+        activo = True  # Asumimos que el servicio se crea como activo por defecto
+
+        # Generar automáticamente dir_imagen
+        dir_imagen = f"./src/assets/img/Services_{nombre}.jpg"
+
+        nuevo_servicio = Servicios(
+            nombre=nombre,
+            descripcion=descripcion,
+            numero_sesiones=numero_sesiones,
+            minutos_sesion=minutos_sesion,
+            costo=costo,
+            activo=activo,
+            dir_imagen=dir_imagen,
+        )
+        nuevo_servicio.save()
+        return Response(
+            {"message": "Servicio agregado con éxito."},
+            status=status.HTTP_201_CREATED,
+        )
+    except Exception as e:
+        print(e)
+        return Response(
+            {"error": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
