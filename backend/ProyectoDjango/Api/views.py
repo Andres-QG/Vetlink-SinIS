@@ -1569,6 +1569,7 @@ def consult_schedules(request):
         # Obtener el rol y el usuario de la sesión
         rol_id = request.session.get("role")
         usuario = request.session.get("user")
+        # Obtener la clínica del administrador
         clinica_id = request.session.get("clinica_id") if rol_id == 2 else None
 
         if not rol_id or not usuario:
@@ -1618,6 +1619,11 @@ def consult_schedules(request):
             # Convertir los resultados en un formato adecuado para la respuesta
             schedules_list = []
             for schedule in schedules:
+                try:
+                    clinica_nombre = Clinicas.objects.get(clinica_id=schedule[6]).nombre if schedule[6] else "Desconocida"
+                except Clinicas.DoesNotExist:
+                    clinica_nombre = "Clínica no encontrada"
+
                 schedule_data = {
                     "horario_id": schedule[0],
                     "usuario_veterinario": schedule[1],
@@ -1626,11 +1632,7 @@ def consult_schedules(request):
                         schedule[3].strftime("%H:%M") if schedule[3] else None
                     ),
                     "hora_fin": schedule[4].strftime("%H:%M") if schedule[4] else None,
-                    "clinica": (
-                        Clinicas.objects.get(clinica_id=schedule[6]).nombre
-                        if schedule[6]
-                        else "Desconocida"
-                    ),
+                    "clinica": clinica_nombre,
                     "activo": True if schedule[5] == 1 else False,
                 }
                 schedules_list.append(schedule_data)
@@ -1654,7 +1656,12 @@ def consult_schedules(request):
             return paginator.get_paginated_response(result_page)
 
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # Log para el servidor y respuesta detallada para el usuario
+        print(f"Error en consult_schedules: {str(e)}")
+        if "ORACLE error" in str(e):
+            return Response({"error": "Error en la base de datos, por favor intente más tarde."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"error": "Error desconocido en el servidor."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 
 @api_view(["PUT"])
@@ -1770,9 +1777,7 @@ def autocomplete_vet(request):
         # Filtrar veterinarios (rol = 3) que coincidan con la búsqueda
         usuarios_veterinarios = Usuarios.objects.filter(
             rol=3, usuario__icontains=search
-        ).order_by("usuario")[
-            :5
-        ]  # Limitar a los primeros resultados
+        ).order_by("usuario")
 
         # Serializar la información relevante para el autocompletado
         serializer_data = [
@@ -1789,3 +1794,42 @@ def autocomplete_vet(request):
 
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+def get_admin_clinic(request):
+    try:
+        # Obtener el rol y el ID del usuario de la sesión
+        rol_id = request.session.get("role")
+        usuario_id = request.session.get("user")
+
+        # Validar que el rol sea de administrador (role_id == 2)
+        if rol_id != 2:
+            return Response(
+                {"error": "No tiene permisos para acceder a esta información."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Obtener el usuario administrador
+        usuario = Usuarios.objects.filter(usuario=usuario_id, rol=2).first()
+        
+        # Verificar si el usuario y la clínica existen
+        if not usuario or not usuario.clinica:
+            return Response(
+                {"error": "No se encontró la clínica para este administrador."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Devolver la información de la clínica asociada
+        clinica_data = {
+            "clinica_id": usuario.clinica.clinica_id,
+            "clinica": usuario.clinica.nombre,
+        }
+        return Response(clinica_data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc())  # Para registrar el error completo
+        return Response(
+            {"error": f"Error al obtener la clínica: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
