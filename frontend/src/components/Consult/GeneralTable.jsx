@@ -81,7 +81,7 @@ const GeneralTable = ({
     try {
       const url = `${deletionUrl}/${selectedItem[pkCol]}/`;
       const response = await axios.delete(url);
-      notify("Elemento eliminado correctamente.", "success");
+      notify("Elemento desactivado correctamente.", "success");
     } catch (error) {
       if (error.response) {
         notify(
