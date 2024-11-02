@@ -29,8 +29,7 @@ import CalendarIcon from "@mui/icons-material/Event";
 import ClientsIcon from "@mui/icons-material/Group";
 import PetsIconAlt from "@mui/icons-material/Pets";
 import VetsIcon from "@mui/icons-material/MedicalServices";
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 
 const { Header, Content, Sider, Footer } = Layout;
 
@@ -202,7 +201,7 @@ const DashboardLayout = ({
             label: "Expedientes",
             onClick: () => handleClick("consultrecords"),
           },
-          
+
           ...(role === 1 || role === 2
             ? [
                 {
@@ -211,19 +210,19 @@ const DashboardLayout = ({
                   label: "Clientes",
                   onClick: () => handleClick("consultclients"),
                 },
-              {
-                key: "consultvets",
-                icon: <VetsIcon />,
-                label: "Veterinarios",
-                onClick: () => handleClick("consultvets"),
-              },
-              {
-                key: "consultCitas",
-                icon: <CalendarMonthIcon />,
-                label: "Citas",
-                onClick: () => handleClick("appointments"),
-              },
-            ]
+                {
+                  key: "consultvets",
+                  icon: <VetsIcon />,
+                  label: "Veterinarios",
+                  onClick: () => handleClick("consultvets"),
+                },
+                {
+                  key: "consultCitas",
+                  icon: <CalendarMonthIcon />,
+                  label: "Citas",
+                  onClick: () => handleClick("appointments"),
+                },
+              ]
             : []),
           ...(role === 1
             ? [
@@ -239,7 +238,6 @@ const DashboardLayout = ({
                   label: "Administradores",
                   onClick: () => handleClick("consultAdmins"),
                 },
-                
               ]
             : []),
         ],
@@ -355,7 +353,7 @@ const DashboardLayout = ({
         >
           <Avatar
             style={{
-              backgroundColor: isActive ? "#1890ff" : "#808080",
+              backgroundColor: isActive ? "#0BA6A9" : "#808080",
               cursor: "pointer",
               marginLeft: "16px",
             }}

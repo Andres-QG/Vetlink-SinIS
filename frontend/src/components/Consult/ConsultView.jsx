@@ -17,7 +17,7 @@ const ConsultView = ({
   columns,
   pkCol,
   visualIdentifierCol,
-  rowsPerPage
+  rowsPerPage,
 }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -56,6 +56,10 @@ const ConsultView = ({
       // console.log(data)
       setData(data.results);
       setTotalCount(data.count);
+      const data = response.data.results || [];
+      setData(data);
+      setTotalCount(data.length);
+      setFilteredData(data);
     } catch (error) {
       console.error("Failed to fetch data:", error);
     } finally {
@@ -87,8 +91,7 @@ const ConsultView = ({
                 marginRight: { xs: "0px", md: "10px" },
                 width: { xs: "100%", md: "auto" },
                 fontSize: "0.85rem",
-              }}
-            >
+              }}>
               Agregar
             </Button>
             <SearchBar

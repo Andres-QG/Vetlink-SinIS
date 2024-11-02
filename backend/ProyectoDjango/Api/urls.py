@@ -48,28 +48,32 @@ urlpatterns = [
     path(
         "delete-pet-record/<int:consulta_id>/",
         delete_pet_record,
-        name="delete_pet_record",
+        name="delete_pet_record"
     ),
     # Vacunas
     path("consult-vaccines/", consult_vaccines, name="consult_vaccines"),
+    # Sintomas
+    path("consult-symptoms/", consult_symptoms, name="consult_symptoms"),
+    # Tratamientos
+    path("consult-treatments/", consult_treatments, name="consult_treatments"),
     # Citas APIs
     path("consult-citas/", consult_citas, name="consult_citas"),
     path("add-cita/", add_cita, name="add_cita"),
     path("update-cita/<int:cita_id>/", update_cita, name="update_cita"),
     path("delete-cita/<int:cita_id>/", delete_cita, name="delete_cita"),
+    
     # Horarios Veterinarios APIs
     path("consult-schedules/", consult_schedules, name="consult_schedules"),
     path("add-schedule/", add_vet_schedule, name="add_vet_schedule"),
     path("autocomplete-vet/", autocomplete_vet, name="autocomplete_vet"),
     path("get-admin-clinic/", get_admin_clinic, name="get_admin_clinic"),
+    path("modify-vet-schedule/<int:horario_id>/", modify_vet_schedule, name="modify_vet_schedule"),
+    path('delete-vet-schedule/<int:horario_id>/', delete_vet_schedule, name='delete_vet_schedule'),
+    
     # Reactivate APIs
     path("reactivate-user/<str:usuario>/", reactivate_user, name="reactivate_user"),
     path("reactivate-pet/<int:mascota_id>/", reactivate_pet, name="reactivate_pet"),
-    path(
-        "reactivate-clinic/<int:clinica_id>/",
-        reactivate_clinic,
-        name="reactivate_clinic",
-    ),
+    path("reactivate-clinic/<int:clinica_id>/", reactivate_clinic, name="reactivate_clinic"),
     # Services APIs
     path("add-service/", add_servicio, name="add_servicio"),
     path("consult-services/", consult_services, name="consult_services"),
@@ -80,4 +84,7 @@ urlpatterns = [
         reactivate_service,
         name="reactivate_service",
     ),
+    
+    # Mascotas Cliente APIs
+    path("consult-my-pets/", consult_my_pets, name="consult_my_pets"),
 ]

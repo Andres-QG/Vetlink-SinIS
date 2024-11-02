@@ -1,4 +1,4 @@
-import { useState, forwardRef } from "react";
+import { useState, useEffect, forwardRef } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
 import Tag from "../Tag";
@@ -20,26 +20,51 @@ import {
   MedicalInformation as MedicalInformationIcon,
 } from "@mui/icons-material";
 
-const AddRecord = forwardRef(
-  ({ open, handleClose, onSuccess, otherData }, ref) => {
-    AddRecord.displayName = "AddRecord";
+const ModifyRecord = forwardRef(
+  ({ open, handleClose, onSuccess, selectedItem, otherData }, ref) => {
+    ModifyRecord.displayName = "ModifyRecord";
     const [formData, setFormData] = useState({
-      mascota_id: "",
-      fecha: "",
-      peso: "",
-      diagnostico: "",
-      sintomas: [],
-      vacunas: [],
-      tratamientos: [],
+      mascota_id: selectedItem?.mascota_id || "",
+      fecha: selectedItem?.fecha || "",
+      peso: selectedItem?.peso || "",
+      diagnostico: selectedItem?.diagnostico || "",
+      sintomas: selectedItem?.sintomas || [],
+      vacunas: selectedItem?.vacunas || [],
+      tratamientos: selectedItem?.tratamientos || [],
     });
 
     const [errors, setErrors] = useState({});
+    const [loading, setLoading] = useState(false);
+    const [isModified, setIsModified] = useState(false);
+
+    useEffect(() => {
+      if (selectedItem) {
+        setFormData({
+          mascota_id: selectedItem.mascota_id,
+          fecha: selectedItem.fecha,
+          peso: selectedItem.peso,
+          diagnostico: selectedItem.diagnostico,
+          sintomas: Array.isArray(selectedItem.sintomas)
+            ? selectedItem.sintomas
+            : selectedItem.sintomas.split(",").map((sintoma) => sintoma.trim()),
+          vacunas: Array.isArray(selectedItem.vacunas)
+            ? selectedItem.vacunas
+            : selectedItem.vacunas.split(",").map((vacuna) => vacuna.trim()),
+          tratamientos: Array.isArray(selectedItem.tratamientos)
+            ? selectedItem.tratamientos
+            : selectedItem.tratamientos
+                .split(",")
+                .map((tratamiento) => tratamiento.trim()),
+        });
+      }
+    }, [selectedItem]);
 
     const handleChange = (e) => {
       setFormData({
         ...formData,
         [e.target.name]: e.target.value,
       });
+      setIsModified(true);
     };
 
     const validateForm = () => {
@@ -70,8 +95,6 @@ const AddRecord = forwardRef(
       setErrors(newErrors);
       return Object.keys(newErrors).length === 0;
     };
-
-    const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e) => {
       e.preventDefault();
@@ -104,8 +127,8 @@ const AddRecord = forwardRef(
     };
 
     const sendFormData = async (formDataToSend) => {
-      const response = await axios.post(
-        "http://localhost:8000/api/add-pet-record/",
+      const response = await axios.put(
+        `http://localhost:8000/api/update-pet-record/${selectedItem.mascota_id}/${selectedItem.consulta_id}/`,
         formDataToSend,
         {
           headers: {
@@ -114,8 +137,8 @@ const AddRecord = forwardRef(
         }
       );
 
-      if (response.status === 201) {
-        onSuccess("Expediente agregado exitosamente.", "success");
+      if (response.status === 200) {
+        onSuccess("Expediente modificado exitosamente.", "success");
       }
     };
 
@@ -150,6 +173,7 @@ const AddRecord = forwardRef(
         tratamientos: [],
       });
       setErrors({});
+      setIsModified(false);
     };
 
     return (
@@ -177,20 +201,23 @@ const AddRecord = forwardRef(
               alignItems="center"
               mb={2}
             >
-              <h2>Agregar Expediente</h2>
+              <h2>Modificar Expediente</h2>
               <IconButton onClick={handleClose}>
                 <CloseIcon />
               </IconButton>
             </Stack>
-
             <Autocomplete
               options={otherData.mascotas}
               getOptionLabel={(option) => option.mascota_id.toString()}
+              value={otherData.mascotas.find(
+                (mascota) => mascota.mascota_id === formData.mascota_id
+              )}
               onChange={(event, newValue) => {
                 setFormData({
                   ...formData,
                   mascota_id: newValue ? newValue.mascota_id : "",
                 });
+                setIsModified(true);
               }}
               renderInput={(params) => (
                 <TextField
@@ -219,7 +246,6 @@ const AddRecord = forwardRef(
                 },
               }}
             />
-
             <TextField
               label="Fecha y hora de consulta*"
               type="datetime-local"
@@ -235,7 +261,6 @@ const AddRecord = forwardRef(
               }}
               sx={{ mb: 2 }}
             />
-
             <TextField
               label="Peso (Kg)*"
               variant="outlined"
@@ -254,7 +279,6 @@ const AddRecord = forwardRef(
               }}
               sx={{ mb: 2 }}
             />
-
             <TextField
               label="Diagnóstico*"
               variant="outlined"
@@ -286,6 +310,7 @@ const AddRecord = forwardRef(
                   ...formData,
                   sintomas: newValue.map((sintoma) => sintoma.nombre),
                 });
+                setIsModified(true);
               }}
               renderTags={(value, getTagProps) =>
                 value.map((option, index) => (
@@ -317,7 +342,6 @@ const AddRecord = forwardRef(
                 },
               }}
             />
-
             <Autocomplete
               multiple
               options={otherData.vacunas}
@@ -330,6 +354,7 @@ const AddRecord = forwardRef(
                   ...formData,
                   vacunas: newValue.map((vacuna) => vacuna.nombre),
                 });
+                setIsModified(true);
               }}
               renderTags={(value, getTagProps) =>
                 value.map((option, index) => (
@@ -361,7 +386,6 @@ const AddRecord = forwardRef(
                 },
               }}
             />
-
             <Autocomplete
               multiple
               options={otherData.tratamientos}
@@ -376,6 +400,7 @@ const AddRecord = forwardRef(
                     (tratamiento) => tratamiento.nombre
                   ),
                 });
+                setIsModified(true);
               }}
               renderTags={(value, getTagProps) =>
                 value.map((option, index) => (
@@ -407,7 +432,6 @@ const AddRecord = forwardRef(
                 },
               }}
             />
-
             <Stack
               direction="row"
               spacing={2}
@@ -435,7 +459,7 @@ const AddRecord = forwardRef(
                 type="submit"
                 fullWidth
                 size="medium"
-                disabled={loading}
+                disabled={loading || !isModified}
                 startIcon={loading && <CircularProgress size={20} />}
                 sx={{
                   backgroundColor: "#00308F",
@@ -444,7 +468,7 @@ const AddRecord = forwardRef(
                   },
                 }}
               >
-                {loading ? "Agregando..." : "Agregar Expediente"}
+                {loading ? "Modificando..." : "Modificar Expediente"}
               </Button>
             </Stack>
           </form>
@@ -454,10 +478,11 @@ const AddRecord = forwardRef(
   }
 );
 
-AddRecord.propTypes = {
+ModifyRecord.propTypes = {
   open: PropTypes.bool.isRequired,
   handleClose: PropTypes.func.isRequired,
   onSuccess: PropTypes.func.isRequired,
+  selectedItem: PropTypes.object.isRequired,
   otherData: PropTypes.shape({
     mascotas: PropTypes.array.isRequired,
     vacunas: PropTypes.array.isRequired,
@@ -466,4 +491,4 @@ AddRecord.propTypes = {
   }).isRequired,
 };
 
-export default AddRecord;
+export default ModifyRecord;

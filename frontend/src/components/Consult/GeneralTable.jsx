@@ -25,6 +25,7 @@ import { Edit, Delete, Info } from "@mui/icons-material";
 
 const GeneralTable = ({
   data,
+  otherData,
   columns,
   totalCount,
   page,
@@ -348,6 +349,7 @@ const GeneralTable = ({
             await fetchData();
           }}
           selectedItem={selectedItem}
+          otherData={otherData}
         />
       )}
 
