@@ -465,7 +465,7 @@ def delete_cita(request, cita_id):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(["GET"])
-def get_available_times(request):
+def get_disp_times(request):
     try:
         vet_user = request.GET.get("vet_user")
         clinica_id = request.GET.get("clinica_id")
@@ -623,6 +623,23 @@ def get_services(request):
             "status": "error",
             "message": "No se pudo obtener los servicios"
         })
+
+@api_view(["GET"])
+def get_clinics(request):
+    clinics = Clinicas.objects.all()
+    serializer = ClinicasSerializer(clinics, many=True)
+    if serializer:
+        return Response(
+            {
+                "status": "success",
+                "message": "Clínicas obtenidas",
+                "clinics": serializer.data,
+            }
+        )
+    else:
+        return Response(
+            {"status": "error", "message": "No se pudo obtener las clínicas"}
+        )
 
 @api_view(["GET"])
 def consult_client(request):

@@ -20,6 +20,7 @@ import {
 } from "@mui/icons-material";
 import Tag from "../Tag";
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
+import CorporateFareIcon from '@mui/icons-material/CorporateFare';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import axios from "axios";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -33,6 +34,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
     veterinario: null,
     mascota: "",
     fecha: null,
+    clinica: null,
     hora: "",
     motivo: "",
     services: [],
@@ -44,6 +46,8 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
   const [clientes, setClientes] = useState([]);
   const [veterinarios, setVeterinarios] = useState([]);
   const [horarios, setHorarios] = useState([]);
+  const [clinicas, setClinicas] = useState([]);
+  const [loadingClinics, setLoadingClinics] = useState([]);
   const [loadingClients, setLoadingClients] = useState(true);
   const [loadingVets, setLoadingVets] = useState(true);
   const [services, setServices] = useState([]);
@@ -53,14 +57,16 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
     const fetchData = async () => {
       try {
         setLoadingClients(true);
+        setLoadingClinics(true);
         setLoadingVets(true);
         setLoadingServices(true);
-        const [clientesResponse, veterinariosResponse, servicesResponse] = await Promise.all([
+        const [clientesResponse, veterinariosResponse, servicesResponse, clinicasResponse] = await Promise.all([
           axios.get("http://localhost:8000/api/get-clients/"),
           axios.get("http://localhost:8000/api/get-vets/"),
           axios.get("http://localhost:8000/api/get-services/"),
+          axios.get("http://localhost:8000/api/get-clinics/"),
         ]);
-        console.log(servicesResponse.data.services)
+        setClinicas(clinicasResponse.data.clinics || [])
         setClientes(clientesResponse.data.clients || []);
         setVeterinarios(veterinariosResponse.data.vets || []);
         setServices(servicesResponse.data.services || []);
@@ -68,6 +74,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
         console.error("Error fetching data:", error);
       } finally {
         setLoadingClients(false);
+        setLoadingClinics(false);
         setLoadingVets(false);
         setLoadingServices(false);
       }
@@ -75,45 +82,27 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
     fetchData();
   }, []);
 
-  const handleVetChange = async (event, newValue) => {
-    setFormData({ ...formData, veterinario: newValue });
-
-    console.log(newValue.horarios_veterinarios)
-    if (newValue && newValue.horarios_veterinarios) {
-      const horariosByDay = Array(7).fill(null).map(() => []); // 7 indices for each day
-
-      // Map each horario into the correct day index with hour range
-      newValue.horarios_veterinarios.forEach(horario => {
-        const dayIndex = getDayIndex(horario.dia); // Map `dia` to an index (0 for Monday, etc.)
-        if (dayIndex !== -1) {
-          horariosByDay[dayIndex].push({
-            start: horario.hora_inicio,
-            end: horario.hora_fin,
-          });
-        }
-      });
-
-      setHorarios(horariosByDay);
-      console.log(horariosByDay)
-    } else {
-      setHorarios([]);
+  // Function to retrive available times for the given params
+  const fetchAvailableTimes = async () => {
+    try {
+      if (formData.cliente && formData.veterinario && formData.fecha) {
+        const response = await axios.get("http://localhost:8000/api/get-available-times/", {
+          params: {
+            vet_user: formData.veterinario.veterinario,
+            clinica_id: formData.clinica.clinica_id,
+            full_date: formData.fecha,
+          },
+        });
+        setHorarios(response.data.available_times || []);
+      }
+    } catch (error) {
+      console.error("Error fetching available times:", error);
     }
   };
 
-  // Helper function to map days to indices (example based on Spanish weekdays)
-  const getDayIndex = (dia) => {
-    const daysMap = {
-        "Lunes": 0,
-        "Martes": 1,
-        "Miércoles": 2,
-        "Jueves": 3,
-        "Viernes": 4,
-        "Sábado": 5,
-        "Domingo": 6,
-    };
-    return daysMap[dia] !== undefined ? daysMap[dia] : -1;
-};
-  
+  const handleVetChange = async (event, newValue) => {
+    setFormData({ ...formData, veterinario: newValue });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -237,6 +226,40 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
             sx={{ width: "100%" }}
           />
 
+          <Autocomplete
+            options={clinicas}
+            getOptionLabel={(option) => option.nombre || ""}
+            value={formData.clinica}
+            onChange={handleChange}
+            loading={loadingClinics}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Clínica"
+                placeholder="Seleccione una clínica"
+                fullWidth
+                error={!!errors.veterinario}
+                helperText={errors.veterinario}
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <CorporateFareIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <>
+                      {loadingVets ? <CircularProgress color="inherit" size={20} /> : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+                sx={{ mb: 2 }}
+              />
+            )}
+            sx={{ width: "100%" }}
+          /> 
+
           <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={enGB}>
             <DatePicker
               label="Fecha"
@@ -292,8 +315,13 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
                 placeholder="Selecciona los servicios"
                 error={!!errors.services}
                 helperText={errors.services}
-                InputProps={{
+                InputProps = {{
                   ...params.InputProps,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <CorporateFareIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
                 }}
                 sx={{ mb: 2 }}
               />
