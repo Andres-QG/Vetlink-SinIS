@@ -24,6 +24,7 @@ function Header() {
     { text: "Consultar mascotas", href: "/consultpets", role: [1, 2, 3] },
     { text: "Consultar veterinarios", href: "/consultvets", role: [1, 2] },
     { text: "Consultar administradores", href: "/consultAdmins", role: [1] },
+    { text: "Consultar Servicios", href: "/consultServices", role: [1] },
   ];
 
   const updateMenu = () => {

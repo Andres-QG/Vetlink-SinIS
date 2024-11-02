@@ -11,6 +11,7 @@ const ConsultView = ({
   title,
   fetchUrl,
   deletionUrl,
+  restoreUrl,
   addComponent: AddComponent,
   modifyComponent: ModifyComponent,
   detailedInfoComponent: DetailedInfoComponent,
@@ -18,8 +19,10 @@ const ConsultView = ({
   pkCol,
   visualIdentifierCol,
   rowsPerPage,
+  otherData,
 }) => {
   const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -34,28 +37,20 @@ const ConsultView = ({
   const handleClose = () => setOpen(false);
 
   useEffect(() => {
-    fetchData();
-  }, [page, searchTerm, searchColumn, order]);
+    fetchAllData();
+  }, []);
 
-  const fetchData = async () => {
+  useEffect(() => {
+    applyFilters();
+  }, [searchTerm, searchColumn, order, data]);
+
+  const fetchAllData = async () => {
     setLoading(true);
     try {
-      const params = {
-        page,
-        search: searchTerm,
-        column: searchColumn,
-        order,
-        page_size: rowsPerPage,
-      };
-
       const response = await axios.get(fetchUrl, {
-        params,
-        withCredentials: true, // Habilita el envío de credenciales (cookies de sesión)
+        params: { page_size: 1000 }, // Ajuste para cargar todos los datos
+        withCredentials: true,
       });
-      const data = response.data;
-      // console.log(data)
-      setData(data.results);
-      setTotalCount(data.count);
       const data = response.data.results || [];
       setData(data);
       setTotalCount(data.length);
@@ -67,9 +62,32 @@ const ConsultView = ({
     }
   };
 
-  const handleSearch = (term, column) => {
+  const applyFilters = () => {
+    let results = [...data];
+
+    if (searchTerm) {
+      results = results.filter((item) =>
+        item[searchColumn]
+          ?.toString()
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
+      );
+    }
+
+    results.sort((a, b) => {
+      if (a[searchColumn] < b[searchColumn]) return order === "asc" ? -1 : 1;
+      if (a[searchColumn] > b[searchColumn]) return order === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    setFilteredData(results);
+    setTotalCount(results.length);
+  };
+
+  const handleSearch = (term, column, newOrder) => {
     setSearchTerm(term);
     setSearchColumn(column);
+    setOrder(newOrder);
     setPage(1);
   };
 
@@ -106,16 +124,21 @@ const ConsultView = ({
           </div>
         ) : (
           <GeneralTable
-            data={data}
+            data={filteredData.slice(
+              (page - 1) * rowsPerPage,
+              page * rowsPerPage
+            )}
+            otherData={otherData}
             columns={columns}
             totalCount={totalCount}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={setPage}
             deletionUrl={deletionUrl}
+            restoreUrl={restoreUrl}
             pkCol={pkCol}
             visualIdentifierCol={visualIdentifierCol}
-            fetchData={fetchData}
+            fetchData={fetchAllData}
             ModModal={ModifyComponent}
             DetailsModal={DetailedInfoComponent}
           />
@@ -128,8 +151,9 @@ const ConsultView = ({
             onSuccess={async (message, severity) => {
               notify(message, severity);
               handleClose();
-              await fetchData();
+              await fetchAllData();
             }}
+            otherData={otherData}
           />
         )}
       </div>
@@ -141,6 +165,7 @@ ConsultView.propTypes = {
   title: PropTypes.string.isRequired,
   fetchUrl: PropTypes.string.isRequired,
   deletionUrl: PropTypes.string.isRequired,
+  restoreUrl: PropTypes.string,
   addComponent: PropTypes.elementType.isRequired,
   modifyComponent: PropTypes.elementType.isRequired,
   detailedInfoComponent: PropTypes.elementType,

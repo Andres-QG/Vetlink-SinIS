@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
-import { useNotification } from "../Notification";
 import {
   IconButton,
   TablePagination,
@@ -21,7 +20,9 @@ import {
   CardContent,
   Chip,
 } from "@mui/material";
-import { Edit, Delete, Info } from "@mui/icons-material";
+import { Edit, Delete, Info, Restore } from "@mui/icons-material";
+import { useNotification } from "../Notification";
+import { green } from "@mui/material/colors";
 
 const GeneralTable = ({
   data,
@@ -32,6 +33,7 @@ const GeneralTable = ({
   rowsPerPage,
   onPageChange,
   deletionUrl,
+  restoreUrl,
   pkCol,
   visualIdentifierCol,
   fetchData,
@@ -47,9 +49,7 @@ const GeneralTable = ({
     };
 
     handleResize();
-
     window.addEventListener("resize", handleResize);
-
     return () => {
       window.removeEventListener("resize", handleResize);
     };
@@ -80,25 +80,55 @@ const GeneralTable = ({
 
     try {
       const url = `${deletionUrl}${selectedItem[pkCol]}/`;
-      const response = await axios.delete(url);
+      await axios.delete(url);
       notify("Elemento desactivado correctamente.", "success");
+      fetchData();
     } catch (error) {
       if (error.response) {
         notify(
           `Error: ${error.response.status} - ${
             error.response.data.error || error.response.data.detail
-          }`
+          }`,
+          "error"
         );
       } else if (error.request) {
-        notify("No se recibió respuesta del servidor. Verifica tu conexión.");
+        notify(
+          "No se recibió respuesta del servidor. Verifica tu conexión.",
+          "error"
+        );
       } else {
-        notify(`Error desconocido: ${error.message}`);
+        notify(`Error desconocido: ${error.message}`, "error");
       }
     }
-    fetchData();
   };
 
-  // "Modify" modal
+  const handleReactivate = async (item) => {
+    if (!restoreUrl) return;
+
+    try {
+      const url = `${restoreUrl}${item[pkCol]}/`;
+      await axios.put(url);
+      notify("Elemento reactivado correctamente.", "success");
+      fetchData();
+    } catch (error) {
+      if (error.response) {
+        notify(
+          `Error: ${error.response.status} - ${
+            error.response.data.error || error.response.data.detail
+          }`,
+          "error"
+        );
+      } else if (error.request) {
+        notify(
+          "No se recibió respuesta del servidor. Verifica tu conexión.",
+          "error"
+        );
+      } else {
+        notify(`Error desconocido: ${error.message}`, "error");
+      }
+    }
+  };
+
   const handleOpenModModal = (item) => {
     setSelectedItem(item);
     setOpenModModal(true);
@@ -109,7 +139,6 @@ const GeneralTable = ({
     setSelectedItem(null);
   };
 
-  // "Details" modal
   const handleOpenDetailsModal = (item) => {
     setSelectedItem(item);
     setOpenDetailsModal(true);
@@ -123,9 +152,10 @@ const GeneralTable = ({
   return (
     <>
       {isMobile ? (
+        // Vista móvil
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {data.map((item) => (
-            <Card key={item.id} variant="outlined" sx={{ padding: 1 }}>
+            <Card key={item[pkCol]} variant="outlined" sx={{ padding: 1 }}>
               <CardContent>
                 {columns.map(
                   (col) =>
@@ -135,11 +165,15 @@ const GeneralTable = ({
                         {col.type === "chip" ? (
                           <Chip
                             label={
-                              item[col.field] === true ? "Activo" : "Inactivo"
+                              item[col.field] === true ||
+                              item[col.field] === "activo"
+                                ? "Activo"
+                                : "Inactivo"
                             }
                             style={{
                               backgroundColor:
-                                item[col.field] === true
+                                item[col.field] === true ||
+                                item[col.field] === "activo"
                                   ? col.chipColors?.["activo"]
                                   : col.chipColors?.["inactivo"] || "gray",
                             }}
@@ -179,12 +213,23 @@ const GeneralTable = ({
                     startIcon={<Edit />}>
                     Modificar
                   </Button>
-                  <Button
-                    onClick={() => handleOpenModal(item)}
-                    startIcon={<Delete />}
-                    color="error">
-                    Eliminar
-                  </Button>
+                  {item.activo === true || item.activo === "activo" ? (
+                    <Button
+                      onClick={() => handleOpenModal(item)}
+                      startIcon={<Delete />}
+                      color="error">
+                      Desactivar
+                    </Button>
+                  ) : null}
+                  {restoreUrl &&
+                    (item.activo === false || item.activo === "inactivo") && (
+                      <Button
+                        onClick={() => handleReactivate(item)}
+                        startIcon={<Restore style={{ color: green[500] }} />}
+                        style={{ color: green[500] }}>
+                        Reactivar
+                      </Button>
+                    )}
                 </Box>
               </CardContent>
             </Card>
@@ -194,7 +239,7 @@ const GeneralTable = ({
             count={totalCount}
             rowsPerPage={rowsPerPage}
             page={page - 1}
-            onPageChange={(event, newPage) => onPageChange(newPage + 1)}
+            onPageChange={(_, newPage) => onPageChange(newPage + 1)}
             labelDisplayedRows={({ from, to, count }) =>
               `${from}-${to} de ${count !== -1 ? count : `más de ${to}`}`
             }
@@ -205,6 +250,7 @@ const GeneralTable = ({
           />
         </Box>
       ) : (
+        // Vista de escritorio
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
@@ -223,29 +269,36 @@ const GeneralTable = ({
                     )
                 )}
                 <TableCell
-                  style={{ fontWeight: "bold", backgroundColor: "#f0f0f0" }}>
+                  style={{
+                    fontWeight: "bold",
+                    backgroundColor: "#f0f0f0",
+                  }}>
                   Acciones
                 </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {data.map((item, index) => (
-                <TableRow key={item.id || `row-${index}`}>
+                <TableRow key={item[pkCol] || `row-${index}`}>
                   {columns.map(
                     (col) =>
                       col.type !== "action" && (
                         <TableCell
-                          key={`cell-${item.id || index}-${col.field}`}>
+                          key={`cell-${item[pkCol] || index}-${col.field}`}>
                           {col.type === "chip" ? (
                             <Chip
                               label={
-                                item[col.field] === true ? "Activo" : "Inactivo"
+                                item[col.field] === true ||
+                                item[col.field] === "activo"
+                                  ? "Activo"
+                                  : "Inactivo"
                               }
                               style={{
                                 position: "relative",
                                 left: "-8px",
                                 backgroundColor:
-                                  item[col.field] === true
+                                  item[col.field] === true ||
+                                  item[col.field] === "activo"
                                     ? col.chipColors?.["activo"]
                                     : col.chipColors?.["inactivo"] || "gray",
                               }}
@@ -256,7 +309,7 @@ const GeneralTable = ({
                         </TableCell>
                       )
                   )}
-                  <TableCell key={`actions-${item.id || index}`}>
+                  <TableCell key={`actions-${item[pkCol] || index}`}>
                     {columns
                       .filter((col) => col.type === "action")
                       .map((col) => (
@@ -274,9 +327,17 @@ const GeneralTable = ({
                     <IconButton onClick={() => handleOpenModModal(item)}>
                       <Edit />
                     </IconButton>
-                    <IconButton onClick={() => handleOpenModal(item)}>
-                      <Delete />
-                    </IconButton>
+                    {item.activo === true || item.activo === "activo" ? (
+                      <IconButton onClick={() => handleOpenModal(item)}>
+                        <Delete color="error" />
+                      </IconButton>
+                    ) : null}
+                    {restoreUrl &&
+                      (item.activo === false || item.activo === "inactivo") && (
+                        <IconButton onClick={() => handleReactivate(item)}>
+                          <Restore style={{ color: green[500] }} />
+                        </IconButton>
+                      )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -301,7 +362,7 @@ const GeneralTable = ({
                     count={totalCount}
                     rowsPerPage={rowsPerPage}
                     page={page - 1}
-                    onPageChange={(event, newPage) => onPageChange(newPage + 1)}
+                    onPageChange={(_, newPage) => onPageChange(newPage + 1)}
                     labelDisplayedRows={({ from, to, count }) =>
                       `${from}-${to} de ${
                         count !== -1 ? count : `más de ${to}`
@@ -319,10 +380,11 @@ const GeneralTable = ({
         </TableContainer>
       )}
 
+      {/* Modal de confirmación para desactivar */}
       <Modal open={openModal} onClose={handleCloseModal}>
         <Box
           className="p-6 bg-white rounded-lg shadow-lg"
-          style={{ width: 400, margin: "auto", marginTop: "10%" }}>
+          sx={{ width: 400, margin: "auto", marginTop: "10%" }}>
           <Typography variant="h6" component="h2">
             ¿Estás seguro de que deseas desactivar{" "}
             {selectedItem?.[visualIdentifierCol]}?
@@ -339,6 +401,7 @@ const GeneralTable = ({
         </Box>
       </Modal>
 
+      {/* Modal para modificar */}
       {selectedItem && openModModal && (
         <ModModal
           open={openModModal}
@@ -353,6 +416,7 @@ const GeneralTable = ({
         />
       )}
 
+      {/* Modal para detalles */}
       {selectedItem && openDetailsModal && (
         <DetailsModal
           open={openDetailsModal}
@@ -382,11 +446,13 @@ GeneralTable.propTypes = {
   rowsPerPage: PropTypes.number.isRequired,
   onPageChange: PropTypes.func.isRequired,
   deletionUrl: PropTypes.string.isRequired,
+  restoreUrl: PropTypes.string,
   pkCol: PropTypes.string.isRequired,
   visualIdentifierCol: PropTypes.string.isRequired,
   fetchData: PropTypes.func.isRequired,
   ModModal: PropTypes.elementType.isRequired,
   DetailsModal: PropTypes.elementType,
+  otherData: PropTypes.array,
 };
 
 export default GeneralTable;

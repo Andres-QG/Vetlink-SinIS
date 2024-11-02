@@ -1,4 +1,3 @@
-import React from "react";
 import ConsultView from "../components/Consult/ConsultView";
 import AddServicesModal from "../components/consultServices/AddServicesModal";
 import ModifyServicesModal from "../components/consultServices/ModifyServicesModal";
@@ -28,13 +27,14 @@ const ConsultServices = () => {
       title="Consultar Servicios"
       fetchUrl="http://localhost:8000/api/consult-services/"
       deletionUrl="http://localhost:8000/api/delete-service/"
-      restoreUrl="" // Si tienes una URL para restaurar servicios, puedes colocarla aquí
+      restoreUrl="http://localhost:8000/api/reactivate-service/"
       addComponent={AddServicesModal}
       modifyComponent={ModifyServicesModal}
       rowsPerPage={rowsPerPage}
       columns={columns}
       pkCol="servicio_id"
       visualIdentifierCol="nombre"
+      otherData={[]}
     />
   );
 };
