@@ -53,7 +53,7 @@ const ConsultView = ({
         withCredentials: true, // Habilita el envío de credenciales (cookies de sesión)
       });
       const data = response.data;
-      console.log(data)
+      // console.log(data)
       setData(data.results);
       setTotalCount(data.count);
     } catch (error) {

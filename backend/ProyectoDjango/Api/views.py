@@ -1802,6 +1802,8 @@ def consult_services(request):
         # Ordenamiento de resultados
         servicios = servicios.order_by(f"-{column}" if order == "desc" else column)
 
+        paginator = CustomPagination()
+        result_page = paginator.paginate_queryset(servicios, request)
         serializer_data = [
             {
                 "servicio_id": servicio.servicio_id,
@@ -1813,10 +1815,10 @@ def consult_services(request):
                 "activo": servicio.activo,
                 "imagen": servicio.dir_imagen,
             }
-            for servicio in servicios
+            for servicio in result_page
         ]
 
-        return Response(serializer_data, status=status.HTTP_200_OK)
+        return paginator.get_paginated_response(serializer_data)
     except Exception as e:
         print(e)
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -1901,6 +1903,13 @@ def add_servicio(request):
         minutos_sesion = request.data.get("minutos_sesion")
         costo = request.data.get("costo")
         activo = True  # Asumimos que el servicio se crea como activo por defecto
+
+        # Verificar si ya existe un servicio con el mismo nombre
+        if Servicios.objects.filter(nombre=nombre).exists():
+            return Response(
+                {"error": "Ya existe un servicio con ese nombre."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # Generar automáticamente dir_imagen
         dir_imagen = f"./src/assets/img/Services_{nombre}.jpg"

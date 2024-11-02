@@ -42,7 +42,7 @@ const GeneralTable = ({
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 905);
+      setIsMobile(window.innerWidth <= 768);
     };
 
     handleResize();
@@ -78,7 +78,7 @@ const GeneralTable = ({
     if (!selectedItem) return;
 
     try {
-      const url = `${deletionUrl}/${selectedItem[pkCol]}/`;
+      const url = `${deletionUrl}${selectedItem[pkCol]}/`;
       const response = await axios.delete(url);
       notify("Elemento desactivado correctamente.", "success");
     } catch (error) {
@@ -133,9 +133,14 @@ const GeneralTable = ({
                         <strong>{col.headerName}:</strong>{" "}
                         {col.type === "chip" ? (
                           <Chip
-                            label={item[col.field] === true ? "Activo" : "Inactivo"}
+                            label={
+                              item[col.field] === true ? "Activo" : "Inactivo"
+                            }
                             style={{
-                              backgroundColor: item[col.field] === true ? col.chipColors?.["activo"] : col.chipColors?.["inactivo"] || "gray",
+                              backgroundColor:
+                                item[col.field] === true
+                                  ? col.chipColors?.["activo"]
+                                  : col.chipColors?.["inactivo"] || "gray",
                             }}
                           />
                         ) : (
@@ -151,37 +156,32 @@ const GeneralTable = ({
                     gap: 1,
                     mt: 2,
                     alignItems: "flex-start",
-                  }}
-                >
+                  }}>
                   {columns
                     .filter((col) => col.type === "action")
                     .map((col) => (
                       <IconButton
                         key={`action-${col.field}`}
-                        onClick={() => col.onClick(item)}
-                      >
+                        onClick={() => col.onClick(item)}>
                         {col.icon}
                       </IconButton>
                     ))}
                   {DetailsModal && (
                     <Button
                       onClick={() => handleOpenDetailsModal(item)}
-                      startIcon={<Info />}
-                    >
+                      startIcon={<Info />}>
                       Más detalles
                     </Button>
                   )}
                   <Button
                     onClick={() => handleOpenModModal(item)}
-                    startIcon={<Edit />}
-                  >
+                    startIcon={<Edit />}>
                     Modificar
                   </Button>
                   <Button
                     onClick={() => handleOpenModal(item)}
                     startIcon={<Delete />}
-                    color="error"
-                  >
+                    color="error">
                     Eliminar
                   </Button>
                 </Box>
@@ -216,15 +216,13 @@ const GeneralTable = ({
                         style={{
                           fontWeight: "bold",
                           backgroundColor: "#f0f0f0",
-                        }}
-                      >
+                        }}>
                         {col.headerName}
                       </TableCell>
                     )
                 )}
                 <TableCell
-                  style={{ fontWeight: "bold", backgroundColor: "#f0f0f0" }}
-                >
+                  style={{ fontWeight: "bold", backgroundColor: "#f0f0f0" }}>
                   Acciones
                 </TableCell>
               </TableRow>
@@ -236,15 +234,19 @@ const GeneralTable = ({
                     (col) =>
                       col.type !== "action" && (
                         <TableCell
-                          key={`cell-${item.id || index}-${col.field}`}
-                        >
+                          key={`cell-${item.id || index}-${col.field}`}>
                           {col.type === "chip" ? (
                             <Chip
-                              label={item[col.field] === true ? "Activo" : "Inactivo"}
+                              label={
+                                item[col.field] === true ? "Activo" : "Inactivo"
+                              }
                               style={{
                                 position: "relative",
                                 left: "-8px",
-                                backgroundColor: item[col.field] === true ? col.chipColors?.["activo"] : col.chipColors?.["inactivo"] || "gray",
+                                backgroundColor:
+                                  item[col.field] === true
+                                    ? col.chipColors?.["activo"]
+                                    : col.chipColors?.["inactivo"] || "gray",
                               }}
                             />
                           ) : (
@@ -259,8 +261,7 @@ const GeneralTable = ({
                       .map((col) => (
                         <IconButton
                           key={`action-${col.field}`}
-                          onClick={() => col.onClick(item)}
-                        >
+                          onClick={() => col.onClick(item)}>
                           {col.icon}
                         </IconButton>
                       ))}
@@ -293,8 +294,7 @@ const GeneralTable = ({
                   sx={{
                     borderBottom: "none",
                     padding: "8px 0",
-                  }}
-                >
+                  }}>
                   <TablePagination
                     component="div"
                     count={totalCount}
@@ -318,23 +318,18 @@ const GeneralTable = ({
         </TableContainer>
       )}
 
-      {/*Modal de confirmación de eliminación*/}
       <Modal open={openModal} onClose={handleCloseModal}>
         <Box
           className="p-6 bg-white rounded-lg shadow-lg"
-          style={{ width: 400, margin: "auto", marginTop: "10%" }}
-        >
+          style={{ width: 400, margin: "auto", marginTop: "10%" }}>
           <Typography variant="h6" component="h2">
-            ¿Estás seguro de que deseas eliminar{" a "}
+            ¿Estás seguro de que deseas desactivar{" "}
             {selectedItem?.[visualIdentifierCol]}?
           </Typography>
-          <Typography sx={{ mt: 2 }}>
-            Esta acción no se puede deshacer. El elemento será eliminado
-            permanentemente.
-          </Typography>
+          <Typography sx={{ mt: 2 }}>Esta acción se puede deshacer.</Typography>
           <Box mt={4} display="flex" justifyContent="space-between">
             <Button variant="contained" color="error" onClick={handleDelete}>
-              Eliminar
+              Desactivar
             </Button>
             <Button variant="outlined" onClick={handleCloseModal}>
               Cancelar
@@ -342,7 +337,7 @@ const GeneralTable = ({
           </Box>
         </Box>
       </Modal>
-      {/*Modal de modificación*/}
+
       {selectedItem && openModModal && (
         <ModModal
           open={openModModal}
@@ -355,7 +350,7 @@ const GeneralTable = ({
           selectedItem={selectedItem}
         />
       )}
-      {/*Modal de detalles*/}
+
       {selectedItem && openDetailsModal && (
         <DetailsModal
           open={openDetailsModal}
