@@ -11,7 +11,19 @@ class UsuariosSerializer(serializers.ModelSerializer):
 class NameUsuariosSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuarios
-        fields = ["usuario", "nombre"]
+        fields = "__all__"
+
+class HorariosVeterinariosSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HorariosVeterinarios
+        fields = ['dia', 'hora_inicio', 'hora_fin', 'activo']
+
+class NameUsuariosWithHorariosSerializer(serializers.ModelSerializer):
+    horarios_veterinarios = HorariosVeterinariosSerializer(many=True, source='horariosveterinarios_set')
+
+    class Meta:
+        model = Usuarios
+        fields = ['usuario', 'nombre', 'horarios_veterinarios']
 
 
 class MascotaSerializer(serializers.ModelSerializer):

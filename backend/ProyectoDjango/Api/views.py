@@ -545,23 +545,21 @@ def get_clients(request):
 
 @api_view(["GET"])
 def get_vets(request):
-    vets = Usuarios.objects.filter(
-        rol__nombre="Veterinario"
-    )  # Assuming "Veterinario" represents veterinarians
-    serializer = NameUsuariosSerializer(vets, many=True)
-    if serializer:
-        return Response(
-            {
-                "status": "success",
-                "message": "Veterinarios obtenidos",
-                "vets": serializer.data,
-            }
-        )
+    vets = Usuarios.objects.filter(rol__nombre="Veterinario")
+    serializer = NameUsuariosWithHorariosSerializer(vets, many=True)
+    print(serializer.data)
+    
+    if serializer.data:
+        return Response({
+            "status": "success",
+            "message": "Veterinarios y horarios obtenidos",
+            "vets": serializer.data,
+        })
     else:
-        return Response(
-            {"status": "error", "message": "No se pudo obtener veterinarios"}
-        )
-
+        return Response({
+            "status": "error",
+            "message": "No se pudo obtener veterinarios y horarios"
+        })
 
 @api_view(["GET"])
 def get_owners(request):

@@ -422,8 +422,8 @@ class HorariosVeterinarios(models.Model):
         "Usuarios", models.DO_NOTHING, db_column="usuario_veterinario"
     )
     dia = models.CharField(max_length=20)
-    hora_inicio = models.DateField()
-    hora_fin = models.DateField()
+    hora_inicio = models.DateTimeField()
+    hora_fin = models.DateTimeField()
     activo = models.FloatField()
     clinica = models.ForeignKey(Clinicas, models.DO_NOTHING)
 
