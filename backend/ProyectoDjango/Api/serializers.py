@@ -65,3 +65,13 @@ class VacunasSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vacunas
         fields = "__all__"
+
+class SintomasSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Sintomas
+        fields = "__all__"
+
+class TratamientosSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tratamientos
+        fields = "__all__"

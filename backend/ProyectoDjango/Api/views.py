@@ -1371,38 +1371,73 @@ def consult_vaccines(request):
 
         vaccines = vaccines.order_by(f"-{column}" if order == "desc" else column)
 
-        paginator = CustomPagination()
-        result_page = paginator.paginate_queryset(vaccines, request)
-        serializer = VacunasSerializer(result_page, many=True)
-
-        return paginator.get_paginated_response(serializer.data)
+        serializer = VacunasSerializer(vaccines, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        print(f"Error fetching vaccines: {str(e)}")
+        return Response([], status=status.HTTP_200_OK)
 
 
-@api_view(["DELETE"])
-def delete_pet_record(request, consulta_id):
+@api_view(["GET"])
+def consult_symptoms(request):
+    search = request.GET.get("search", "")
+    column = request.GET.get("column", "nombre")
+    order = request.GET.get("order", "asc")
+
     try:
-        # Verificar si la mascota existe
-        mascota = Mascotas.objects.get(pk=mascota_id)
+        symptoms = Sintomas.objects.all()
+        if search:
+            kwargs = {f"{column}__icontains": search}
+            symptoms = symptoms.filter(**kwargs)
 
-        # Verificar si la consulta existe
-        consulta = ConsultaMascotas.objects.get(pk=consulta_id, mascota=mascota)
+        symptoms = symptoms.order_by(f"-{column}" if order == "desc" else column)
 
+        serializer = SintomasSerializer(symptoms, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Exception as e:
+        print(f"Error fetching symptoms: {str(e)}")
+        return Response([], status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+def consult_treatments(request):
+    search = request.GET.get("search", "")
+    column = request.GET.get("column", "nombre")
+    order = request.GET.get("order", "asc")
+
+    try:
+        treatments = Tratamientos.objects.all()
+        if search:
+            kwargs = {f"{column}__icontains": search}
+            treatments = treatments.filter(**kwargs)
+
+        treatments = treatments.order_by(f"-{column}" if order == "desc" else column)
+
+        serializer = TratamientosSerializer(treatments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Exception as e:
+        print(f"Error fetching treatments: {str(e)}")
+        return Response([], status=status.HTTP_200_OK)
+
+
+@api_view(['DELETE'])
+def delete_pet_record(request,consulta_id):
+    try:
+        
         # Si ambas existen, proceder a eliminar el expediente
         with connection.cursor() as cursor:
-            cursor.callproc("VETLINK.Eliminar_Expediente", [mascota_id, consulta_id])
-
-        return Response({"message": "Expediente eliminado correctamente"}, status=200)
-
+            cursor.callproc("VETLINK.Eliminar_Expediente", [consulta_id])
+        
+        return Response({'message': 'Expediente eliminado correctamente'}, status=200)
+    
     except Mascotas.DoesNotExist:
-        return Response({"error": "Mascota no encontrada"}, status=404)
-
+        return Response({'error': 'Mascota no encontrada'}, status=404)
+    
     except ConsultaMascotas.DoesNotExist:
-        return Response({"error": "Consulta no encontrada"}, status=404)
-
+        return Response({'error': 'Consulta no encontrada'}, status=404)
+    
     except Exception as e:
-        return Response({"error": str(e)}, status=500)
+        return Response({'error': str(e)}, status=500)
 
 
 @api_view(["PUT"])
@@ -2030,3 +2065,39 @@ def add_servicio(request):
             {"error": str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+        
+@api_view(['GET'])
+def consult_my_pets(request):
+    try:
+        # Obtener el usuario y rol de la sesión
+        usuario = request.session.get('user')
+        rol_id = request.session.get('role')
+
+        if not usuario or not rol_id:
+            return Response({'error': 'Usuario no autenticado.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        # Verificar que el rol sea de cliente (por ejemplo, rol_id == 4)
+        if rol_id != 4:
+            return Response({'error': 'No tiene permisos para consultar esta información.'}, status=status.HTTP_403_FORBIDDEN)
+
+        with connection.cursor() as cursor:
+            out_cursor = cursor.connection.cursor()
+            cursor.callproc('VETLINK.CONSULTAR_MIS_MASCOTAS', [usuario, out_cursor])
+
+            # Obtener los nombres de las columnas
+            columns = [col[0] for col in out_cursor.description]
+            pets = [dict(zip(columns, row)) for row in out_cursor.fetchall()]
+
+            if not pets:
+                return Response({'message': 'No tienes mascotas registradas.'}, status=status.HTTP_200_OK)
+
+            # Convertir FECHA_NACIMIENTO de cadena a fecha si es necesario
+            for pet in pets:
+                if pet['FECHA_NACIMIENTO']:
+                    pet['FECHA_NACIMIENTO'] = pet['FECHA_NACIMIENTO']
+
+            return Response({'results': pets}, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        print(f'Error en consult_my_pets: {str(e)}')
+        return Response({'error': 'Error al consultar las mascotas.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
