@@ -12,6 +12,7 @@ urlpatterns = [
     path("get-owners/", get_owners, name="get_owners"),
     path("get-clients/", get_clients, name="get_clients"),
     path("get-vets/", get_vets, name="get_vets"),
+    path("get-services/", get_services, name="get_services"),
     # Client APIs
     path("consult-client/", consult_client, name="consult_client"),
     path("add-client/", add_client, name="add_client"),
@@ -60,6 +61,7 @@ urlpatterns = [
     path("consult-citas/", consult_citas, name="consult_citas"),
     path("add-cita/", add_cita, name="add_cita"),
     path("update-cita/<int:cita_id>/", update_cita, name="update_cita"),
+    path("delete-cita/<int:cita_id>/", delete_cita, name="delete_cita"),
     path("delete-cita/<int:cita_id>/", delete_cita, name="delete_cita"),
     
     # Horarios Veterinarios APIs

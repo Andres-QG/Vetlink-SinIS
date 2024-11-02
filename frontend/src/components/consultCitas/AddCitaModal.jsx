@@ -9,7 +9,6 @@ import {
   CircularProgress,
   InputAdornment,
   Autocomplete,
-  MenuItem,
 } from "@mui/material";
 import {
   Close,
@@ -17,7 +16,9 @@ import {
   HealthAndSafety as HealthAndSafetyIcon,
   AccessTime as AccessTimeIcon,
   LocalHospital as LocalHospitalIcon,
+  Build as BuildIcon
 } from "@mui/icons-material";
+import Tag from "../Tag";
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import axios from "axios";
@@ -34,6 +35,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
     fecha: null,
     hora: "",
     motivo: "",
+    services: [],
   };
 
   const [formData, setFormData] = useState(initialFormData);
@@ -44,23 +46,30 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
   const [horarios, setHorarios] = useState([]);
   const [loadingClients, setLoadingClients] = useState(true);
   const [loadingVets, setLoadingVets] = useState(true);
+  const [services, setServices] = useState([]);
+  const [loadingServices, setLoadingServices] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoadingClients(true);
         setLoadingVets(true);
-        const [clientesResponse, veterinariosResponse] = await Promise.all([
+        setLoadingServices(true);
+        const [clientesResponse, veterinariosResponse, servicesResponse] = await Promise.all([
           axios.get("http://localhost:8000/api/get-clients/"),
           axios.get("http://localhost:8000/api/get-vets/"),
+          axios.get("http://localhost:8000/api/get-services/"),
         ]);
+        console.log(servicesResponse.data.services)
         setClientes(clientesResponse.data.clients || []);
         setVeterinarios(veterinariosResponse.data.vets || []);
+        setServices(servicesResponse.data.services || []);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
         setLoadingClients(false);
         setLoadingVets(false);
+        setLoadingServices(false);
       }
     };
     fetchData();
@@ -156,7 +165,9 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
           <Close />
         </IconButton>
         <form onSubmit={handleSubmit} className="w-full flex flex-col items-center">
-          <Typography id="modal-title" variant="h6" component="h2" sx={{ textAlign: "center", marginBottom: "20px", fontWeight: "bold", color: "#333", borderBottom: "1px solid #ddd", paddingBottom: "10px" }}>Agregar Cita</Typography>
+          <Typography id="modal-title" variant="h6" component="h2" sx={{ textAlign: "center", marginBottom: "20px", fontWeight: "bold", color: "#333", borderBottom: "1px solid #ddd", paddingBottom: "10px" }}>
+            Agregar Cita
+          </Typography>
 
           <Autocomplete
             options={clientes}
@@ -174,11 +185,17 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
                 helperText={errors.cliente}
                 InputProps={{
                   ...params.InputProps,
-                  startAdornment: <InputAdornment position="start"><PersonIcon fontSize="small" /></InputAdornment>,
-                  endAdornment: <>
-                    {loadingClients ? <CircularProgress color="inherit" size={20} /> : null}
-                    {params.InputProps.endAdornment}
-                  </>,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PersonIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <>
+                      {loadingClients ? <CircularProgress color="inherit" size={20} /> : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
                 }}
                 sx={{ mb: 2 }}
               />
@@ -202,11 +219,17 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
                 helperText={errors.veterinario}
                 InputProps={{
                   ...params.InputProps,
-                  startAdornment: <InputAdornment position="start"><HealthAndSafetyIcon fontSize="small" /></InputAdornment>,
-                  endAdornment: <>
-                    {loadingVets ? <CircularProgress color="inherit" size={20} /> : null}
-                    {params.InputProps.endAdornment}
-                  </>,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <HealthAndSafetyIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <>
+                      {loadingVets ? <CircularProgress color="inherit" size={20} /> : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
                 }}
                 sx={{ mb: 2 }}
               />
@@ -220,6 +243,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
               value={formData.fecha}
               onChange={handleDateChange}
               format="dd/MM/yyyy"
+              slots={{ openPickerIcon: ArrowDropDownIcon }}
               slotProps={{
                 textField: {
                   fullWidth: true,
@@ -227,11 +251,61 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
                   error: !!errors.fecha,
                   helperText: errors.fecha,
                   sx: { mb: 2 },
-                  InputProps: { startAdornment: <InputAdornment position="start"><CalendarMonthRoundedIcon fontSize="small" /></InputAdornment> },
+                  onClick: (event) => event.stopPropagation(),
+                  InputProps: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <CalendarMonthRoundedIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  },
                 },
               }}
             />
           </LocalizationProvider>
+
+          <Autocomplete
+            multiple
+            options={services}
+            getOptionLabel={(option) => option.nombre}
+            value={services.filter((service) => formData.services.includes(service.nombre))}
+            onChange={(event, newValue) => {
+              setFormData({
+                ...formData,
+                services: newValue.map((service) => service.nombre),
+              });
+            }}
+            renderTags={(value, getTagProps) =>
+              value.map((option, index) => (
+                <Tag
+                  key={option.nombre}
+                  label={option.nombre}
+                  {...getTagProps({ index })}
+                />
+              ))
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="outlined"
+                label="Servicios*"
+                placeholder="Selecciona los servicios"
+                error={!!errors.services}
+                helperText={errors.services}
+                InputProps={{
+                  ...params.InputProps,
+                }}
+                sx={{ mb: 2 }}
+              />
+            )}
+            ListboxProps={{
+              style: {
+                maxHeight: "200px",
+                overflow: "auto",
+              },
+            }}
+            sx={{ width: "100%" }}
+          />
 
           <TextField
             select
@@ -245,11 +319,19 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
             error={!!errors.hora}
             helperText={errors.hora}
             disabled={!formData.veterinario}
-            InputProps={{ startAdornment: <InputAdornment position="start"><AccessTimeIcon fontSize="small" /></InputAdornment> }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <AccessTimeIcon fontSize="small" />
+                </InputAdornment>
+              ),
+            }}
           >
-            {/* {horarios.map((hora) => (
-              <MenuItem key={hora} value={hora}>{hora}</MenuItem>
-            ))} */}
+            {horarios.map((hora) => (
+              <MenuItem key={hora} value={hora}>
+                Hola
+              </MenuItem>
+            ))}
           </TextField>
 
           <TextField
@@ -269,13 +351,18 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
           />
 
           <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-            <Button variant="outlined" onClick={handleClear} fullWidth disabled={loading} sx={{ borderColor: "#00308F", color: "#00308F", "&:hover": { color: "#00246d", borderColor: "#00246d" } }}>Limpiar</Button>
-            <Button variant="contained" type="submit" fullWidth disabled={loading} startIcon={loading && <CircularProgress size={20} />} sx={{ minWidth: "160px", backgroundColor: "#00308F", "&:hover": { backgroundColor: "#00246d" } }}>{loading ? "Agregando..." : "Agregar Cita"}</Button>
+            <Button variant="outlined" onClick={handleClear} fullWidth disabled={loading} sx={{ borderColor: "#00308F", color: "#00308F", "&:hover": { color: "#00246d", borderColor: "#00246d" } }}>
+              Limpiar
+            </Button>
+            <Button variant="contained" type="submit" fullWidth disabled={loading} startIcon={loading && <CircularProgress size={20} />} sx={{ minWidth: "160px", backgroundColor: "#00308F", "&:hover": { backgroundColor: "#00246d" } }}>
+              {loading ? "Agregando..." : "Agregar Cita"}
+            </Button>
           </Box>
         </form>
       </Box>
     </Modal>
   );
+
 };
 
 export default AddCitaModal;

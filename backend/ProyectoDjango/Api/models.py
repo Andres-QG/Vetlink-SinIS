@@ -96,7 +96,6 @@ class CitaServicios(models.Model):
         unique_together = (("cita", "servicio"),)
         db_table_comment = "La tabla CITA_SERVICIOS almacena informaci¾n sobre los servicios especÝficos que se prestan durante cada cita en la clÝnica veterinaria. Esta tabla permite vincular citas con los servicios ofrecidos en esas citas, facilitando la gesti¾n y el seguimiento de la atenci¾n brindada."
 
-
 class Citas(models.Model):
     cita_id = models.FloatField(
         primary_key=True,

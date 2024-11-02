@@ -7,6 +7,11 @@ class UsuariosSerializer(serializers.ModelSerializer):
         model = Usuarios
         fields = "__all__"
 
+class ServiciosNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Servicios
+        fields = ['servicio_id', 'nombre']
+
 
 class NameUsuariosSerializer(serializers.ModelSerializer):
     class Meta:

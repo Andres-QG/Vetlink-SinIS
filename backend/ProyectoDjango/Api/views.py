@@ -464,6 +464,35 @@ def delete_cita(request, cita_id):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(["GET"])
+def get_available_times(request):
+    try:
+        vet_user = request.GET.get("vet_user")
+        clinica_id = request.GET.get("clinica_id")
+        full_date = request.GET.get("full_date")
+        print(vet_user, clinica_id, full_date)
+
+        if not vet_user or not clinica_id or not full_date:
+            return Response(
+                {"error": "Missing required parameters: vet_user, clinica_id, full_date."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        with connection.cursor() as cursor:
+            avail_times = cursor.var(cx_Oracle.OBJECT, typename="VETLINK.TIMELIST")
+            cursor.callproc("VETLINK.HORARIOS_DISP", [vet_user, clinica_id, full_date, avail_times])
+            available_times_list = [str(time) for time in avail_times.getvalue().aslist()]
+
+        return Response({"available_times": available_times_list}, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        # Log the error with full traceback
+        print("Error calling VETLINK.HORARIOS_DISP: %s", str(e), exc_info=True)
+        
+        return Response(
+            {"error": "Error retrieving available times. Please try again later."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 @api_view(["POST"])
 def create_pet(request):
@@ -547,7 +576,6 @@ def get_clients(request):
 def get_vets(request):
     vets = Usuarios.objects.filter(rol__nombre="Veterinario")
     serializer = NameUsuariosWithHorariosSerializer(vets, many=True)
-    print(serializer.data)
     
     if serializer.data:
         return Response({
@@ -578,6 +606,23 @@ def get_owners(request):
             {"status": "error", "message": "No se pudo obtener propietarios"}
         )
 
+@api_view(["GET"])
+def get_services(request):
+    services = Servicios.objects.all()
+    serializer = ServiciosNameSerializer(services, many=True)
+    
+    if serializer.data:
+        print(serializer.data)
+        return Response({
+            "status": "success",
+            "message": "Servicios obtenidos",
+            "services": serializer.data,
+        })
+    else:
+        return Response({
+            "status": "error",
+            "message": "No se pudo obtener los servicios"
+        })
 
 @api_view(["GET"])
 def consult_client(request):
