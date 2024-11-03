@@ -57,6 +57,8 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
   const [services, setServices] = useState([]);
   const [loadingTimes, setLoadingTimes] = useState(true); 
   const [loadingPets, setLoadingPets] = useState(true); 
+  const [user, setUser] = useState({})
+  const [info, setInfo] = useState({})
 
   useEffect(() => {
     const fetchData = async () => {
@@ -65,18 +67,23 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
         setLoadingClinics(true);
         setLoadingVets(true);
         setLoadingPets(true);
-        const [clientesResponse, veterinariosResponse, servicesResponse, clinicasResponse, petsResponse] = await Promise.all([
+        const [userResponse, clientesResponse, veterinariosResponse, servicesResponse, clinicasResponse] = await Promise.all([
+          axios.get("http://localhost:8000/api/get-user/", { withCredentials: true }),
           axios.get("http://localhost:8000/api/get-clients/"),
           axios.get("http://localhost:8000/api/get-vets/"),
           axios.get("http://localhost:8000/api/get-services/"),
           axios.get("http://localhost:8000/api/get-clinics/"),
-          axios.get("http://localhost:8000/api/get-pets/"),
         ]);
+        console.log("User Data:", userResponse.data.data || {});
+        console.log("Services Data:", servicesResponse.data.services || []);
+        console.log("Clinics Data:", clinicasResponse.data.clinics|| []);
+        console.log("Clients Data:", clientesResponse.data.clients || []);
+        console.log("Vets Data:", veterinariosResponse.data.vets || []);
+        setUser(userResponse.data.data || {})
         setServices(servicesResponse.data.services || [])
         setClinicas(clinicasResponse.data.clinics || [])
         setClientes(clientesResponse.data.clients || [])
         setVeterinarios(veterinariosResponse.data.vets || [])
-        setPets(petsResponse.data.pets || [])
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -212,6 +219,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
             value={formData.pet}
             onChange={(event, newValue) => setFormData({ ...formData, pet: newValue })}
             loading={loadingClinics}
+            disabled={!formData.cliente }
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -275,11 +283,16 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
           />
 
           <Autocomplete
-            options={veterinarios}
+            options={clinicas}
             getOptionLabel={(option) => option.nombre || ""}
-            value={formData.veterinario}
-            onChange={(event, newValue) => setFormData({ ...formData, veterinario: newValue })}
+            value={
+              user.clinica
+                ? clinicas.find((clinic) => clinic.clinica_id === user.clinica) || null
+                : formData.clinica
+            }
+            onChange={(event, newValue) => setFormData({ ...formData, clinica: newValue })}
             loading={loadingPets}
+            disabled={!!user.clinica}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -306,9 +319,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
               />
             )}
             sx={{ width: "100%" }}
-          /> 
-
-           
+          />
 
           <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={enGB}>
             <DatePicker
@@ -336,6 +347,44 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
               }}
             />
           </LocalizationProvider>
+
+          
+
+          <TextField
+            select
+            fullWidth
+            label="Hora"
+            name="hora"
+            placeholder="Seleccione un horario"
+            value={formData.hora}
+            onChange={handleChange}
+            sx={{ mb: 2 }}
+            required
+            error={!!errors.hora}
+            helperText={errors.hora}
+            disabled={loadingTimes}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <AccessTimeIcon fontSize="small" />
+                </InputAdornment>
+              ),
+            }}
+            MenuProps={{
+              PaperProps: {
+                style: {
+                  maxHeight: 200, // Adjust this height if necessary
+                  top: '100%', // Positions the menu directly below the field
+                },
+              },
+            }}
+          >
+            {horarios.map((hora) => (
+              <MenuItem key={hora} value={hora}>
+                {hora}
+              </MenuItem>
+            ))}
+          </TextField>
 
           <Autocomplete
             multiple
@@ -388,41 +437,6 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
             }}
             sx={{ width: "100%" }}
           />
-
-          <TextField
-            select
-            fullWidth
-            label="Hora"
-            name="hora"
-            value={formData.hora}
-            onChange={handleChange}
-            sx={{ mb: 2 }}
-            required
-            error={!!errors.hora}
-            helperText={errors.hora}
-            disabled={loadingTimes}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <AccessTimeIcon fontSize="small" />
-                </InputAdornment>
-              ),
-            }}
-            MenuProps={{
-              PaperProps: {
-                style: {
-                  maxHeight: 200, // Adjust this height if necessary
-                  top: '100%', // Positions the menu directly below the field
-                },
-              },
-            }}
-          >
-            {horarios.map((hora) => (
-              <MenuItem key={hora} value={hora}>
-                {hora}
-              </MenuItem>
-            ))}
-          </TextField>
 
 
           <TextField

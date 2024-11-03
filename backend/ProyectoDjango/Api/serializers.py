@@ -43,6 +43,12 @@ class ClinicasSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class FullUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Usuarios
+        fields = ["usuario", "rol_id", "clinica_id"]
+
+
 class EspecialidadesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Especialidades
