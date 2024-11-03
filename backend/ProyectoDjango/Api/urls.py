@@ -9,16 +9,21 @@ urlpatterns = [
     path("reset-password/", reset_password, name="reset_password"),
     path("verify-code/", verify_code, name="verify_code"),
     path("check-new-pass/", check_new_pass, name="check_new_pass"),
+    
+    # Get all registers
     path("get-owners/", get_owners, name="get_owners"),
     path("get-clients/", get_clients, name="get_clients"),
     path("get-vets/", get_vets, name="get_vets"),
     path("get-services/", get_services, name="get_services"),
     path("get-clinics/", get_clinics, name="get_clinics"),
+    path("get-pets/", get_clinics, name="get_clinics"),
+
     # Client APIs
     path("consult-client/", consult_client, name="consult_client"),
     path("add-client/", add_client, name="add_client"),
     path("update-client/<str:usuario>/", update_client, name="update_client"),
     path("delete-client/<str:usuario>/", delete_client, name="delete_client"),
+
     # Clinic APIs
     path("consult-clinics/", consult_clinics, name="consult_clinics"),
     path("add-clinic/", add_clinic, name="add_clinic"),

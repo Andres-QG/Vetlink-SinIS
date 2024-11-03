@@ -20,7 +20,7 @@ import {
   Build as BuildIcon
 } from "@mui/icons-material";
 import Tag from "../Tag";
-import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
+import PetsIcon from '@mui/icons-material/Pets';
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
 import CorporateFareIcon from '@mui/icons-material/CorporateFare';
@@ -47,7 +47,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [clientes, setClientes] = useState([]);
-  const [mascotas, setMascotas] = useState([]);
+  const [pets, setPets] = useState([]);
   const [veterinarios, setVeterinarios] = useState([]);
   const [horarios, setHorarios] = useState([]);
   const [clinicas, setClinicas] = useState([]);
@@ -56,6 +56,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
   const [loadingVets, setLoadingVets] = useState(true);
   const [services, setServices] = useState([]);
   const [loadingTimes, setLoadingTimes] = useState(true); 
+  const [loadingPets, setLoadingPets] = useState(true); 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -63,22 +64,26 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
         setLoadingClients(true);
         setLoadingClinics(true);
         setLoadingVets(true);
-        const [clientesResponse, veterinariosResponse, servicesResponse, clinicasResponse] = await Promise.all([
+        setLoadingPets(true);
+        const [clientesResponse, veterinariosResponse, servicesResponse, clinicasResponse, petsResponse] = await Promise.all([
           axios.get("http://localhost:8000/api/get-clients/"),
           axios.get("http://localhost:8000/api/get-vets/"),
           axios.get("http://localhost:8000/api/get-services/"),
           axios.get("http://localhost:8000/api/get-clinics/"),
+          axios.get("http://localhost:8000/api/get-pets/"),
         ]);
         setServices(servicesResponse.data.services || [])
         setClinicas(clinicasResponse.data.clinics || [])
         setClientes(clientesResponse.data.clients || [])
-        setVeterinarios(veterinariosResponse.data.vets || []);
+        setVeterinarios(veterinariosResponse.data.vets || [])
+        setPets(petsResponse.data.pets || [])
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
         setLoadingClients(false);
         setLoadingClinics(false);
         setLoadingVets(false);
+        setLoadingPets(false);
       }
     };
     fetchData();
@@ -202,29 +207,29 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
           />
 
           <Autocomplete
-            options={clinicas}
+            options={pets}
             getOptionLabel={(option) => option.nombre || ""}
-            value={formData.clinica}
-            onChange={(event, newValue) => setFormData({ ...formData, clinica: newValue })}
+            value={formData.pet}
+            onChange={(event, newValue) => setFormData({ ...formData, pet: newValue })}
             loading={loadingClinics}
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="Clínica"
+                label="Mascota"
                 placeholder="Seleccione una mascota"
                 fullWidth
-                error={!!errors.veterinario}
-                helperText={errors.veterinario}
+                error={!!errors.pet}
+                helperText={errors.pet}
                 InputProps={{
                   ...params.InputProps,
                   startAdornment: (
                     <InputAdornment position="start">
-                      <CorporateFareIcon fontSize="small" />
+                      <PetsIcon fontSize="small" />
                     </InputAdornment>
                   ),
                   endAdornment: (
                     <>
-                      {loadingVets ? <CircularProgress color="inherit" size={20} /> : null}
+                      {loadingPets ? <CircularProgress color="inherit" size={21} /> : null}
                       {params.InputProps.endAdornment}
                     </>
                   ),
@@ -270,11 +275,11 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
           />
 
           <Autocomplete
-            options={clinicas}
+            options={veterinarios}
             getOptionLabel={(option) => option.nombre || ""}
-            value={formData.clinica}
-            onChange={(event, newValue) => setFormData({ ...formData, clinica: newValue })}
-            loading={loadingClinics}
+            value={formData.veterinario}
+            onChange={(event, newValue) => setFormData({ ...formData, veterinario: newValue })}
+            loading={loadingPets}
             renderInput={(params) => (
               <TextField
                 {...params}
