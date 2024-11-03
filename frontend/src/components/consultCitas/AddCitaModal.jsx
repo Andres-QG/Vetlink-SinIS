@@ -20,6 +20,7 @@ import {
   Build as BuildIcon
 } from "@mui/icons-material";
 import Tag from "../Tag";
+import { parseISO, isValid } from 'date-fns';
 import PetsIcon from '@mui/icons-material/Pets';
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
@@ -76,7 +77,6 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
           const response = await axios.put("http://localhost:8000/api/get-pets/", {
             cliente: formData.cliente.usuario,
           });
-          console.log(response)
           setPets(response.data.pets || []);
         } catch (error) {
           console.error("Error fetching pets:", error);
@@ -84,8 +84,11 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
           setLoadingPets(false);
         }
       } else {
-        setPets([]); 
+        setPets([]);
       }
+
+      // Reset pet field to null if cliente changes
+      setFormData((prevData) => ({ ...prevData, pet: null }));
     };
 
     fetchPets();
@@ -132,7 +135,6 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
           clinica_id: formData.clinica?.clinica_id,
           full_date: formattedDate,
         });
-        console.log(response.data.available_times)
         setHorarios(response.data.available_times || []);
       }
     } catch (error) {
@@ -144,9 +146,10 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
 
   useEffect(() => {
     if (formData.clinica  && formData.veterinario  && formData.fecha) {
-      console.log(user.clinica, formData.clinica)
       fetchAvailableTimes();
     } else {
+      setHorarios([]);
+      setFormData((prevData) => ({ ...prevData, hora: "" }));
       setLoadingTimes(true)
     }
   }, [formData.clinica, formData.veterinario, formData.fecha]);
@@ -196,7 +199,8 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
   };
 
   const handleDateChange = (newDate) => {
-    setFormData({ ...formData, fecha: newDate });
+    const validDate = typeof newDate === 'string' ? parseISO(newDate) : newDate;
+    setFormData({ ...formData, fecha: isValid(validDate) ? validDate : null });
   };
 
   const handleClear = () => {
@@ -218,7 +222,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
           <Autocomplete
             options={clientes}
             getOptionLabel={(option) => option.usuario || ""}
-            value={formData.cliente}
+            value={formData.cliente || ""}
             onChange={(event, newValue) => setFormData({ ...formData, cliente: newValue })}
             loading={loadingClients}
             renderInput={(params) => (
@@ -252,10 +256,10 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
           <Autocomplete
             options={pets}
             getOptionLabel={(option) => option.nombre || ""}
-            value={formData.pet}
+            value={formData.pet || ""} // Ensure value is always defined, even if `pet` is null initially
             onChange={(event, newValue) => setFormData({ ...formData, pet: newValue })}
             loading={loadingPets}
-            disabled={!formData.cliente }
+            disabled={!formData.cliente}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -282,12 +286,12 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
               />
             )}
             sx={{ width: "100%" }}
-          /> 
+          />
 
           <Autocomplete
             options={veterinarios}
             getOptionLabel={(option) => option.usuario || ""}
-            value={formData.veterinario}
+            value={formData.veterinario || ""}
             onChange={(event, newValue) => setFormData({ ...formData, veterinario: newValue })}
             loading={loadingVets}
             renderInput={(params) => (
@@ -321,7 +325,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
           <Autocomplete
             options={clinicas}
             getOptionLabel={(option) => option.nombre || ""}
-            value={formData.clinica}
+            value={formData.clinica || ""}
             onChange={(event, newValue) => setFormData({ ...formData, clinica: newValue })}
             loading={loadingClinics}
             disabled={!!user.clinica}
@@ -356,7 +360,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
           <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={enGB}>
             <DatePicker
               label="Fecha"
-              value={formData.fecha}
+              value={formData.fecha || null} // Ensure it's a Date or null, not a string
               onChange={handleDateChange}
               format="dd/MM/yyyy"
               slots={{ openPickerIcon: ArrowDropDownIcon }}
@@ -408,18 +412,24 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
               },
             }}
           >
-            {horarios.map((hora) => (
-              <MenuItem key={hora} value={hora}>
-                {hora}
+            {horarios.length > 0 ? (
+              horarios.map((hora) => (
+                <MenuItem key={hora} value={hora}>
+                  {hora}
+                </MenuItem>
+              ))
+            ) : (
+              <MenuItem value="" disabled>
+                No hay horarios disponibles
               </MenuItem>
-            ))}
+            )}
           </TextField>
 
           <Autocomplete
             multiple
             options={services}
             getOptionLabel={(option) => option.nombre || ""}
-            value={formData.services}
+            value={formData.services || ""}
             onChange={(event, newValue) => {
               setFormData({
                 ...formData,
