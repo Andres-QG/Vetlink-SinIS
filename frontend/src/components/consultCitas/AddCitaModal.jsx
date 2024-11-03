@@ -58,7 +58,38 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
   const [loadingTimes, setLoadingTimes] = useState(true); 
   const [loadingPets, setLoadingPets] = useState(true); 
   const [user, setUser] = useState({})
-  const [info, setInfo] = useState({})
+
+  useEffect(() => {
+  if (user.clinica && !formData.clinica) {
+    setFormData((prevData) => ({
+      ...prevData,
+      clinica: clinicas.find((clinic) => clinic.clinica_id === user.clinica) || null
+    }));
+    }
+  }, [user, clinicas]);
+
+  useEffect(() => {
+    const fetchPets = async () => {
+      if (formData.cliente) {
+        setLoadingPets(true);
+        try {
+          const response = await axios.put("http://localhost:8000/api/get-pets/", {
+            cliente: formData.cliente.usuario,
+          });
+          console.log(response)
+          setPets(response.data.pets || []);
+        } catch (error) {
+          console.error("Error fetching pets:", error);
+        } finally {
+          setLoadingPets(false);
+        }
+      } else {
+        setPets([]); 
+      }
+    };
+
+    fetchPets();
+  }, [formData.cliente]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -66,7 +97,6 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
         setLoadingClients(true);
         setLoadingClinics(true);
         setLoadingVets(true);
-        setLoadingPets(true);
         const [userResponse, clientesResponse, veterinariosResponse, servicesResponse, clinicasResponse] = await Promise.all([
           axios.get("http://localhost:8000/api/get-user/", { withCredentials: true }),
           axios.get("http://localhost:8000/api/get-clients/"),
@@ -74,11 +104,6 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
           axios.get("http://localhost:8000/api/get-services/"),
           axios.get("http://localhost:8000/api/get-clinics/"),
         ]);
-        console.log("User Data:", userResponse.data.data || {});
-        console.log("Services Data:", servicesResponse.data.services || []);
-        console.log("Clinics Data:", clinicasResponse.data.clinics|| []);
-        console.log("Clients Data:", clientesResponse.data.clients || []);
-        console.log("Vets Data:", veterinariosResponse.data.vets || []);
         setUser(userResponse.data.data || {})
         setServices(servicesResponse.data.services || [])
         setClinicas(clinicasResponse.data.clinics || [])
@@ -90,7 +115,6 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
         setLoadingClients(false);
         setLoadingClinics(false);
         setLoadingVets(false);
-        setLoadingPets(false);
       }
     };
     fetchData();
@@ -99,10 +123,9 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
   // Function to retrive available times for the given params
   const fetchAvailableTimes = async () => {
     try {
-      if (formData.clinica?.clinica_id && formData.veterinario && formData.fecha) {
+      if (formData.veterinario && formData.clinica && formData.fecha) {
         setLoadingTimes(true);
         const formattedDate = formData.fecha.toISOString().split("T")[0];
-        console.log(formData.clinica?.clinica_id, formData.veterinario, formData.fecha)
 
         const response = await axios.put("http://localhost:8000/api/get-disp-times/", {
           vet_user: formData.veterinario.usuario,
@@ -120,10 +143,23 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
   };
 
   useEffect(() => {
-    if (formData.clinica?.clinica_id && formData.veterinario && formData.fecha) {
+    if (formData.clinica  && formData.veterinario  && formData.fecha) {
+      console.log(user.clinica, formData.clinica)
       fetchAvailableTimes();
+    } else {
+      setLoadingTimes(true)
     }
-  }, [formData.clinica?.clinica_id, formData.veterinario, formData.fecha]);
+  }, [formData.clinica, formData.veterinario, formData.fecha]);
+
+  useEffect(() => {
+    if (user.clinica) {
+      const clinic = clinicas.find((clinic) => clinic.clinica_id === user.clinica) || null;
+      setFormData((prevData) => ({
+        ...prevData,
+        clinica: clinic,
+      }));
+    }
+  }, [user.clinica, clinicas, setFormData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -218,7 +254,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
             getOptionLabel={(option) => option.nombre || ""}
             value={formData.pet}
             onChange={(event, newValue) => setFormData({ ...formData, pet: newValue })}
-            loading={loadingClinics}
+            loading={loadingPets}
             disabled={!formData.cliente }
             renderInput={(params) => (
               <TextField
@@ -285,13 +321,9 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
           <Autocomplete
             options={clinicas}
             getOptionLabel={(option) => option.nombre || ""}
-            value={
-              user.clinica
-                ? clinicas.find((clinic) => clinic.clinica_id === user.clinica) || null
-                : formData.clinica
-            }
+            value={formData.clinica}
             onChange={(event, newValue) => setFormData({ ...formData, clinica: newValue })}
-            loading={loadingPets}
+            loading={loadingClinics}
             disabled={!!user.clinica}
             renderInput={(params) => (
               <TextField
@@ -348,15 +380,12 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
             />
           </LocalizationProvider>
 
-          
-
           <TextField
             select
             fullWidth
             label="Hora"
             name="hora"
-            placeholder="Seleccione un horario"
-            value={formData.hora}
+            value={formData.hora || ""}
             onChange={handleChange}
             sx={{ mb: 2 }}
             required
@@ -373,8 +402,8 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
             MenuProps={{
               PaperProps: {
                 style: {
-                  maxHeight: 200, // Adjust this height if necessary
-                  top: '100%', // Positions the menu directly below the field
+                  maxHeight: 200,
+                  top: '100%',
                 },
               },
             }}

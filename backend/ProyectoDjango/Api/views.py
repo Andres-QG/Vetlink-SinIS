@@ -570,9 +570,6 @@ def get_user(request):
         if role == 2:
             data['clinica'] = request.session.get("clinica_id")
 
-        print(data)
-        print("Current session:", request.session.items())
-
         return Response({"status": "success", "data": data})
 
     except Exception as e:
@@ -585,8 +582,11 @@ def get_clients(request):
             out_clientes = cursor.var(str).var
             cursor.callproc("VETLINK.OBTENER_CLIENTES_JSON", [out_clientes])
 
-        clientes_json = json.loads(out_clientes.getvalue())
+        clientes_data = out_clientes.getvalue()
+        if clientes_data is None:
+            return Response({"clients": []})
 
+        clientes_json = json.loads(out_clientes.getvalue())
         return Response({"clients": clientes_json})
 
     except Exception as e:
@@ -601,8 +601,11 @@ def get_vets(request):
             out_vets = cursor.var(str).var
             cursor.callproc("VETLINK.OBTENER_VETERINARIOS_JSON", [out_vets])
 
-        vets_json = json.loads(out_vets.getvalue())
+        vets_data = out_vets.getvalue()
+        if vets_data is None:
+            return Response({"vets": []})
 
+        vets_json = json.loads(vets_data)
         return Response({"vets": vets_json})
 
     except Exception as e:
@@ -632,11 +635,15 @@ def get_pets(request):
     try:
         in_client = request.data.get("cliente")
         with connection.cursor() as cursor:
-            out_pets = cursor.var(str)
+            out_pets = cursor.var(str).var
             cursor.callproc("VETLINK.OBTENER_MASCOTAS_JSON", [in_client, out_pets])
 
-        pets_json = json.loads(out_pets.getvalue())
+        pets_data = out_pets.getvalue()
+        print(pets_data)
+        if not pets_data:
+            return Response({"pets": []})
 
+        pets_json = json.loads(pets_data)
         return Response({"pets": pets_json})
 
     except Exception as e:
@@ -650,7 +657,6 @@ def get_services(request):
     serializer = ServiciosNameSerializer(services, many=True)
     
     if serializer.data:
-        print(serializer.data)
         return Response({
             "status": "success",
             "message": "Servicios obtenidos",
@@ -668,9 +674,12 @@ def get_clinics(request):
         with connection.cursor() as cursor:
             out_clinicas = cursor.var(str).var
             cursor.callproc("VETLINK.OBTENER_CLINICAS_JSON", [out_clinicas])
+            
+        clinics_data = out_clinicas.getvalue()
+        if clinics_data is None:
+            return Response({"clinics": []})
 
         clinicas_json = json.loads(out_clinicas.getvalue())
-
         return Response({"clinics": clinicas_json})
 
     except Exception as e:
