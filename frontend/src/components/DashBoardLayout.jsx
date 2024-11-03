@@ -14,6 +14,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import ComputerIcon from "@mui/icons-material/Computer";
+import MedicalServices from "@mui/icons-material/MedicalServices";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import SearchIcon from "@mui/icons-material/Search";
 import PersonIcon from "@mui/icons-material/Person";
@@ -222,6 +223,12 @@ const DashboardLayout = ({
                   label: "Citas",
                   onClick: () => handleClick("appointments"),
                 },
+                {
+                  key: "consultservices",
+                  icon: <MedicalServices />,
+                  label: "Servicios",
+                  onClick: () => handleClick("consultservices"),
+                },
               ]
             : []),
           ...(role === 1
@@ -266,6 +273,8 @@ const DashboardLayout = ({
         return "consultpets";
       case "/consultvets":
         return "consultvets";
+      case "/consultservices":
+        return "consultservices";
       case "/consultMyPets":
         return "consultMyPets";
       case "/Owner":

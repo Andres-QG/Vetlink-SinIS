@@ -26,6 +26,10 @@ import {
   Transgender as GenderIcon,
 } from "@mui/icons-material";
 import SearchBar from "../components/Consult/GeneralizedSearchBar";
+import AddMyPets from "../components/ConsultMyPets/AddMyPets";
+import ModifyMyPets from "../components/ConsultMyPets/ModifyMyPets";
+import DeleteMyPets from "../components/ConsultMyPets/DeleteMyPets";
+import { useNotification } from "../components/Notification";
 
 import dogImage from "../assets/img/pets/dogs/corgi.png";
 import catImage from "../assets/img/pets/cats/smile.png";
@@ -36,7 +40,13 @@ const ConsultMyPets = () => {
   const [filteredPets, setFilteredPets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [modalState, setModalState] = useState({
+    open: false,
+    type: "",
+    pet: null,
+  });
   const petsPerPage = 8;
+  const showNotification = useNotification();
 
   useEffect(() => {
     fetchMyPets();
@@ -61,40 +71,56 @@ const ConsultMyPets = () => {
     }
   };
 
+  const openModal = (type, pet = null) => {
+    setModalState({ open: true, type, pet });
+  };
+
+  const closeModal = () => {
+    setModalState({ open: false, type: "", pet: null });
+  };
+
+  const handleActionSuccess = (message, type) => {
+    showNotification(message, type);
+    if (type === "success") {
+      fetchMyPets();
+      closeModal();
+    }
+  };
+
   const handleSearch = (searchTerm, filterColumn, order) => {
-    let resultsToSort = searchTerm
-      ? pets.filter((pet) => {
-          const value = pet[filterColumn]?.toString().toLowerCase() || "";
-          return value.includes(searchTerm.toLowerCase());
-        })
+    const resultsToSort = searchTerm
+      ? pets.filter((pet) =>
+          pet[filterColumn]
+            ?.toString()
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
+        )
       : [...pets];
 
-    const sortedResults = resultsToSort.sort((a, b) => {
-      if (a[filterColumn] < b[filterColumn]) return order === "asc" ? -1 : 1;
-      if (a[filterColumn] > b[filterColumn]) return order === "asc" ? 1 : -1;
-      return 0;
-    });
-
-    setFilteredPets(sortedResults);
+    setFilteredPets(
+      resultsToSort.sort((a, b) => {
+        if (a[filterColumn] < b[filterColumn]) return order === "asc" ? -1 : 1;
+        if (a[filterColumn] > b[filterColumn]) return order === "asc" ? 1 : -1;
+        return 0;
+      })
+    );
   };
 
   const columns = ["NOMBRE", "ESPECIE", "RAZA", "FECHA_NACIMIENTO", "SEXO"];
 
-  const getSpeciesImage = (species) => {
-    return species.toLowerCase() === "perro"
+  const getSpeciesImage = (species) =>
+    species.toLowerCase() === "perro"
       ? dogImage
       : species.toLowerCase() === "gato"
         ? catImage
         : defaultPetImage;
-  };
 
-  const getCardBackgroundColor = (species) => {
-    return species.toLowerCase() === "perro"
+  const getCardBackgroundColor = (species) =>
+    species.toLowerCase() === "perro"
       ? "rgba(255, 165, 0, 0.1)"
       : species.toLowerCase() === "gato"
         ? "rgba(0, 123, 255, 0.1)"
         : "rgba(128, 128, 128, 0.1)";
-  };
 
   const handleChangePage = (event, value) => {
     setCurrentPage(value);
@@ -161,6 +187,7 @@ const ConsultMyPets = () => {
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}
+                onClick={() => openModal("add")}
                 sx={{
                   textTransform: "none",
                   minWidth: { xs: "100%", md: "180px" },
@@ -179,7 +206,7 @@ const ConsultMyPets = () => {
             container
             spacing={3}
             sx={{
-              justifyContent: { xs: "center", md: "flex-start" },
+              justifyContent: { xs: "center", md: "center" },
             }}
           >
             {currentPets.length > 0 ? (
@@ -189,14 +216,15 @@ const ConsultMyPets = () => {
                     <Card
                       elevation={6}
                       sx={{
-                        transition: "transform 0.3s",
+                        transition: "transform 0.3s, box-shadow 0.3s",
                         display: "flex",
                         flexDirection: "column",
                         height: "100%",
                         width: "100%",
+                        boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.15)",
                         "&:hover": {
                           transform: "scale(1.05)",
-                          boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.25)",
+                          boxShadow: "0px 6px 20px rgba(0, 0, 0, 0.3)",
                         },
                       }}
                     >
@@ -284,22 +312,30 @@ const ConsultMyPets = () => {
                         )}
                       </CardContent>
                       <CardActions sx={{ justifyContent: "center" }}>
-                        <Tooltip title="Editar Mascota">
+                        <Tooltip
+                          title="Editar Mascota"
+                          TransitionComponent={Grow}
+                        >
                           <Button
                             size="small"
                             color="primary"
                             startIcon={<EditIcon />}
                             sx={{ textTransform: "none", mr: 1 }}
+                            onClick={() => openModal("edit", pet)}
                           >
                             Editar
                           </Button>
                         </Tooltip>
-                        <Tooltip title="Eliminar Mascota">
+                        <Tooltip
+                          title="Eliminar Mascota"
+                          TransitionComponent={Grow}
+                        >
                           <Button
                             size="small"
                             color="error"
                             startIcon={<DeleteIcon />}
                             sx={{ textTransform: "none" }}
+                            onClick={() => openModal("delete", pet)}
                           >
                             Eliminar
                           </Button>
@@ -330,6 +366,31 @@ const ConsultMyPets = () => {
               color="primary"
             />
           </Box>
+
+          {/* Modals */}
+          {modalState.type === "add" && (
+            <AddMyPets
+              open={modalState.open}
+              handleClose={closeModal}
+              onSuccess={handleActionSuccess}
+            />
+          )}
+          {modalState.type === "edit" && modalState.pet && (
+            <ModifyMyPets
+              open={modalState.open}
+              handleClose={closeModal}
+              petData={modalState.pet}
+              onSuccess={handleActionSuccess}
+            />
+          )}
+          {modalState.type === "delete" && modalState.pet && (
+            <DeleteMyPets
+              open={modalState.open}
+              handleClose={closeModal}
+              petData={modalState.pet}
+              onSuccess={handleActionSuccess}
+            />
+          )}
         </>
       )}
     </Box>

@@ -11,6 +11,7 @@ const ConsultView = ({
   title,
   fetchUrl,
   deletionUrl,
+  restoreUrl,
   addComponent: AddComponent,
   modifyComponent: ModifyComponent,
   detailedInfoComponent: DetailedInfoComponent,
@@ -108,8 +109,7 @@ const ConsultView = ({
                 marginRight: { xs: "0px", md: "10px" },
                 width: { xs: "100%", md: "auto" },
                 fontSize: "0.85rem",
-              }}
-            >
+              }}>
               Agregar
             </Button>
             <SearchBar
@@ -135,6 +135,7 @@ const ConsultView = ({
             page={page}
             onPageChange={setPage}
             deletionUrl={deletionUrl}
+            restoreUrl={restoreUrl}
             pkCol={pkCol}
             visualIdentifierCol={visualIdentifierCol}
             fetchData={fetchAllData}
@@ -164,6 +165,7 @@ ConsultView.propTypes = {
   title: PropTypes.string.isRequired,
   fetchUrl: PropTypes.string.isRequired,
   deletionUrl: PropTypes.string.isRequired,
+  restoreUrl: PropTypes.string,
   addComponent: PropTypes.elementType.isRequired,
   modifyComponent: PropTypes.elementType.isRequired,
   detailedInfoComponent: PropTypes.elementType,

@@ -7,7 +7,7 @@ import AddVetModal from "../components/ConsultVets/AddVetModal";
 import VetsTable from "../components/ConsultVets/VetsTable";
 import EditVetModal from "../components/ConsultVets/EditVetModal";
 
-const ConsultVets = () => {
+export const ConsultVets = () => {
   const [vets, setVets] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");

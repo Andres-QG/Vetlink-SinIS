@@ -8,7 +8,7 @@ import ConsultClients from "./routes/ConsultClients";
 import ConsultVets from "./routes/ConsultVets";
 import ConsultPets from "./routes/ConsultPets";
 import ConsultRecords from "./routes/ConsultRecords";
-// import ConsultServices from "./routes/ConsultServices";
+import ConsultServices from "./routes/ConsultServices";
 import {
   PassReset,
   CheckCode,
@@ -118,16 +118,18 @@ function App() {
             />
 
             {/* consult Services */}
-            {/* <Route
+            <Route
               path="/consultServices"
               element={
                 <DashBoardLayout>
-                  <ProtectedRoute requiredRoles={[1, 2]}>
-                    <ConsultServices />
-                  </ProtectedRoute>
+                  <NotificationProvider>
+                    <ProtectedRoute requiredRoles={[1, 2]}>
+                      <ConsultServices />
+                    </ProtectedRoute>
+                  </NotificationProvider>
                 </DashBoardLayout>
               }
-            /> */}
+            />
 
             {/* Consult Pages */}
             <Route
@@ -147,7 +149,9 @@ function App() {
               element={
                 <DashBoardLayout>
                   <ProtectedRoute requiredRoles={[4]}>
-                    <ConsultMyPets />
+                    <NotificationProvider>
+                      <ConsultMyPets />
+                    </NotificationProvider>
                   </ProtectedRoute>
                 </DashBoardLayout>
               }

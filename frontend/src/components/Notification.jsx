@@ -19,6 +19,21 @@ export const NotificationProvider = ({ children }) => {
     setNotification({ open: false });
   };
 
+  const getAlertStyles = (type) => {
+    switch (type) {
+      case "success":
+        return { backgroundColor: "#4caf50", color: "#fff" };
+      case "error":
+        return { backgroundColor: "#f44336", color: "#fff" };
+      case "info":
+        return { backgroundColor: "#2196f3", color: "#fff" };
+      case "warning":
+        return { backgroundColor: "#ff9800", color: "#fff" };
+      default:
+        return {};
+    }
+  };
+
   return (
     <NotificationContext.Provider value={showNotification}>
       {children}
@@ -26,12 +41,13 @@ export const NotificationProvider = ({ children }) => {
         open={notification.open}
         autoHideDuration={3000}
         onClose={handleClose}
-        anchorOrigin={{ vertical: "top", horizontal: "left" }}
+        anchorOrigin={{ vertical: "center", horizontal: "center" }}
       >
         <Alert
           onClose={handleClose}
           severity={notification.type}
           variant="filled"
+          sx={getAlertStyles(notification.type)}
         >
           {notification.message}
         </Alert>
