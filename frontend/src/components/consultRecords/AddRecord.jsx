@@ -1,3 +1,4 @@
+import React from "react";
 import { useState, forwardRef } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
@@ -177,7 +178,7 @@ const AddRecord = forwardRef(
               alignItems="center"
               mb={2}
             >
-              <h2>Agregar Expediente</h2>
+              <h2>Agrega Expediente</h2>
               <IconButton onClick={handleClose}>
                 <CloseIcon />
               </IconButton>
