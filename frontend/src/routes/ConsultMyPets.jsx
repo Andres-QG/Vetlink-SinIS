@@ -26,6 +26,8 @@ import {
   Transgender as GenderIcon,
 } from "@mui/icons-material";
 import SearchBar from "../components/Consult/GeneralizedSearchBar";
+import AddMyPets from "../components/ConsultMyPets/AddMyPets";
+import { useNotification } from "../components/Notification";
 
 import dogImage from "../assets/img/pets/dogs/corgi.png";
 import catImage from "../assets/img/pets/cats/smile.png";
@@ -36,7 +38,9 @@ const ConsultMyPets = () => {
   const [filteredPets, setFilteredPets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [modalOpen, setModalOpen] = useState(false);
   const petsPerPage = 8;
+  const showNotification = useNotification();
 
   useEffect(() => {
     fetchMyPets();
@@ -76,6 +80,22 @@ const ConsultMyPets = () => {
     });
 
     setFilteredPets(sortedResults);
+  };
+
+  const handleOpenModal = () => {
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+
+  const handleAddPetSuccess = (message, type) => {
+    showNotification(message, type);
+    if (type === "success") {
+      fetchMyPets(); // Refrescar la lista de mascotas después de agregar una nueva
+      handleCloseModal();
+    }
   };
 
   const columns = ["NOMBRE", "ESPECIE", "RAZA", "FECHA_NACIMIENTO", "SEXO"];
@@ -161,6 +181,7 @@ const ConsultMyPets = () => {
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}
+                onClick={handleOpenModal}
                 sx={{
                   textTransform: "none",
                   minWidth: { xs: "100%", md: "180px" },
@@ -179,7 +200,7 @@ const ConsultMyPets = () => {
             container
             spacing={3}
             sx={{
-              justifyContent: { xs: "center", md: "flex-start" },
+              justifyContent: { xs: "center", md: "center" },
             }}
           >
             {currentPets.length > 0 ? (
@@ -189,14 +210,15 @@ const ConsultMyPets = () => {
                     <Card
                       elevation={6}
                       sx={{
-                        transition: "transform 0.3s",
+                        transition: "transform 0.3s, box-shadow 0.3s",
                         display: "flex",
                         flexDirection: "column",
                         height: "100%",
                         width: "100%",
+                        boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.15)",
                         "&:hover": {
                           transform: "scale(1.05)",
-                          boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.25)",
+                          boxShadow: "0px 6px 20px rgba(0, 0, 0, 0.3)",
                         },
                       }}
                     >
@@ -284,7 +306,10 @@ const ConsultMyPets = () => {
                         )}
                       </CardContent>
                       <CardActions sx={{ justifyContent: "center" }}>
-                        <Tooltip title="Editar Mascota">
+                        <Tooltip
+                          title="Editar Mascota"
+                          TransitionComponent={Grow}
+                        >
                           <Button
                             size="small"
                             color="primary"
@@ -294,7 +319,10 @@ const ConsultMyPets = () => {
                             Editar
                           </Button>
                         </Tooltip>
-                        <Tooltip title="Eliminar Mascota">
+                        <Tooltip
+                          title="Eliminar Mascota"
+                          TransitionComponent={Grow}
+                        >
                           <Button
                             size="small"
                             color="error"
@@ -330,6 +358,13 @@ const ConsultMyPets = () => {
               color="primary"
             />
           </Box>
+
+          {/* Modal para agregar mascota */}
+          <AddMyPets
+            open={modalOpen}
+            handleClose={handleCloseModal}
+            onSuccess={handleAddPetSuccess}
+          />
         </>
       )}
     </Box>
