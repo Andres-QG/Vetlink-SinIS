@@ -87,4 +87,5 @@ urlpatterns = [
     
     # Mascotas Cliente APIs
     path("consult-my-pets/", consult_my_pets, name="consult_my_pets"),
+    path('add-mypet/', add_mypet, name='add_mypet'),
 ]

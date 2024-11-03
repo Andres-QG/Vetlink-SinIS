@@ -147,7 +147,9 @@ function App() {
               element={
                 <DashBoardLayout>
                   <ProtectedRoute requiredRoles={[4]}>
-                    <ConsultMyPets />
+                    <NotificationProvider>
+                      <ConsultMyPets />
+                    </NotificationProvider>
                   </ProtectedRoute>
                 </DashBoardLayout>
               }
