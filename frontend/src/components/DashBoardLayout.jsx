@@ -10,9 +10,11 @@ import {
   Button,
 } from "antd";
 import { AuthContext } from "../context/AuthContext";
-import { useNavigate, useLocation, Routes, Route } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
+import ComputerIcon from "@mui/icons-material/Computer";
+import MedicalServices from "@mui/icons-material/MedicalServices";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import SearchIcon from "@mui/icons-material/Search";
 import PersonIcon from "@mui/icons-material/Person";
@@ -29,13 +31,12 @@ import ClientsIcon from "@mui/icons-material/Group";
 import PetsIconAlt from "@mui/icons-material/Pets";
 import VetsIcon from "@mui/icons-material/MedicalServices";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import ConsultServices from "../routes/ConsultServices";
 
 const { Header, Content, Sider, Footer } = Layout;
 
 const DashboardLayout = ({
   children,
-  hide = false,
+  hideSidebar = false,
   padding = "24px",
   margin = "24px",
 }) => {
@@ -167,7 +168,7 @@ const DashboardLayout = ({
     }
   };
 
-  const createItems = () => {
+  const createSidebarItems = () => {
     let items = [
       {
         key: "dashboard",
@@ -201,12 +202,7 @@ const DashboardLayout = ({
             label: "Expedientes",
             onClick: () => handleClick("consultrecords"),
           },
-          {
-            key: "consultservices",
-            icon: <AssignmentIcon />,
-            label: "Servicios",
-            onClick: () => handleClick("consultservices"),
-          },
+
           ...(role === 1 || role === 2
             ? [
                 {
@@ -226,6 +222,12 @@ const DashboardLayout = ({
                   icon: <CalendarMonthIcon />,
                   label: "Citas",
                   onClick: () => handleClick("appointments"),
+                },
+                {
+                  key: "consultservices",
+                  icon: <MedicalServices />,
+                  label: "Servicios",
+                  onClick: () => handleClick("consultservices"),
                 },
               ]
             : []),
@@ -271,10 +273,10 @@ const DashboardLayout = ({
         return "consultpets";
       case "/consultvets":
         return "consultvets";
-      case "/consultMyPets":
-        return "consultMyPets";
       case "/consultservices":
         return "consultservices";
+      case "/consultMyPets":
+        return "consultMyPets";
       case "/Owner":
         return "consultClinics";
       case "/consultAdmins":
@@ -300,7 +302,8 @@ const DashboardLayout = ({
           position: "fixed",
           width: "100%",
           zIndex: 1000,
-        }}>
+        }}
+      >
         <Tooltip title="Ir a la página principal" placement="bottom">
           <div
             onClick={() => handleClick("")}
@@ -317,14 +320,16 @@ const DashboardLayout = ({
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "scale(1)";
-            }}>
+            }}
+          >
             <img
               src="./src/assets/icons/logo.png"
               alt="VetLink logo"
               style={{ width: 40, height: 40, marginRight: "16px" }}
             />
             <span
-              style={{ fontSize: "20px", fontWeight: "bold", color: "white" }}>
+              style={{ fontSize: "20px", fontWeight: "bold", color: "white" }}
+            >
               VetLink
             </span>
           </div>
@@ -343,7 +348,7 @@ const DashboardLayout = ({
             flexWrap: "wrap",
           }}
         />
-        {!hide && (
+        {!hideSidebar && (
           <Button
             icon={<MenuUnfoldOutlined />}
             onClick={toggleDrawer}
@@ -353,7 +358,8 @@ const DashboardLayout = ({
         )}
         <Dropdown
           menu={isActive ? loggedInMenu : loggedOutMenu}
-          placement="bottomRight">
+          placement="bottomRight"
+        >
           <Avatar
             style={{
               backgroundColor: isActive ? "#0BA6A9" : "#808080",
@@ -366,7 +372,7 @@ const DashboardLayout = ({
       </Header>
 
       <Layout style={{ marginTop: 64 /* Compensar el header fijo */ }}>
-        {!hide && !isSmallScreen && (
+        {!hideSidebar && !isSmallScreen && (
           <Sider
             width={200}
             collapsible
@@ -377,7 +383,8 @@ const DashboardLayout = ({
               position: "fixed",
               height: "100%",
               zIndex: 10,
-            }}>
+            }}
+          >
             <Menu
               mode="inline"
               selectedKeys={[selectedKey()]}
@@ -386,24 +393,25 @@ const DashboardLayout = ({
                 borderRight: 0,
                 background: colorBgContainer,
               }}
-              items={createItems()}
+              items={createSidebarItems()}
             />
           </Sider>
         )}
 
         {/* Drawer en pantallas pequeñas */}
-        {!hide && isSmallScreen && (
+        {!hideSidebar && isSmallScreen && (
           <Drawer
             width={200}
             title="Menú"
             placement="left"
             onClose={toggleDrawer}
             open={drawerOpen}
-            styles={{ body: { padding: 0 } }}>
+            styles={{ body: { padding: 0 } }}
+          >
             <Menu
               mode="inline"
               selectedKeys={[selectedKey()]}
-              items={createItems()}
+              items={createSidebarItems()}
             />
           </Drawer>
         )}
@@ -412,8 +420,9 @@ const DashboardLayout = ({
           style={{
             display: "flex",
             flexDirection: "column",
-            marginLeft: hide || isSmallScreen ? 0 : collapsed ? 80 : 200,
-          }}>
+            marginLeft: hideSidebar || isSmallScreen ? 0 : collapsed ? 80 : 200,
+          }}
+        >
           <Content
             style={{
               flexGrow: 1,
@@ -423,11 +432,8 @@ const DashboardLayout = ({
               background: colorBgContainer,
               borderRadius: borderRadiusLG,
               boxShadow: "0 8px 16px rgba(0, 0, 0, 0.3)",
-            }}>
-            <Routes>
-              <Route path="/consultservices" element={<ConsultServices />} />
-              {/* Otras rutas aquí */}
-            </Routes>
+            }}
+          >
             {children}
           </Content>
 
@@ -439,7 +445,8 @@ const DashboardLayout = ({
               background: colorBgContainer,
               borderTop: "1px solid #e8e8e8",
               marginTop: "auto",
-            }}>
+            }}
+          >
             <div style={{ color: "#595959" }}>
               &copy; {new Date().getFullYear()} VetLink. Todos los derechos
               reservados.
