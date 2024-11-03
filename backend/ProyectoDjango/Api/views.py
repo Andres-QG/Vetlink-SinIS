@@ -375,36 +375,17 @@ def add_cita(request):
         cliente_id = request.data.get("cliente_id")
         veterinario_id = request.data.get("veterinario_id")
         mascota_id = request.data.get("mascota_id")
+        clinica_id = request.data.get("clinica_id")
         fecha = request.data.get("fecha")
         hora = request.data.get("hora")
+        servicios= request.data.get("services")
         motivo = request.data.get("motivo", "")
         estado = request.data.get("estado", "Programada")
 
-        cliente = Usuarios.objects.get(usuario=cliente_id)
-        veterinario = Usuarios.objects.get(usuario=veterinario_id)
-        mascota = Mascotas.objects.get(pk=mascota_id)
+        print(f"cliente_id: {cliente_id}, veterinario_id: {veterinario_id}, mascota_id: {mascota_id}, clinica_id: {clinica_id}, fecha: {fecha}, hora: {hora}, servicios: {servicios}, motivo: {motivo}, estado: {estado}")
 
-        data = {
-            "usuario_cliente": cliente.usuario,
-            "usuario_veterinario": veterinario.usuario,
-            "mascota": mascota.mascota_id,
-            "fecha": fecha,
-            "hora": hora,
-            "motivo": motivo,
-            "estado": estado,
-        }
+        return Response({"Success": True})
 
-        nuevaCita = CitasSerializer(data=data)
-        if nuevaCita.is_valid():
-            nuevaCita.save()
-            return Response(
-                {"message": "Cita agregada con éxito"},
-                status=status.HTTP_201_CREATED,
-            )
-        else:
-            return Response(
-                {"errors": nuevaCita.errors}, status=status.HTTP_400_BAD_REQUEST
-            )
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -549,7 +530,6 @@ def create_pet(request):
 def get_user_role(request):
     role = request.session.get("role")
 
-    print("Current session:", request.session.items())
     if role:
         return Response({"status": "success", "message": "Rol obtenido", "role": role})
     else:
