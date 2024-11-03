@@ -27,6 +27,8 @@ import {
 } from "@mui/icons-material";
 import SearchBar from "../components/Consult/GeneralizedSearchBar";
 import AddMyPets from "../components/ConsultMyPets/AddMyPets";
+import ModifyMyPets from "../components/ConsultMyPets/ModifyMyPets";
+import DeleteMyPets from "../components/ConsultMyPets/DeleteMyPets";
 import { useNotification } from "../components/Notification";
 
 import dogImage from "../assets/img/pets/dogs/corgi.png";
@@ -38,7 +40,11 @@ const ConsultMyPets = () => {
   const [filteredPets, setFilteredPets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [modalState, setModalState] = useState({
+    open: false,
+    type: "",
+    pet: null,
+  });
   const petsPerPage = 8;
   const showNotification = useNotification();
 
@@ -65,56 +71,56 @@ const ConsultMyPets = () => {
     }
   };
 
-  const handleSearch = (searchTerm, filterColumn, order) => {
-    let resultsToSort = searchTerm
-      ? pets.filter((pet) => {
-          const value = pet[filterColumn]?.toString().toLowerCase() || "";
-          return value.includes(searchTerm.toLowerCase());
-        })
-      : [...pets];
-
-    const sortedResults = resultsToSort.sort((a, b) => {
-      if (a[filterColumn] < b[filterColumn]) return order === "asc" ? -1 : 1;
-      if (a[filterColumn] > b[filterColumn]) return order === "asc" ? 1 : -1;
-      return 0;
-    });
-
-    setFilteredPets(sortedResults);
+  const openModal = (type, pet = null) => {
+    setModalState({ open: true, type, pet });
   };
 
-  const handleOpenModal = () => {
-    setModalOpen(true);
+  const closeModal = () => {
+    setModalState({ open: false, type: "", pet: null });
   };
 
-  const handleCloseModal = () => {
-    setModalOpen(false);
-  };
-
-  const handleAddPetSuccess = (message, type) => {
+  const handleActionSuccess = (message, type) => {
     showNotification(message, type);
     if (type === "success") {
-      fetchMyPets(); // Refrescar la lista de mascotas después de agregar una nueva
-      handleCloseModal();
+      fetchMyPets();
+      closeModal();
     }
+  };
+
+  const handleSearch = (searchTerm, filterColumn, order) => {
+    const resultsToSort = searchTerm
+      ? pets.filter((pet) =>
+          pet[filterColumn]
+            ?.toString()
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
+        )
+      : [...pets];
+
+    setFilteredPets(
+      resultsToSort.sort((a, b) => {
+        if (a[filterColumn] < b[filterColumn]) return order === "asc" ? -1 : 1;
+        if (a[filterColumn] > b[filterColumn]) return order === "asc" ? 1 : -1;
+        return 0;
+      })
+    );
   };
 
   const columns = ["NOMBRE", "ESPECIE", "RAZA", "FECHA_NACIMIENTO", "SEXO"];
 
-  const getSpeciesImage = (species) => {
-    return species.toLowerCase() === "perro"
+  const getSpeciesImage = (species) =>
+    species.toLowerCase() === "perro"
       ? dogImage
       : species.toLowerCase() === "gato"
         ? catImage
         : defaultPetImage;
-  };
 
-  const getCardBackgroundColor = (species) => {
-    return species.toLowerCase() === "perro"
+  const getCardBackgroundColor = (species) =>
+    species.toLowerCase() === "perro"
       ? "rgba(255, 165, 0, 0.1)"
       : species.toLowerCase() === "gato"
         ? "rgba(0, 123, 255, 0.1)"
         : "rgba(128, 128, 128, 0.1)";
-  };
 
   const handleChangePage = (event, value) => {
     setCurrentPage(value);
@@ -181,7 +187,7 @@ const ConsultMyPets = () => {
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}
-                onClick={handleOpenModal}
+                onClick={() => openModal("add")}
                 sx={{
                   textTransform: "none",
                   minWidth: { xs: "100%", md: "180px" },
@@ -315,6 +321,7 @@ const ConsultMyPets = () => {
                             color="primary"
                             startIcon={<EditIcon />}
                             sx={{ textTransform: "none", mr: 1 }}
+                            onClick={() => openModal("edit", pet)}
                           >
                             Editar
                           </Button>
@@ -328,6 +335,7 @@ const ConsultMyPets = () => {
                             color="error"
                             startIcon={<DeleteIcon />}
                             sx={{ textTransform: "none" }}
+                            onClick={() => openModal("delete", pet)}
                           >
                             Eliminar
                           </Button>
@@ -359,12 +367,30 @@ const ConsultMyPets = () => {
             />
           </Box>
 
-          {/* Modal para agregar mascota */}
-          <AddMyPets
-            open={modalOpen}
-            handleClose={handleCloseModal}
-            onSuccess={handleAddPetSuccess}
-          />
+          {/* Modals */}
+          {modalState.type === "add" && (
+            <AddMyPets
+              open={modalState.open}
+              handleClose={closeModal}
+              onSuccess={handleActionSuccess}
+            />
+          )}
+          {modalState.type === "edit" && modalState.pet && (
+            <ModifyMyPets
+              open={modalState.open}
+              handleClose={closeModal}
+              petData={modalState.pet}
+              onSuccess={handleActionSuccess}
+            />
+          )}
+          {modalState.type === "delete" && modalState.pet && (
+            <DeleteMyPets
+              open={modalState.open}
+              handleClose={closeModal}
+              petData={modalState.pet}
+              onSuccess={handleActionSuccess}
+            />
+          )}
         </>
       )}
     </Box>
