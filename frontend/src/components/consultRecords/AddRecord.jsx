@@ -185,7 +185,9 @@ const AddRecord = forwardRef(
 
             <Autocomplete
               options={otherData.mascotas}
-              getOptionLabel={(option) => option.mascota_id.toString()}
+              getOptionLabel={(option) =>
+                `${option.mascota_id} - ${option.nombre} (dueño: ${option.usuario_cliente})`
+              }
               onChange={(event, newValue) => {
                 setFormData({
                   ...formData,
