@@ -80,7 +80,7 @@ const ConsultRecords = () => {
     <ConsultView
       title="Consultar Expedientes"
       fetchUrl="http://localhost:8000/api/consult-pet-records/"
-      deletionUrl="http://localhost:8000/api/delete-pet-record"
+      deletionUrl="http://localhost:8000/api/delete-pet-record/"
       addComponent={AddRecord}
       modifyComponent={ModifyRecord}
       detailedInfoComponent={DetailedRecordInfo}
