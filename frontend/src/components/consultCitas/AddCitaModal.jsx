@@ -57,7 +57,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
   const [loadingVets, setLoadingVets] = useState(true);
   const [services, setServices] = useState([]);
   const [loadingTimes, setLoadingTimes] = useState(true); 
-  const [loadingPets, setLoadingPets] = useState(true); 
+  const [loadingPets, setLoadingPets] = useState(false); 
   const [user, setUser] = useState({})
 
   useEffect(() => {
