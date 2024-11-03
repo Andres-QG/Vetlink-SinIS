@@ -9,6 +9,7 @@ import {
   CircularProgress,
   InputAdornment,
   Autocomplete,
+  Chip,
 } from "@mui/material";
 import {
   Close,
@@ -19,7 +20,9 @@ import {
   Build as BuildIcon
 } from "@mui/icons-material";
 import Tag from "../Tag";
+import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
+import BorderColorIcon from '@mui/icons-material/BorderColor';
 import CorporateFareIcon from '@mui/icons-material/CorporateFare';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import axios from "axios";
@@ -51,7 +54,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
   const [loadingClients, setLoadingClients] = useState(true);
   const [loadingVets, setLoadingVets] = useState(true);
   const [services, setServices] = useState([]);
-  const [loadingServices, setLoadingServices] = useState(true);
+  const [loadingTimes, setLoadingTimes] = useState(true); 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -59,7 +62,6 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
         setLoadingClients(true);
         setLoadingClinics(true);
         setLoadingVets(true);
-        setLoadingServices(true);
         const [clientesResponse, veterinariosResponse, servicesResponse, clinicasResponse] = await Promise.all([
           axios.get("http://localhost:8000/api/get-clients/"),
           axios.get("http://localhost:8000/api/get-vets/"),
@@ -69,14 +71,12 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
         setClinicas(clinicasResponse.data.clinics || [])
         setClientes(clientesResponse.data.clients || []);
         setVeterinarios(veterinariosResponse.data.vets || []);
-        setServices(servicesResponse.data.services || []);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
         setLoadingClients(false);
         setLoadingClinics(false);
         setLoadingVets(false);
-        setLoadingServices(false);
       }
     };
     fetchData();
@@ -85,24 +85,30 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
   // Function to retrive available times for the given params
   const fetchAvailableTimes = async () => {
     try {
-      if (formData.cliente && formData.veterinario && formData.fecha) {
-        const response = await axios.get("http://localhost:8000/api/get-available-times/", {
-          params: {
-            vet_user: formData.veterinario.veterinario,
-            clinica_id: formData.clinica.clinica_id,
-            full_date: formData.fecha,
-          },
+      if (formData.clinica?.clinica_id && formData.veterinario && formData.fecha) {
+        setLoadingTimes(true);
+        const formattedDate = formData.fecha.toISOString().split("T")[0];
+        console.log(formData.clinica?.clinica_id, formData.veterinario, formData.fecha)
+
+        const response = await axios.put("http://localhost:8000/api/get-disp-times/", {
+          vet_user: formData.veterinario.usuario,
+          clinica_id: formData.clinica?.clinica_id,
+          full_date: formattedDate,
         });
         setHorarios(response.data.available_times || []);
       }
     } catch (error) {
       console.error("Error fetching available times:", error);
+    } finally {
+      setLoadingTimes(false)
     }
   };
 
-  const handleVetChange = async (event, newValue) => {
-    setFormData({ ...formData, veterinario: newValue });
-  };
+  useEffect(() => {
+    if (formData.clinica?.clinica_id && formData.veterinario && formData.fecha) {
+      fetchAvailableTimes();
+    }
+  }, [formData.clinica?.clinica_id, formData.veterinario, formData.fecha]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -196,7 +202,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
             options={veterinarios}
             getOptionLabel={(option) => option.usuario || ""}
             value={formData.veterinario}
-            onChange={handleVetChange}
+            onChange={(event, newValue) => setFormData({ ...formData, veterinario: newValue })}
             loading={loadingVets}
             renderInput={(params) => (
               <TextField
@@ -230,7 +236,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
             options={clinicas}
             getOptionLabel={(option) => option.nombre || ""}
             value={formData.clinica}
-            onChange={handleChange}
+            onChange={(event, newValue) => setFormData({ ...formData, clinica: newValue })}
             loading={loadingClinics}
             renderInput={(params) => (
               <TextField
@@ -290,12 +296,12 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
           <Autocomplete
             multiple
             options={services}
-            getOptionLabel={(option) => option.nombre}
-            value={services.filter((service) => formData.services.includes(service.nombre))}
+            getOptionLabel={(option) => option.nombre || ""}
+            value={formData.services}
             onChange={(event, newValue) => {
               setFormData({
                 ...formData,
-                services: newValue.map((service) => service.nombre),
+                services: newValue,
               });
             }}
             renderTags={(value, getTagProps) =>
@@ -315,13 +321,12 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
                 placeholder="Selecciona los servicios"
                 error={!!errors.services}
                 helperText={errors.services}
-                InputProps = {{
+                InputProps={{
                   ...params.InputProps,
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <CorporateFareIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
+                  // startAdornment:
+                  //   <InputAdornment className='absolute' position="start" sx={{ display: 'flex', alignItems: 'center' }}>
+                  //     <MedicalServicesIcon fontSize="small" />
+                  //   </InputAdornment>
                 }}
                 sx={{ mb: 2 }}
               />
@@ -346,7 +351,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
             required
             error={!!errors.hora}
             helperText={errors.hora}
-            disabled={!formData.veterinario}
+            disabled={loadingTimes} // Disabled while loading times
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -357,7 +362,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
           >
             {horarios.map((hora) => (
               <MenuItem key={hora} value={hora}>
-                Hola
+                {hora}
               </MenuItem>
             ))}
           </TextField>
@@ -372,7 +377,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <LocalHospitalIcon fontSize="small" />
+                  <BorderColorIcon fontSize="small" />
                 </InputAdornment>
               ),
             }}

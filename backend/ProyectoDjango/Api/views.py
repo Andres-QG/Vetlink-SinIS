@@ -13,6 +13,7 @@ from django.db import transaction
 from django.views.decorators.cache import cache_page
 from .serializers import *
 import random
+import cx_Oracle
 from datetime import datetime
 from django.http import JsonResponse
 from django.db import connection
@@ -407,7 +408,7 @@ def add_cita(request):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@api_view(["PUT"])
+@api_view(["GET"])
 def update_cita(request, cita_id):
     try:
         cita = Citas.objects.get(pk=cita_id)
@@ -464,12 +465,12 @@ def delete_cita(request, cita_id):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@api_view(["GET"])
+@api_view(["PUT"])
 def get_disp_times(request):
     try:
-        vet_user = request.GET.get("vet_user")
-        clinica_id = request.GET.get("clinica_id")
-        full_date = request.GET.get("full_date")
+        vet_user = request.data.get("vet_user")
+        clinica_id = request.data.get("clinica_id")
+        full_date = request.data.get("full_date")
         print(vet_user, clinica_id, full_date)
 
         if not vet_user or not clinica_id or not full_date:
@@ -479,15 +480,33 @@ def get_disp_times(request):
             )
 
         with connection.cursor() as cursor:
-            avail_times = cursor.var(cx_Oracle.OBJECT, typename="VETLINK.TIMELIST")
-            cursor.callproc("VETLINK.HORARIOS_DISP", [vet_user, clinica_id, full_date, avail_times])
-            available_times_list = [str(time) for time in avail_times.getvalue().aslist()]
+            avail_times_output = cursor.var(str)
+            print(avail_times_output)
+            cursor.callproc("VETLINK.HORARIOS_DISP", [vet_user, clinica_id, full_date, avail_times_output])
+            print(avail_times_output.getvalue())
 
-        return Response({"available_times": available_times_list}, status=status.HTTP_200_OK)
+            # Retrieve the output value from `avail_times_output`
+            dbms_output_lines = []
+            while True:
+                line, _ = cursor.callproc("DBMS_OUTPUT.GET_LINE", ['', 0])
+                if not line:
+                    break
+                dbms_output_lines.append(line)
+
+            # Log DBMS_OUTPUT messages
+            print("DBMS_OUTPUT:", dbms_output_lines)
+
+            if (not avail_times_output):
+                raise ValueError("Empty")
+
+
+        # Parse JSON string to a dictionary and return in response
+        print(None)
+        return Response({"available_times": "hola"}, status=status.HTTP_200_OK)
 
     except Exception as e:
         # Log the error with full traceback
-        print("Error calling VETLINK.HORARIOS_DISP: %s", str(e), exc_info=True)
+        print("Error calling VETLINK.HORARIOS_DISP: %s", str(e))
         
         return Response(
             {"error": "Error retrieving available times. Please try again later."},
