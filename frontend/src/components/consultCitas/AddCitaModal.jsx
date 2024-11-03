@@ -9,7 +9,7 @@ import {
   CircularProgress,
   InputAdornment,
   Autocomplete,
-  Chip,
+  MenuItem,
 } from "@mui/material";
 import {
   Close,
@@ -47,6 +47,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [clientes, setClientes] = useState([]);
+  const [mascotas, setMascotas] = useState([]);
   const [veterinarios, setVeterinarios] = useState([]);
   const [horarios, setHorarios] = useState([]);
   const [clinicas, setClinicas] = useState([]);
@@ -68,8 +69,9 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
           axios.get("http://localhost:8000/api/get-services/"),
           axios.get("http://localhost:8000/api/get-clinics/"),
         ]);
+        setServices(servicesResponse.data.services || [])
         setClinicas(clinicasResponse.data.clinics || [])
-        setClientes(clientesResponse.data.clients || []);
+        setClientes(clientesResponse.data.clients || [])
         setVeterinarios(veterinariosResponse.data.vets || []);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -95,6 +97,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
           clinica_id: formData.clinica?.clinica_id,
           full_date: formattedDate,
         });
+        console.log(response.data.available_times)
         setHorarios(response.data.available_times || []);
       }
     } catch (error) {
@@ -199,6 +202,40 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
           />
 
           <Autocomplete
+            options={clinicas}
+            getOptionLabel={(option) => option.nombre || ""}
+            value={formData.clinica}
+            onChange={(event, newValue) => setFormData({ ...formData, clinica: newValue })}
+            loading={loadingClinics}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Clínica"
+                placeholder="Seleccione una mascota"
+                fullWidth
+                error={!!errors.veterinario}
+                helperText={errors.veterinario}
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <CorporateFareIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <>
+                      {loadingVets ? <CircularProgress color="inherit" size={20} /> : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+                sx={{ mb: 2 }}
+              />
+            )}
+            sx={{ width: "100%" }}
+          /> 
+
+          <Autocomplete
             options={veterinarios}
             getOptionLabel={(option) => option.usuario || ""}
             value={formData.veterinario}
@@ -266,6 +303,8 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
             sx={{ width: "100%" }}
           /> 
 
+           
+
           <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={enGB}>
             <DatePicker
               label="Fecha"
@@ -305,13 +344,18 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
               });
             }}
             renderTags={(value, getTagProps) =>
-              value.map((option, index) => (
-                <Tag
-                  key={option.nombre}
-                  label={option.nombre}
-                  {...getTagProps({ index })}
-                />
-              ))
+              value.map((option, index) => {
+                // Use a unique identifier, such as option.id, or fallback to a unique combination if id is not available
+                const uniqueKey = option.id || `${option.nombre}-${index}`;
+                const { key, ...tagProps } = getTagProps({ index });
+                return (
+                  <Tag
+                    key={uniqueKey} // Apply a unique key directly here
+                    label={option.nombre}
+                    {...tagProps} // Spread the remaining props
+                  />
+                );
+              })
             }
             renderInput={(params) => (
               <TextField
@@ -351,13 +395,21 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
             required
             error={!!errors.hora}
             helperText={errors.hora}
-            disabled={loadingTimes} // Disabled while loading times
+            disabled={loadingTimes}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
                   <AccessTimeIcon fontSize="small" />
                 </InputAdornment>
               ),
+            }}
+            MenuProps={{
+              PaperProps: {
+                style: {
+                  maxHeight: 200, // Adjust this height if necessary
+                  top: '100%', // Positions the menu directly below the field
+                },
+              },
             }}
           >
             {horarios.map((hora) => (
@@ -366,6 +418,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
               </MenuItem>
             ))}
           </TextField>
+
 
           <TextField
             fullWidth
