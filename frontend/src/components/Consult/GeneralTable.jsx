@@ -357,6 +357,14 @@ const GeneralTable = ({
                         <Delete color="error" />
                       </IconButton>
                     ) : null}
+                    {restoreUrl &&
+                      (item.activo === false || item.activo === "inactivo") && (
+                        <Button
+                          onClick={() => handleReactivate(item)}
+                          startIcon={<Restore style={{ color: green[500] }} />}
+                          style={{ color: green[500] }}
+                        />
+                      )}
                   </TableCell>
                 </TableRow>
               ))}
