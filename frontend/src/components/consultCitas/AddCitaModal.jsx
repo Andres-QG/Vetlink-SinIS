@@ -32,7 +32,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { enGB } from "date-fns/locale";
 
-const AddCitaModal = ({ open, handleClose, onSuccess }) => {
+const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
   const initialFormData = {
     cliente: null,
     veterinario: null,
@@ -59,6 +59,24 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
   const [loadingTimes, setLoadingTimes] = useState(true);
   const [loadingPets, setLoadingPets] = useState(false);
   const [user, setUser] = useState({});
+
+  useEffect(() => {
+    if (otherData) {
+      setClientes(otherData.clientes || []);
+      setPets(otherData.pets || []);
+      setVeterinarios(otherData.veterinarios || []);
+      setHorarios(otherData.horarios || []);
+      setClinicas(otherData.clinicas || []);
+      setServices(otherData.services || []);
+      setUser(otherData.user || {});
+
+      setLoadingClinics(false);
+      setLoadingClients(false);
+      setLoadingVets(false);
+      setLoadingTimes(false);
+      setLoadingPets(false);
+    }
+  }, [otherData]);
 
   useEffect(() => {
     if (user.clinica && !formData.clinica) {
@@ -93,35 +111,6 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
 
     fetchPets();
   }, [formData.cliente]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoadingClients(true);
-        setLoadingClinics(true);
-        setLoadingVets(true);
-        const [userResponse, clientesResponse, veterinariosResponse, servicesResponse, clinicasResponse] = await Promise.all([
-          axios.get("http://localhost:8000/api/get-user/", { withCredentials: true }),
-          axios.get("http://localhost:8000/api/get-clients/"),
-          axios.get("http://localhost:8000/api/get-vets/"),
-          axios.get("http://localhost:8000/api/get-services/"),
-          axios.get("http://localhost:8000/api/get-clinics/"),
-        ]);
-        setUser(userResponse.data.data || {})
-        setServices(servicesResponse.data.services || [])
-        setClinicas(clinicasResponse.data.clinics || [])
-        setClientes(clientesResponse.data.clients || [])
-        setVeterinarios(veterinariosResponse.data.vets || [])
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoadingClients(false);
-        setLoadingClinics(false);
-        setLoadingVets(false);
-      }
-    };
-    fetchData();
-  }, []);
 
   const fetchAvailableTimes = async () => {
     try {
@@ -193,20 +182,6 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
     if (formData.services.length === 0) newErrors.services = "Al menos un servicio es requerido.";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleDateChange = (newDate) => {
-    const validDate = typeof newDate === 'string' ? parseISO(newDate) : newDate;
-    setFormData({ ...formData, fecha: isValid(validDate) ? validDate : null });
-  };
-
-  const handleClear = () => {
-    setFormData(initialFormData);
-    setErrors({});
   };
 
   return (
@@ -293,6 +268,11 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
                     }}
                     sx={{ mb: 2 }}
                   />
+                )}
+                renderOption={(props, option) => (
+                  <li {...props} key={option.mascota_id || option.nombre + "_" + option.ownerId}>
+                    {option.nombre}
+                  </li>
                 )}
               />
 

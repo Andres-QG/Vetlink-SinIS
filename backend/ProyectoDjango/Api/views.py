@@ -348,21 +348,24 @@ def consult_citas(request):
             citas = [
             {
                 "cita_id": row[0],
-                "cliente_nombre": row[1],
+                "cliente": row[1],
                 "cliente_usuario": row[2],
-                "veterinario_nombre": row[3],
+                "veterinario": row[3],
                 "veterinario_usuario": row[4],
                 "mascota_id": row[5],
                 "mascota": row[6],
-                "fecha": row[7].strftime('%Y-%m-%d'),  # Format date for consistency
+                "fecha": row[7].strftime('%Y-%m-%d'),
                 "hora": row[8],
-                "motivo": row[9] if row[9] is not None else "N/A",  # Handle null values
-                "estado": row[10]
+                "clinica_id": row[9] if row[9] is not None else 0,
+                "clinica": row[10] if row[10] is not None else "N/A",
+                "motivo": row[11] if row[11] is not None else "N/A",
+                "estado": row[12]
             }
             for row in returned_cursor.fetchall()
             ]
- 
 
+            print(citas)
+ 
             # Apply search filter if specified
             if search:
                 citas = [
