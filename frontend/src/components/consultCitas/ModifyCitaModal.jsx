@@ -133,14 +133,28 @@ const ModifyCitaModal = forwardRef(
       }
     }, [formData.clinica, formData.veterinario, formData.fecha]);
 
+
     const handleReset = () => {
-      setFormData(initialDataRef.current);
-      if (initialDataRef.current.fecha?.toISOString().split("T")[0] === selectedItem.fecha) {
-        setHorarios([selectedItem.hora, ...otherData.horarios]);
-      } else {
-        setHorarios(otherData.horarios);
+      setFormData({
+        cliente: null,
+        veterinario: null,
+        clinica: null,
+        mascota: null,
+        fecha: null,
+        hora: "",
+        motivo: "",
+        services: []
+      });
+
+      if (Array.isArray(otherData.horarios)) {
+        if (initialDataRef.current.fecha?.toISOString().split("T")[0] === selectedItem.fecha) {
+          setHorarios([selectedItem.hora, ...otherData.horarios]);
+        } else {
+          setHorarios(otherData.horarios);
+        }
       }
     };
+
 
     const handleSubmit = async (e) => {
       e.preventDefault();
