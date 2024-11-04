@@ -1,24 +1,27 @@
 import axios from "axios";
-import { useState, useContext } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
-
+import { useNotification } from "../components/Notification";
 import {
   Typography,
   TextField,
   Button,
   CircularProgress,
   InputAdornment,
+  Container,
+  Box,
+  Grid,
 } from "@mui/material";
 import {
   AccountCircle,
   Badge,
   Email,
-  Margin,
   Person,
   Phone,
   VpnKey,
 } from "@mui/icons-material";
+import PetsIcon from "@mui/icons-material/Pets";
+import Logo from "../assets/icons/big_logo.png";
 
 function Signup() {
   const initialFormData = {
@@ -33,71 +36,68 @@ function Signup() {
   };
 
   const navigate = useNavigate();
-
   const [formData, setFormData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const showNotification = useNotification();
 
-  // Validation function
+  const validations = {
+    usuario: (v) => !v && "El usuario es requerido.",
+    cedula: (v) => !/^[0-9]{9}$/.test(v) && "La cédula debe tener 9 dígitos.",
+    correo: (v) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) && "Correo inválido.",
+    clave: (v) =>
+      !/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/.test(v) &&
+      "Contraseña debe tener 8 caracteres, una mayúscula, un número y un carácter especial.",
+    telefono: (v) =>
+      !/^[0-9]{8}$/.test(v) && "El teléfono debe tener 8 dígitos.",
+    nombre: (v) => !v && "El nombre es requerido.",
+    apellido1: (v) => !v && "El primer apellido es requerido.",
+    apellido2: (v) => !v && "El segundo apellido es requerido.",
+  };
+
   const validate = () => {
     const newErrors = {};
-
-    if (!formData.usuario) newErrors.usuario = "El usuario es requerido.";
-
-    const cedulaRegex = /^[0-9]{9}$/;
-    if (!formData.cedula || !cedulaRegex.test(formData.cedula)) {
-      newErrors.cedula = "La cédula debe tener 9 dígitos.";
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!formData.correo || !emailRegex.test(formData.correo)) {
-      newErrors.correo = "El correo electrónico no es válido.";
-    }
-
-    const passwordRegex =
-      /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
-    if (!formData.clave || !passwordRegex.test(formData.clave)) {
-      newErrors.clave =
-        "La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial.";
-    }
-
-    const telefonoRegex = /^[0-9]{8}$/;
-    if (!formData.telefono || !telefonoRegex.test(formData.telefono)) {
-      newErrors.telefono = "El teléfono debe tener 8 dígitos.";
-    }
-
+    Object.keys(validations).forEach((key) => {
+      const error = validations[key](formData[key]);
+      if (error) newErrors[key] = error;
+    });
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async () => {
     if (validate()) {
       setLoading(true);
-      console.log(formData);
       try {
         const response = await axios.post(
           "http://localhost:8000/api/add-client/",
           formData,
-          {
-            withCredentials: true,
-          }
+          { withCredentials: true }
         );
         setLoading(false);
-        if (response.data.success === true) {
-          navigate("/");
+        if (response.status === 201) {
+          showNotification(response.data.message, "success");
+          setTimeout(() => navigate("/login"), 3000); // Espera 3 segundos antes de redirigir
+        } else {
+          showNotification(response.data.error || "Error desconocido", "error");
         }
       } catch (error) {
-        console.log(error);
+        if (error.response) {
+          showNotification(
+            error.response.data.error || "Error en el servidor",
+            "error"
+          );
+        } else if (error.request) {
+          showNotification("No se recibió respuesta del servidor", "error");
+        } else {
+          showNotification(error.message, "error");
+        }
         setLoading(false);
       }
-      setLoading(false);
     }
   };
 
@@ -107,187 +107,178 @@ function Signup() {
   };
 
   return (
-    <>
-      <div className=" bg-white flex w-full h-[93vh] sm:bg-[#274B92]">
-        <div className="flex-col items-center justify-center hidden w-6/12 h-full py-40 sm:flex">
-          <p className="text-5xl text-center text-white w-96">
-            Estás cerca de tener acceso al
-            <span className="text-blue-300"> mejor cuidado </span>
-            para tu mascota
-          </p>
-          <img
-            className="py-20 w-80"
-            src="./src/assets/icons/big_logo.png"
-            alt=""
+    <Container
+      maxWidth="lg"
+      sx={{
+        display: "flex",
+        minHeight: "80vh",
+        marginTop: "20px",
+        marginBottom: "20px",
+        alignItems: "center",
+        p: 0,
+      }}
+    >
+      <Grid
+        container
+        sx={{
+          boxShadow: 3,
+          borderRadius: 2,
+          overflow: "hidden",
+          width: "100%",
+          display: "flex",
+        }}
+      >
+        <Grid
+          item
+          xs={12}
+          md={6}
+          sx={{
+            bgcolor: "#00308f",
+            color: "white",
+            p: { xs: 4, md: 5 },
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Box
+            component="img"
+            src={Logo}
+            alt="Logo de VetLink"
+            sx={{
+              width: { xs: 60, md: 100 }, // Tamaño responsivo
+              height: { xs: 60, md: 100 }, // Altura igual al ancho para mantener la proporción
+              mb: 2,
+            }}
           />
-        </div>
-        <div className="flex items-center justify-center h-full max-w-5xl ml-auto bg-white rounded-l-3xl">
-          <div className="flex justify-center mx-auto">
-            <div className="w-[70%] p-6 rounded-md">
-              <Typography
-                variant="h4"
-                component="h1"
-                className="pb-10 text-left"
-              >
-                Crear Cuenta
-              </Typography>
-
-              {/* Form Fields */}
-              <TextField
-                fullWidth
-                label="Usuario"
-                name="usuario"
-                value={formData.usuario}
-                onChange={handleChange}
-                required
-                error={!!errors.usuario}
-                helperText={errors.usuario}
-                sx={{ mb: 2 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <AccountCircle />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              <TextField
-                fullWidth
-                label="Contraseña"
-                type="password"
-                name="clave"
-                value={formData.clave}
-                onChange={handleChange}
-                required
-                error={!!errors.clave}
-                helperText={errors.clave}
-                sx={{ mb: 2 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <VpnKey />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              <TextField
-                fullWidth
-                label="Cédula"
-                name="cedula"
-                value={formData.cedula}
-                onChange={handleChange}
-                required
-                error={!!errors.cedula}
-                helperText={errors.cedula}
-                sx={{ mb: 2 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Badge />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              <TextField
-                fullWidth
-                label="Correo"
-                name="correo"
-                value={formData.correo}
-                onChange={handleChange}
-                required
-                error={!!errors.correo}
-                helperText={errors.correo}
-                sx={{ mb: 2 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Email />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              <TextField
-                fullWidth
-                label="Nombre"
-                name="nombre"
-                value={formData.nombre}
-                onChange={handleChange}
-                required
-                sx={{ mb: 2 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Person />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              <TextField
-                fullWidth
-                label="Primer Apellido"
-                name="apellido1"
-                value={formData.apellido1}
-                onChange={handleChange}
-                required
-                sx={{ mb: 2 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Person />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              <TextField
-                fullWidth
-                label="Segundo Apellido"
-                name="apellido2"
-                value={formData.apellido2}
-                onChange={handleChange}
-                sx={{ mb: 2 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Person />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              <TextField
-                fullWidth
-                label="Teléfono"
-                name="telefono"
-                value={formData.telefono}
-                onChange={handleChange}
-                required
-                error={!!errors.telefono}
-                helperText={errors.telefono}
-                sx={{ mb: 2 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Phone />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-
-              {/* Button */}
-              <Button
-                variant="contained"
-                onClick={handleSubmit}
-                fullWidth
-                disabled={loading}
-                startIcon={loading && <CircularProgress size={20} />}
-                sx={{ bgcolor: "#00308F", "&:hover": { bgcolor: "#00246d" } }}
-              >
-                {loading ? "Agregando..." : "Crear cuenta"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
+          <Typography variant="h4" fontWeight="bold" mb={2} textAlign="center">
+            ¡Bienvenido a VetLink!
+          </Typography>
+          <Typography
+            variant="body1"
+            align="center"
+            mb={3}
+            sx={{ fontSize: { xs: 14, md: 16 } }}
+          >
+            Únete a nuestra familia y obtén acceso a servicios y cuidados
+            exclusivos para tu mascota. Estamos aquí para cuidar a tus amigos
+            peludos con la mejor atención.
+          </Typography>
+          <Button
+            variant="outlined"
+            color="inherit"
+            sx={{
+              mt: 2,
+              color: "white",
+              borderColor: "white",
+              "&:hover": {
+                borderColor: "white",
+                backgroundColor: "rgba(255, 255, 255, 0.1)",
+              },
+            }}
+            onClick={() => navigate("/login")}
+          >
+            ¿Ya tienes una cuenta? Inicia sesión
+          </Button>
+        </Grid>
+        <Grid
+          item
+          xs={12}
+          md={6}
+          sx={{
+            bgcolor: "#fff",
+            p: { xs: 4, md: 5 },
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            width: "100%",
+          }}
+        >
+          <Typography
+            variant="h4"
+            fontWeight="bold"
+            color="#00308f"
+            mb={3}
+            textAlign="Center"
+          >
+            Registro
+          </Typography>
+          <Grid container spacing={2} sx={{ width: "100%" }}>
+            {[
+              { label: "Nombre", name: "nombre", icon: <Person /> },
+              { label: "Cédula", name: "cedula", icon: <Badge /> },
+              { label: "Primer Apellido", name: "apellido1", icon: <Person /> },
+              {
+                label: "Segundo Apellido",
+                name: "apellido2",
+                icon: <Person />,
+              },
+              { label: "Usuario", name: "usuario", icon: <AccountCircle /> },
+              {
+                label: "Contraseña",
+                name: "clave",
+                type: "password",
+                icon: <VpnKey />,
+              },
+              { label: "Correo Electrónico", name: "correo", icon: <Email /> },
+              { label: "Teléfono", name: "telefono", icon: <Phone /> },
+            ].map((field) => (
+              <Grid item xs={12} sm={6} key={field.name}>
+                <TextField
+                  fullWidth
+                  label={field.label}
+                  name={field.name}
+                  type={field.type || "text"}
+                  value={formData[field.name]}
+                  onChange={handleChange}
+                  error={!!errors[field.name]}
+                  helperText={errors[field.name]}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        {field.icon}
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+            ))}
+          </Grid>
+          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
+            <Button
+              variant="outlined"
+              onClick={handleClear}
+              sx={{
+                width: "48%",
+                color: "#00308f",
+                borderColor: "#00308f",
+                "&:hover": { backgroundColor: "rgba(0, 48, 143, 0.1)" },
+              }}
+            >
+              Limpiar
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSubmit}
+              disabled={loading}
+              sx={{
+                width: "48%",
+                bgcolor: "#00308f",
+                "&:hover": { bgcolor: "#00246d" },
+              }}
+            >
+              {loading ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                "Crear cuenta"
+              )}
+            </Button>
+          </Box>
+        </Grid>
+      </Grid>
+    </Container>
   );
 }
 

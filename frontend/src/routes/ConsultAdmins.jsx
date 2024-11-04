@@ -76,7 +76,7 @@ const ConsultAdmins = () => {
     <div className="flex flex-col min-h-screen">
       <div className="flex-grow">
         <div className="flex flex-col items-center justify-between mb-4 space-y-4 md:flex-row md:space-y-0">
-          <h1 className="text-2xl font-semibold">Consultar Administradores</h1>
+          <h1 className="text-2xl font-semibold">Administradores</h1>
           <div className="flex flex-col w-full space-y-4 md:w-auto md:flex-row md:items-center md:space-y-0">
             <Button
               variant="contained"
@@ -85,13 +85,12 @@ const ConsultAdmins = () => {
               sx={{
                 backgroundColor: "#00308F",
                 "&:hover": { backgroundColor: "#00246d" },
-                minWidth: "250px",
+                minWidth: "190px",
                 marginBottom: { xs: "-4px", md: "0px" },
                 marginRight: { xs: "0px", md: "10px" },
                 width: { xs: "100%", md: "auto" },
-              }}
-            >
-              Agregar Administrador
+              }}>
+              Agregar
             </Button>
             <SearchBar
               onSearch={handleSearch}
@@ -131,12 +130,10 @@ const ConsultAdmins = () => {
         open={snackbarOpen}
         autoHideDuration={4000}
         onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>
         <Alert
           onClose={() => setSnackbarOpen(false)}
-          severity={snackbarSeverity}
-        >
+          severity={snackbarSeverity}>
           {snackbarMessage}
         </Alert>
       </Snackbar>

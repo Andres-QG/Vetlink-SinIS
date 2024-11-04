@@ -1,4 +1,5 @@
-import { Card, CardContent, Typography, Grow } from "@mui/material";
+import { Card, Typography, Grow } from "@mui/material";
+import PropTypes from "prop-types";
 
 function Services_Gallery({
   title,
@@ -8,7 +9,11 @@ function Services_Gallery({
   className,
   price,
   duration,
+  number_of_sessions,
 }) {
+  const displayDuration = duration || "Variable";
+  const displaySessions = number_of_sessions || "Variable";
+
   return (
     <div className={`lg:w-1/3 sm:w-1/2 p-4 ${className}`}>
       <Grow in={true} timeout={1000}>
@@ -40,8 +45,16 @@ function Services_Gallery({
             <Typography
               variant="overline"
               color="textSecondary"
-              className="font-montserrat mt-2">
-              {duration}
+              className="font-montserrat mt-2"
+              style={{ display: "block", marginBottom: "16px" }}>
+              Duración: {displayDuration}
+            </Typography>
+            <Typography
+              variant="overline"
+              color="textSecondary"
+              className="font-montserrat mt-2"
+              style={{ display: "block" }}>
+              Número de sesiones: {displaySessions}
             </Typography>
           </div>
         </Card>
@@ -49,5 +62,23 @@ function Services_Gallery({
     </div>
   );
 }
+
+Services_Gallery.propTypes = {
+  title: PropTypes.string.isRequired,
+  subtitle: PropTypes.string,
+  text: PropTypes.string.isRequired,
+  imageSrc: PropTypes.string.isRequired,
+  className: PropTypes.string,
+  price: PropTypes.string.isRequired,
+  duration: PropTypes.string,
+  number_of_sessions: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+};
+
+Services_Gallery.defaultProps = {
+  subtitle: "",
+  className: "",
+  duration: null,
+  number_of_sessions: null,
+};
 
 export default Services_Gallery;

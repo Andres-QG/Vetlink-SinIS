@@ -75,7 +75,7 @@ const ConsultClients = () => {
     <div className="flex flex-col min-h-screen">
       <div className="flex-grow">
         <div className="flex flex-col items-center justify-between mb-4 space-y-4 md:flex-row md:space-y-0">
-          <h1 className="text-2xl font-semibold">Consultar Clientes</h1>
+          <h1 className="text-2xl font-semibold">Clientes</h1>
           <div className="flex flex-col w-full space-y-4 md:w-auto md:flex-row md:items-center md:space-y-0">
             <Button
               variant="contained"
@@ -88,9 +88,8 @@ const ConsultClients = () => {
                 marginBottom: { xs: "-4px", md: "0px" },
                 marginRight: { xs: "0px", md: "10px" },
                 width: { xs: "100%", md: "auto" },
-              }}
-            >
-              Agregar Cliente
+              }}>
+              Agregar
             </Button>
             <SearchBar
               onSearch={handleSearch}
@@ -130,12 +129,10 @@ const ConsultClients = () => {
         open={snackbarOpen}
         autoHideDuration={4000}
         onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>
         <Alert
           onClose={() => setSnackbarOpen(false)}
-          severity={snackbarSeverity}
-        >
+          severity={snackbarSeverity}>
           {snackbarMessage}
         </Alert>
       </Snackbar>

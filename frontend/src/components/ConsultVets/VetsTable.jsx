@@ -20,6 +20,7 @@ import {
   Chip,
 } from "@mui/material";
 import { Edit, Delete, Restore } from "@mui/icons-material";
+import { green } from "@mui/material/colors";
 
 const VetsTable = ({
   data,
@@ -39,9 +40,7 @@ const VetsTable = ({
     };
 
     handleResize();
-
     window.addEventListener("resize", handleResize);
-
     return () => {
       window.removeEventListener("resize", handleResize);
     };
@@ -65,15 +64,10 @@ const VetsTable = ({
   };
 
   const handleDeleteOrReactivate = async (vet) => {
-    // console.log("handleDeleteOrReactivate llamado con:", vet);
     if (vet.estado === "Activo") {
-      // Desactivar veterinario
-
       handleOpenModal(vet);
     } else {
-      // Reactivar veterinario
       try {
-        // console.log("Reactivando usuario:", vet.usuario);
         await axios.put(
           `http://127.0.0.1:8000/api/reactivate-user/${vet.usuario}/`
         );
@@ -87,7 +81,6 @@ const VetsTable = ({
   const handleDelete = async () => {
     handleCloseModal();
     if (!selectedItem) return;
-    // console.log("Desactivando veterinario:", selectedItem.usuario);
     try {
       await axios.delete(
         `http://127.0.0.1:8000/api/delete-client/${selectedItem.usuario}/`
@@ -149,13 +142,13 @@ const VetsTable = ({
                 </CardContent>
                 <CardActions>
                   <IconButton onClick={() => onEditVet(item)}>
-                    <Edit fontSize="small" />
+                    <Edit />
                   </IconButton>
                   <IconButton onClick={() => handleDeleteOrReactivate(item)}>
                     {item.estado === "Activo" ? (
-                      <Delete fontSize="small" />
+                      <Delete color="error" />
                     ) : (
-                      <Restore fontSize="small" />
+                      <Restore style={{ color: green[500] }} />
                     )}
                   </IconButton>
                 </CardActions>
@@ -209,16 +202,25 @@ const VetsTable = ({
                     {renderEstadoChip(item.estado)}
                   </TableCell>
                   <TableCell key={`actions-${item.id}`}>
-                    <IconButton onClick={() => onEditVet(item)}>
-                      <Edit fontSize="small" />
-                    </IconButton>
-                    <IconButton onClick={() => handleDeleteOrReactivate(item)}>
-                      {item.estado === "Activo" ? (
-                        <Delete fontSize="small" />
-                      ) : (
-                        <Restore fontSize="small" />
-                      )}
-                    </IconButton>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        gap: 1,
+                        alignItems: "center",
+                      }}>
+                      <IconButton onClick={() => onEditVet(item)}>
+                        <Edit />
+                      </IconButton>
+                      <IconButton
+                        onClick={() => handleDeleteOrReactivate(item)}>
+                        {item.estado === "Activo" ? (
+                          <Delete color="error" />
+                        ) : (
+                          <Restore style={{ color: green[500] }} />
+                        )}
+                      </IconButton>
+                    </Box>
                   </TableCell>
                 </TableRow>
               ))}

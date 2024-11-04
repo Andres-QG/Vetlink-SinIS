@@ -12,9 +12,9 @@ from django.db.models import Q
 from django.db import transaction
 from django.views.decorators.cache import cache_page
 from .serializers import *
+from datetime import datetime
 import random
 import json 
-import oracledb
 from datetime import datetime
 from django.http import JsonResponse
 from django.db import connection
@@ -372,40 +372,43 @@ def consult_citas(request):
 @transaction.atomic
 def add_cita(request):
     try:
-        cliente_id = request.data.get("cliente_id")
-        veterinario_id = request.data.get("veterinario_id")
-        mascota_id = request.data.get("mascota_id")
+        cliente_id = request.data.get("cliente").get("usuario")
+        veterinario_id = request.data.get("veterinario").get("usuario")
+        mascota_id = request.data.get("mascota").get("mascota_id")
+        clinica_id = request.data.get("clinica").get("clinica_id")
         fecha = request.data.get("fecha")
         hora = request.data.get("hora")
+        servicios = request.data.get("services")
         motivo = request.data.get("motivo", "")
         estado = request.data.get("estado", "Programada")
 
-        cliente = Usuarios.objects.get(usuario=cliente_id)
-        veterinario = Usuarios.objects.get(usuario=veterinario_id)
-        mascota = Mascotas.objects.get(pk=mascota_id)
+        fecha_datetime = datetime.fromisoformat(fecha[:-1])
+        formatted_fecha = fecha_datetime.strftime("%Y-%m-%d")
 
-        data = {
-            "usuario_cliente": cliente.usuario,
-            "usuario_veterinario": veterinario.usuario,
-            "mascota": mascota.mascota_id,
-            "fecha": fecha,
-            "hora": hora,
-            "motivo": motivo,
-            "estado": estado,
-        }
+        servs_ids = []
+        for serv in servicios:
+            servs_ids.append(serv.get("servicio_id"))
 
-        nuevaCita = CitasSerializer(data=data)
-        if nuevaCita.is_valid():
-            nuevaCita.save()
-            return Response(
-                {"message": "Cita agregada con éxito"},
-                status=status.HTTP_201_CREATED,
-            )
-        else:
-            return Response(
-                {"errors": nuevaCita.errors}, status=status.HTTP_400_BAD_REQUEST
-            )
+        servs_ids = [str(serv.get("servicio_id")) for serv in servicios]
+        service_ids_string = ",".join(servs_ids)  
+
+        with connection.cursor() as cursor:
+            cursor.callproc("VETLINK.ADD_CITA", [
+                cliente_id,          # P_CLIENTE_ID
+                veterinario_id,      # P_VETERINARIO_ID
+                mascota_id,          # P_MASCOTA_ID
+                formatted_fecha,     # P_FECHA (formatted as 'YYYY-MM-DD')
+                hora,                # P_HORA
+                motivo,              # P_MOTIVO
+                estado,              # P_ESTADO
+                clinica_id,          # P_CLINICA
+                service_ids_string   # P_SERVICIOS
+            ]) 
+
+        return Response({"Success": True})
+
     except Exception as e:
+        print(str(e))
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -549,7 +552,6 @@ def create_pet(request):
 def get_user_role(request):
     role = request.session.get("role")
 
-    print("Current session:", request.session.items())
     if role:
         return Response({"status": "success", "message": "Rol obtenido", "role": role})
     else:
@@ -639,7 +641,6 @@ def get_pets(request):
             cursor.callproc("VETLINK.OBTENER_MASCOTAS_JSON", [in_client, out_pets])
 
         pets_data = out_pets.getvalue()
-        print(pets_data)
         if not pets_data:
             return Response({"pets": []})
 

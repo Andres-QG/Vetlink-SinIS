@@ -17,15 +17,15 @@ import {
   HealthAndSafety as HealthAndSafetyIcon,
   AccessTime as AccessTimeIcon,
   LocalHospital as LocalHospitalIcon,
-  Build as BuildIcon
+  Build as BuildIcon,
+  Pets as PetsIcon,
+  CalendarMonthRounded as CalendarMonthRoundedIcon,
+  BorderColor as BorderColorIcon,
+  CorporateFare as CorporateFareIcon,
+  ArrowDropDown as ArrowDropDownIcon,
 } from "@mui/icons-material";
 import Tag from "../Tag";
-import { parseISO, isValid } from 'date-fns';
-import PetsIcon from '@mui/icons-material/Pets';
-import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
-import BorderColorIcon from '@mui/icons-material/BorderColor';
-import CorporateFareIcon from '@mui/icons-material/CorporateFare';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import { parseISO, isValid } from "date-fns";
 import axios from "axios";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -56,16 +56,16 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
   const [loadingClients, setLoadingClients] = useState(true);
   const [loadingVets, setLoadingVets] = useState(true);
   const [services, setServices] = useState([]);
-  const [loadingTimes, setLoadingTimes] = useState(true); 
-  const [loadingPets, setLoadingPets] = useState(false); 
-  const [user, setUser] = useState({})
+  const [loadingTimes, setLoadingTimes] = useState(true);
+  const [loadingPets, setLoadingPets] = useState(false);
+  const [user, setUser] = useState({});
 
   useEffect(() => {
-  if (user.clinica && !formData.clinica) {
-    setFormData((prevData) => ({
-      ...prevData,
-      clinica: clinicas.find((clinic) => clinic.clinica_id === user.clinica) || null
-    }));
+    if (user.clinica && !formData.clinica) {
+      setFormData((prevData) => ({
+        ...prevData,
+        clinica: clinicas.find((clinic) => clinic.clinica_id === user.clinica) || null,
+      }));
     }
   }, [user, clinicas]);
 
@@ -123,7 +123,6 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
     fetchData();
   }, []);
 
-  // Function to retrive available times for the given params
   const fetchAvailableTimes = async () => {
     try {
       if (formData.veterinario && formData.clinica && formData.fecha) {
@@ -165,7 +164,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
   }, [user.clinica, clinicas, setFormData]);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevent the default HTML5 validation
     setLoading(true);
     if (!validate()) {
       setLoading(false);
@@ -190,6 +189,8 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
     if (!formData.mascota) newErrors.mascota = "Mascota requerida.";
     if (!formData.fecha) newErrors.fecha = "Fecha requerida.";
     if (!formData.hora) newErrors.hora = "Hora requerida.";
+    if (!formData.clinica) newErrors.clinica = "Clínica requerida.";
+    if (formData.services.length === 0) newErrors.services = "Al menos un servicio es requerido.";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -210,292 +211,299 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
 
   return (
     <Modal open={open} onClose={handleClose} aria-labelledby="modal-title" aria-describedby="modal-description">
-      <Box sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: { xs: "90%", sm: "80%", md: 450 }, bgcolor: "background.paper", boxShadow: 24, p: 4, borderRadius: "10px" }}>
+      <Box
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full sm:w-4/5 md:w-[650px] bg-white shadow-lg p-6 rounded-lg"
+        sx={{
+          maxHeight: { xs: "90vh", sm: "auto" },
+          overflowY: { xs: "auto", sm: "unset" }, 
+        }}
+      >
         <IconButton onClick={handleClose} sx={{ position: "absolute", top: 8, right: 8 }}>
           <Close />
         </IconButton>
-        <form onSubmit={handleSubmit} className="w-full flex flex-col items-center">
+        <form onSubmit={handleSubmit} className="w-full flex flex-col items-center" noValidate>
           <Typography id="modal-title" variant="h6" component="h2" sx={{ textAlign: "center", marginBottom: "20px", fontWeight: "bold", color: "#333", borderBottom: "1px solid #ddd", paddingBottom: "10px" }}>
             Agregar Cita
           </Typography>
 
-          <Autocomplete
-            options={clientes}
-            getOptionLabel={(option) => option.usuario || ""}
-            value={formData.cliente || ""}
-            onChange={(event, newValue) => setFormData({ ...formData, cliente: newValue })}
-            loading={loadingClients}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Cliente"
-                placeholder="Seleccione un cliente"
-                fullWidth
-                error={!!errors.cliente}
-                helperText={errors.cliente}
-                InputProps={{
-                  ...params.InputProps,
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PersonIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <>
-                      {loadingClients ? <CircularProgress color="inherit" size={20} /> : null}
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                }}
-                sx={{ mb: 2 }}
-              />
-            )}
-            sx={{ width: "100%" }}
-          />
-
-          <Autocomplete
-            options={pets}
-            getOptionLabel={(option) => option.nombre || ""}
-            value={formData.pet || ""} // Ensure value is always defined, even if `pet` is null initially
-            onChange={(event, newValue) => setFormData({ ...formData, pet: newValue })}
-            loading={loadingPets}
-            disabled={!formData.cliente}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Mascota"
-                placeholder="Seleccione una mascota"
-                fullWidth
-                error={!!errors.pet}
-                helperText={errors.pet}
-                InputProps={{
-                  ...params.InputProps,
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PetsIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <>
-                      {loadingPets ? <CircularProgress color="inherit" size={21} /> : null}
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                }}
-                sx={{ mb: 2 }}
-              />
-            )}
-            sx={{ width: "100%" }}
-          />
-
-          <Autocomplete
-            options={veterinarios}
-            getOptionLabel={(option) => option.usuario || ""}
-            value={formData.veterinario || ""}
-            onChange={(event, newValue) => setFormData({ ...formData, veterinario: newValue })}
-            loading={loadingVets}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Veterinario"
-                placeholder="Seleccione un veterinario"
-                fullWidth
-                error={!!errors.veterinario}
-                helperText={errors.veterinario}
-                InputProps={{
-                  ...params.InputProps,
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <HealthAndSafetyIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <>
-                      {loadingVets ? <CircularProgress color="inherit" size={20} /> : null}
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                }}
-                sx={{ mb: 2 }}
-              />
-            )}
-            sx={{ width: "100%" }}
-          />
-
-          <Autocomplete
-            options={clinicas}
-            getOptionLabel={(option) => option.nombre || ""}
-            value={formData.clinica || ""}
-            onChange={(event, newValue) => setFormData({ ...formData, clinica: newValue })}
-            loading={loadingClinics}
-            disabled={!!user.clinica}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Clínica"
-                placeholder="Seleccione una clínica"
-                fullWidth
-                error={!!errors.veterinario}
-                helperText={errors.veterinario}
-                InputProps={{
-                  ...params.InputProps,
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <CorporateFareIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <>
-                      {loadingVets ? <CircularProgress color="inherit" size={20} /> : null}
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                }}
-                sx={{ mb: 2 }}
-              />
-            )}
-            sx={{ width: "100%" }}
-          />
-
-          <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={enGB}>
-            <DatePicker
-              label="Fecha"
-              value={formData.fecha || null} // Ensure it's a Date or null, not a string
-              onChange={handleDateChange}
-              format="dd/MM/yyyy"
-              slots={{ openPickerIcon: ArrowDropDownIcon }}
-              slotProps={{
-                textField: {
-                  fullWidth: true,
-                  required: true,
-                  error: !!errors.fecha,
-                  helperText: errors.fecha,
-                  sx: { mb: 2 },
-                  onClick: (event) => event.stopPropagation(),
-                  InputProps: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <CalendarMonthRoundedIcon fontSize="small" />
-                      </InputAdornment>
-                    ),
-                  },
-                },
-              }}
-            />
-          </LocalizationProvider>
-
-          <TextField
-            select
-            fullWidth
-            label="Hora"
-            name="hora"
-            value={formData.hora || ""}
-            onChange={handleChange}
-            sx={{ mb: 2 }}
-            required
-            error={!!errors.hora}
-            helperText={errors.hora}
-            disabled={loadingTimes}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <AccessTimeIcon fontSize="small" />
-                </InputAdornment>
-              ),
-            }}
-            MenuProps={{
-              PaperProps: {
-                style: {
-                  maxHeight: 200,
-                  top: '100%',
-                },
-              },
-            }}
-          >
-            {horarios.length > 0 ? (
-              horarios.map((hora) => (
-                <MenuItem key={hora} value={hora}>
-                  {hora}
-                </MenuItem>
-              ))
-            ) : (
-              <MenuItem value="" disabled>
-                No hay horarios disponibles
-              </MenuItem>
-            )}
-          </TextField>
-
-          <Autocomplete
-            multiple
-            options={services}
-            getOptionLabel={(option) => option.nombre || ""}
-            value={formData.services || ""}
-            onChange={(event, newValue) => {
-              setFormData({
-                ...formData,
-                services: newValue,
-              });
-            }}
-            renderTags={(value, getTagProps) =>
-              value.map((option, index) => {
-                // Use a unique identifier, such as option.id, or fallback to a unique combination if id is not available
-                const uniqueKey = option.id || `${option.nombre}-${index}`;
-                const { key, ...tagProps } = getTagProps({ index });
-                return (
-                  <Tag
-                    key={uniqueKey} // Apply a unique key directly here
-                    label={option.nombre}
-                    {...tagProps} // Spread the remaining props
+          <div className="flex flex-col md:flex-row gap-0 md:gap-10 w-full">
+            {/* Left Column */}
+            <div className="w-full md:w-1/2">
+              <Autocomplete
+                options={clientes}
+                getOptionLabel={(option) => option.usuario || ""}
+                value={formData.cliente || ""}
+                onChange={(event, newValue) => setFormData({ ...formData, cliente: newValue })}
+                loading={loadingClients}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Cliente"
+                    placeholder="Seleccione un cliente"
+                    fullWidth
+                    error={!!errors.cliente}
+                    helperText={errors.cliente}
+                    InputProps={{
+                      ...params.InputProps,
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <PersonIcon fontSize="small" />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <>
+                          {loadingClients ? <CircularProgress color="inherit" size={20} /> : null}
+                          {params.InputProps.endAdornment}
+                        </>
+                      ),
+                    }}
+                    sx={{ mb: 2 }}
                   />
-                );
-              })
-            }
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="outlined"
-                label="Servicios*"
-                placeholder="Selecciona los servicios"
-                error={!!errors.services}
-                helperText={errors.services}
-                InputProps={{
-                  ...params.InputProps,
-                  // startAdornment:
-                  //   <InputAdornment className='absolute' position="start" sx={{ display: 'flex', alignItems: 'center' }}>
-                  //     <MedicalServicesIcon fontSize="small" />
-                  //   </InputAdornment>
-                }}
-                sx={{ mb: 2 }}
+                )}
               />
-            )}
-            ListboxProps={{
-              style: {
-                maxHeight: "200px",
-                overflow: "auto",
-              },
-            }}
-            sx={{ width: "100%" }}
-          />
 
+              <Autocomplete
+                options={pets}
+                getOptionLabel={(option) => option.nombre || ""}
+                value={formData.mascota || ""}
+                onChange={(event, newValue) => setFormData({ ...formData, mascota: newValue })}
+                loading={loadingPets}
+                disabled={!formData.cliente}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Mascota"
+                    placeholder="Seleccione una mascota"
+                    fullWidth
+                    error={!!errors.mascota}
+                    helperText={errors.mascota}
+                    InputProps={{
+                      ...params.InputProps,
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <PetsIcon fontSize="small" />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <>
+                          {loadingPets ? <CircularProgress color="inherit" size={21} /> : null}
+                          {params.InputProps.endAdornment}
+                        </>
+                      ),
+                    }}
+                    sx={{ mb: 2 }}
+                  />
+                )}
+              />
 
-          <TextField
-            fullWidth
-            label="Motivo"
-            name="motivo"
-            value={formData.motivo}
-            onChange={handleChange}
-            sx={{ mb: 2 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <BorderColorIcon fontSize="small" />
-                </InputAdornment>
-              ),
-            }}
-          />
+              <Autocomplete
+                multiple
+                options={services}
+                getOptionLabel={(option) => option.nombre || ""}
+                value={formData.services || ""}
+                onChange={(event, newValue) => {
+                  setFormData({ ...formData, services: newValue });
+                }}
+                renderTags={(value, getTagProps) => (
+                  <div
+                    style={{
+                      minHeight: "39px",
+                      maxHeight: "39px",
+                      overflowY: "auto",
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "4px",
+                      scrollbarWidth: "none",
+                    }}
+                  >
+                    {value.map((option, index) => (
+                      <Tag
+                        key={option.id || `${option.nombre}-${index}`}
+                        label={option.nombre}
+                        {...getTagProps({ index })}
+                      />
+                    ))}
+                  </div>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    variant="outlined"
+                    label="Servicios*"
+                    placeholder={formData.services.length === 0 ? "Selecciona los servicios" : ""}
+                    error={!!errors.services}
+                    helperText={errors.services}
+                    sx={{
+                      mb: 2,
+                      // Hide input field when tags are present
+                      "& input": {
+                        display: formData.services.length > 0 ? "none" : "block",
+                        width: formData.services.length > 0 ? "0" : "auto",
+                      },
+                    }}
+                  />
+                )}
+                ListboxProps={{
+                  style: {
+                    maxHeight: "200px",
+                    overflow: "auto",
+                  },
+                }}
+                sx={{
+                  width: "100%",
+                }}
+              /> 
+
+              <TextField
+                fullWidth
+                label="Motivo"
+                name="motivo"
+                value={formData.motivo}
+                onChange={(e) => setFormData({ ...formData, motivo: e.target.value })}
+                sx={{ mb: 2 }}
+                error={!!errors.motivo}
+                helperText={errors.motivo}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <BorderColorIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </div>
+
+            {/* Right Column */}
+            <div className="w-full md:w-1/2">
+              <Autocomplete
+                options={veterinarios}
+                getOptionLabel={(option) => option.usuario || ""}
+                value={formData.veterinario || ""}
+                onChange={(event, newValue) => setFormData({ ...formData, veterinario: newValue })}
+                loading={loadingVets}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Veterinario"
+                    placeholder="Seleccione un veterinario"
+                    fullWidth
+                    error={!!errors.veterinario}
+                    helperText={errors.veterinario}
+                    InputProps={{
+                      ...params.InputProps,
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <HealthAndSafetyIcon fontSize="small" />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <>
+                          {loadingVets ? <CircularProgress color="inherit" size={20} /> : null}
+                          {params.InputProps.endAdornment}
+                        </>
+                      ),
+                    }}
+                    sx={{ mb: 2 }}
+                  />
+                )}
+              />
+
+              <Autocomplete
+                options={clinicas}
+                getOptionLabel={(option) => option.nombre || ""}
+                value={formData.clinica || ""}
+                onChange={(event, newValue) => setFormData({ ...formData, clinica: newValue })}
+                loading={loadingClinics}
+                disabled={!!user.clinica}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Clínica"
+                    placeholder="Seleccione una clínica"
+                    fullWidth
+                    error={!!errors.clinica}
+                    helperText={errors.clinica}
+                    InputProps={{
+                      ...params.InputProps,
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <CorporateFareIcon fontSize="small" />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <>
+                          {loadingClinics ? <CircularProgress color="inherit" size={20} /> : null}
+                          {params.InputProps.endAdornment}
+                        </>
+                      ),
+                    }}
+                    sx={{ mb: 2 }}
+                  />
+                )}
+              />
+
+              <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={enGB}>
+                <DatePicker
+                  label="Fecha"
+                  value={formData.fecha || null}
+                  onChange={(newDate) => setFormData({ ...formData, fecha: isValid(newDate) ? newDate : null })}
+                  slots={{ openPickerIcon: ArrowDropDownIcon }}
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      required: true,
+                      error: !!errors.fecha,
+                      helperText: errors.fecha,
+                      sx: { mb: 2 },
+                      InputProps: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <CalendarMonthRoundedIcon fontSize="small" />
+                          </InputAdornment>
+                        ),
+                      },
+                    },
+                  }}
+                />
+              </LocalizationProvider>
+
+              <TextField
+                select
+                fullWidth
+                label="Hora"
+                name="hora"
+                value={formData.hora || ""}
+                onChange={(e) => setFormData({ ...formData, hora: e.target.value })}
+                sx={{ mb: 2 }}
+                required
+                error={!!errors.hora}
+                helperText={errors.hora}
+                disabled={loadingTimes}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <AccessTimeIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                }}
+              >
+                {horarios.length > 0 ? (
+                  horarios.map((hora) => (
+                    <MenuItem key={hora} value={hora}>
+                      {hora}
+                    </MenuItem>
+                  ))
+                ) : (
+                  <MenuItem value="" disabled>
+                    No hay horarios disponibles
+                  </MenuItem>
+                )}
+              </TextField>
+            </div>
+          </div>
 
           <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-            <Button variant="outlined" onClick={handleClear} fullWidth disabled={loading} sx={{ borderColor: "#00308F", color: "#00308F", "&:hover": { color: "#00246d", borderColor: "#00246d" } }}>
+            <Button variant="outlined" onClick={() => { setFormData(initialFormData); setErrors({}); }} fullWidth disabled={loading} sx={{ borderColor: "#00308F", color: "#00308F", "&:hover": { color: "#00246d", borderColor: "#00246d" } }}>
               Limpiar
             </Button>
             <Button variant="contained" type="submit" fullWidth disabled={loading} startIcon={loading && <CircularProgress size={20} />} sx={{ minWidth: "160px", backgroundColor: "#00308F", "&:hover": { backgroundColor: "#00246d" } }}>
@@ -506,7 +514,6 @@ const AddCitaModal = ({ open, handleClose, onSuccess }) => {
       </Box>
     </Modal>
   );
-
 };
 
 export default AddCitaModal;
