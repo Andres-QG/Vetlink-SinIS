@@ -47,15 +47,23 @@ const ModifyRecord = forwardRef(
           diagnostico: selectedItem.diagnostico,
           sintomas: Array.isArray(selectedItem.sintomas)
             ? selectedItem.sintomas
-            : selectedItem.sintomas.split(",").map((sintoma) => sintoma.trim()),
+            : selectedItem.sintomas
+              ? selectedItem.sintomas
+                  .split(",")
+                  .map((sintoma) => sintoma.trim())
+              : [],
           vacunas: Array.isArray(selectedItem.vacunas)
             ? selectedItem.vacunas
-            : selectedItem.vacunas.split(",").map((vacuna) => vacuna.trim()),
+            : selectedItem.vacunas
+              ? selectedItem.vacunas.split(",").map((vacuna) => vacuna.trim())
+              : [],
           tratamientos: Array.isArray(selectedItem.tratamientos)
             ? selectedItem.tratamientos
             : selectedItem.tratamientos
-                .split(",")
-                .map((tratamiento) => tratamiento.trim()),
+              ? selectedItem.tratamientos
+                  .split(",")
+                  .map((tratamiento) => tratamiento.trim())
+              : [],
         });
       }
     }, [selectedItem]);
@@ -82,15 +90,6 @@ const ModifyRecord = forwardRef(
       }
       if (!formData.diagnostico) {
         newErrors.diagnostico = "Diagnóstico es obligatorio";
-      }
-      if (!formData.sintomas.length) {
-        newErrors.sintomas = "Síntomas son obligatorios";
-      }
-      if (!formData.vacunas.length) {
-        newErrors.vacunas = "Vacunas son obligatorias";
-      }
-      if (!formData.tratamientos.length) {
-        newErrors.tratamientos = "Tratamientos son obligatorios";
       }
 
       setErrors(newErrors);

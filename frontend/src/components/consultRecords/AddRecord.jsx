@@ -58,15 +58,6 @@ const AddRecord = forwardRef(
       if (!formData.diagnostico) {
         newErrors.diagnostico = "Diagnóstico es obligatorio";
       }
-      if (!formData.sintomas.length) {
-        newErrors.sintomas = "Síntomas son obligatorios";
-      }
-      if (!formData.vacunas.length) {
-        newErrors.vacunas = "Vacunas son obligatorias";
-      }
-      if (!formData.tratamientos.length) {
-        newErrors.tratamientos = "Tratamientos son obligatorios";
-      }
 
       setErrors(newErrors);
       return Object.keys(newErrors).length === 0;
@@ -98,9 +89,13 @@ const AddRecord = forwardRef(
         fecha: formData.fecha,
         peso: formData.peso,
         diagnostico: formData.diagnostico,
-        sintomas: formData.sintomas.join(","),
-        vacunas: formData.vacunas.join(","),
-        tratamientos: formData.tratamientos.join(","),
+        sintomas:
+          formData.sintomas.length > 0 ? formData.sintomas.join(",") : "",
+        vacunas: formData.vacunas.length > 0 ? formData.vacunas.join(",") : "",
+        tratamientos:
+          formData.tratamientos.length > 0
+            ? formData.tratamientos.join(",")
+            : "",
       };
     };
 
@@ -122,6 +117,7 @@ const AddRecord = forwardRef(
 
     const handleError = (error) => {
       if (error.response) {
+        console.error(error.response.data);
         if (error.response.status === 404) {
           onSuccess("Expediente no encontrado.", "error");
         } else if (error.response.status === 400) {

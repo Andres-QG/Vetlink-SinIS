@@ -13,9 +13,15 @@ const DetailedRecordInfo = ({ open, handleClose, selectedItem }) => {
     nombre_mascota: selectedItem.nombre_mascota,
     fecha: selectedItem.fecha,
     peso: selectedItem.peso,
-    sintomas: selectedItem.sintomas.split(","),
-    vacunas: selectedItem.vacunas.split(","),
-    tratamientos: selectedItem.tratamientos.split(","),
+    sintomas: selectedItem.sintomas
+      ? selectedItem.sintomas.split(",")
+      : ["Ningún síntoma registrado"],
+    vacunas: selectedItem.vacunas
+      ? selectedItem.vacunas.split(",")
+      : ["Ningúna vacuna registrada"],
+    tratamientos: selectedItem.tratamientos
+      ? selectedItem.tratamientos.split(",")
+      : ["Ningún tratamiento registrado"],
   };
 
   return (
