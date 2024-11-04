@@ -1,4 +1,4 @@
-import React, { useState, useEffect, forwardRef } from "react";
+import React, { useState, useEffect, forwardRef, useRef } from "react";
 import {
   Modal,
   Box,
@@ -23,6 +23,7 @@ import {
   BorderColor as BorderColorIcon,
   CorporateFare as CorporateFareIcon,
   ArrowDropDown as ArrowDropDownIcon,
+  Tune,
 } from "@mui/icons-material";
 import Tag from "../Tag";
 import { parseISO, isValid } from "date-fns";
@@ -30,7 +31,8 @@ import axios from "axios";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { enGB } from "date-fns/locale";
+import { es } from "date-fns/locale";
+import { object } from "prop-types";
 
 const ModifyCitaModal = forwardRef(
   ({ open, handleClose, onSuccess, otherData, selectedItem = {} }, ref) => {
@@ -40,73 +42,63 @@ const ModifyCitaModal = forwardRef(
     };
 
     const initialFormData = {
-      cliente: null,
-      veterinario: null,
-      mascota: "",
-      fecha: null,
-      clinica: null,
-      hora: "",
-      motivo: "",
-      services: [],
-    };
-
-    const [formData, setFormData] = useState({
       cliente: getDefaultValue(otherData.clientes, "usuario", selectedItem.cliente_usuario) || "",
       veterinario: getDefaultValue(otherData.veterinarios, "usuario", selectedItem.veterinario_usuario) || "",
       clinica: getDefaultValue(otherData.clinicas, "clinica_id", selectedItem.clinica_id) || "",
-      mascota: selectedItem.mascota || "",
+      mascota: {nombre: selectedItem.mascota, mascota_id: selectedItem.mascota_id} || null,
       fecha: selectedItem.fecha ? (typeof selectedItem.fecha === 'string' ? new Date(selectedItem.fecha) : selectedItem.fecha) : null,
       hora: selectedItem.hora || "",
       motivo: selectedItem.motivo || "",
       services: selectedItem.services || []
-    });
+    };
 
-    const [loading, setLoading] = useState(false);
-    const [errors, setErrors] = useState({});
-    const [clientes, setClientes] = useState([]);
-    const [pets, setPets] = useState([]);
-    const [veterinarios, setVeterinarios] = useState([]);
+    const initialDataRef = useRef(initialFormData);
+
+    const [formData, setFormData] = useState(initialFormData);
     const [horarios, setHorarios] = useState([]);
-    const [clinicas, setClinicas] = useState([]);
-    const [loadingClinics, setLoadingClinics] = useState(false);
-    const [loadingClients, setLoadingClients] = useState(true);
-    const [loadingVets, setLoadingVets] = useState(true);
-    const [services, setServices] = useState([]);
     const [loadingTimes, setLoadingTimes] = useState(true);
-    const [loadingPets, setLoadingPets] = useState(false);
-    const [user, setUser] = useState({});
+    const [errors, setErrors] = useState({}); 
+    const [user, setUser] = useState({}); 
+    const [loading, setLoading] = useState(false); 
+    const [loadingPets, setLoadingPets] = useState(true);
+    const [pets, setPets] = useState([]);
 
-   
     useEffect(() => {
-      if (otherData) {
-        setClientes(otherData.clientes || []);
-        setPets(otherData.pets || []);
-        setVeterinarios(otherData.veterinarios || []);
-        setClinicas(otherData.clinicas || []);
-        setServices(otherData.services || []);
-        setUser(otherData.user || {});
-
+      if (formData.fecha && formData.fecha.toISOString().split("T")[0] === selectedItem.fecha?.split("T")[0]) {
         const initialHorarios = otherData.horarios || [];
         if (selectedItem.hora && !initialHorarios.includes(selectedItem.hora)) {
           initialHorarios.unshift(selectedItem.hora);
         }
-        formData.mascota = selectedItem.mascota
-        setHorarios(initialHorarios)
-        setLoadingClinics(false);
-        setLoadingClients(false);
-        setLoadingVets(false);
-        setLoadingPets(false);
+        setHorarios(initialHorarios);
       }
-    }, [otherData]);
+    }, [formData.fecha, otherData.horarios, selectedItem.hora, selectedItem.fecha]);
 
-    useEffect(() => {
-      if (user.clinica && !formData.clinica) {
-        setFormData((prevData) => ({
-          ...prevData,
-          clinica: clinicas.find((clinic) => clinic.clinica_id === user.clinica) || null,
-        }));
+    const fetchAvailableTimes = async () => {
+      try {
+        if (formData.veterinario && formData.clinica && formData.fecha) {
+          setLoadingTimes(true);
+          const formattedDate = formData.fecha.toISOString().split("T")[0];
+
+          const response = await axios.put("http://localhost:8000/api/get-disp-times/", {
+            vet_user: formData.veterinario.usuario,
+            clinica_id: formData.clinica?.clinica_id,
+            full_date: formattedDate,
+          });
+          const newHorarios = response.data.available_times || [];
+
+          // Ensure selected hora is included only if date matches
+          if (formattedDate === selectedItem.fecha && selectedItem.hora && !newHorarios.includes(selectedItem.hora)) {
+            setHorarios([selectedItem.hora, ...newHorarios]);
+          } else {
+            setHorarios(newHorarios);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching available times:", error);
+      } finally {
+        setLoadingTimes(false);
       }
-    }, [user, clinicas]);
+    };
 
     useEffect(() => {
       const fetchPets = async () => {
@@ -124,52 +116,12 @@ const ModifyCitaModal = forwardRef(
           }
         } else {
           setPets([]);
+          setLoadingPets(true)
         }
-
-        // Reset pet field to null if cliente changes
-        setFormData((prevData) => ({ ...prevData, pet: null }));
       };
 
       fetchPets();
     }, [formData.cliente]);
-
-
-    const fetchAvailableTimes = async () => {
-      try {
-        if (formData.veterinario && formData.clinica && formData.fecha) {
-          setLoadingTimes(true);
-          const formattedDate = formData.fecha instanceof Date
-            ? formData.fecha.toISOString().split("T")[0]
-            : new Date(formData.fecha).toISOString().split("T")[0];
-
-          const selectedDate = formData.fecha instanceof Date
-            ? formData.fecha.toISOString().split("T")[0]
-            : new Date(formData.fecha).toISOString().split("T")[0];
-          const selectedItemDate = selectedItem.fecha
-            ? (selectedItem.fecha instanceof Date
-              ? selectedItem.fecha.toISOString().split("T")[0]
-              : new Date(selectedItem.fecha).toISOString().split("T")[0])
-            : null;
-
-          const response = await axios.put("http://localhost:8000/api/get-disp-times/", {
-            vet_user: formData.veterinario.usuario,
-            clinica_id: formData.clinica?.clinica_id,
-            full_date: formattedDate,
-          });
-          const newHorarios = response.data.available_times || [];
-
-          if (selectedDate === selectedItemDate && selectedItem.hora && !newHorarios.includes(selectedItem.hora)) {
-            setHorarios([selectedItem.hora, ...newHorarios]);
-          } else {
-            setHorarios([]);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching available times:", error);
-      } finally {
-        setLoadingTimes(false)
-      }
-    };
 
     useEffect(() => {
       if (formData.clinica && formData.veterinario && formData.fecha) {
@@ -179,70 +131,27 @@ const ModifyCitaModal = forwardRef(
         setFormData((prevData) => ({ ...prevData, hora: "" }));
         setLoadingTimes(true)
       }
-    }, [formData.clinica, formData.veterinario, formData.fecha, formData]);
+    }, [formData.clinica, formData.veterinario, formData.fecha]);
 
-    useEffect(() => {
-      if (user.clinica) {
-        const clinic = clinicas.find((clinic) => clinic.clinica_id === user.clinica) || null;
-        setFormData((prevData) => ({
-          ...prevData,
-          clinica: clinic,
-        }));
+    const handleReset = () => {
+      setFormData(initialDataRef.current);
+      if (initialDataRef.current.fecha?.toISOString().split("T")[0] === selectedItem.fecha) {
+        setHorarios([selectedItem.hora, ...otherData.horarios]);
+      } else {
+        setHorarios(otherData.horarios);
       }
-    }, [user.clinica, clinicas, setFormData]);
+    };
 
     const handleSubmit = async (e) => {
       e.preventDefault();
-      setLoading(true);
-      if (!validate()) {
-        setLoading(false);
-        return;
-      }
       try {
         await axios.post("http://localhost:8000/api/add-cita/", formData);
-        onSuccess("Cita agregada correctamente", "success");
+        onSuccess("Cita modificada correctamente", "success");
         handleClose();
       } catch (error) {
-        onSuccess("Error al agregar cita.", "error");
-      } finally {
-        setLoading(false);
+        onSuccess("Error al modificar cita.", "error");
       }
     };
-
-    const validate = () => {
-      const newErrors = {};
-      if (!formData.cliente) newErrors.cliente = "Cliente requerido.";
-      if (!formData.veterinario) newErrors.veterinario = "Veterinario requerido.";
-      if (!formData.mascota) newErrors.mascota = "Mascota requerida.";
-      if (!formData.fecha) newErrors.fecha = "Fecha requerida.";
-      if (!formData.hora) newErrors.hora = "Hora requerida.";
-      if (!formData.clinica) newErrors.clinica = "Clínica requerida.";
-      if (formData.services.length === 0) newErrors.services = "Al menos un servicio es requerido.";
-      setErrors(newErrors);
-      return Object.keys(newErrors).length === 0;
-    };
-
-    const handleValue = () => {
-      const selectedServices = selectedItem.services || [];
-      const combinedServices = [...formData.services, ...selectedServices];
-
-      // Filter to ensure no duplicates based on `nombre`
-      const uniqueServices = combinedServices.reduce((acc, service) => {
-        if (!acc.some((s) => s.servicio_id === service.servicio_id)) {
-          acc.push(service);
-        }
-        return acc;
-      }, []);
-
-      return uniqueServices;
-    };
-
-    useEffect(() => {
-      setFormData((prevData) => ({
-        ...prevData,
-        services: handleValue(),
-      }));
-    }, []);
 
     return (
       <Modal open={open} onClose={handleClose} aria-labelledby="modal-title" aria-describedby="modal-description">
@@ -264,13 +173,11 @@ const ModifyCitaModal = forwardRef(
             <div className="flex flex-col md:flex-row gap-0 md:gap-6 w-full">
               {/* Left Column */}
               <div className="w-full md:w-1/2">
-
                 <Autocomplete
-                  options={clientes}
+                  options={otherData.clientes || []}
                   getOptionLabel={(option) => option.usuario || ""}
-                  value={formData.cliente || ""} // Use formData.cliente here
+                  value={formData.cliente}
                   onChange={(event, newValue) => setFormData({ ...formData, cliente: newValue })}
-                  loading={loadingClients}
                   renderInput={(params) => (
                     <TextField
                       {...params}
@@ -286,12 +193,6 @@ const ModifyCitaModal = forwardRef(
                             <PersonIcon fontSize="small" />
                           </InputAdornment>
                         ),
-                        endAdornment: (
-                          <>
-                            {loadingClients ? <CircularProgress color="inherit" size={20} /> : null}
-                            {params.InputProps.endAdornment}
-                          </>
-                        ),
                       }}
                       sx={{ mb: 2 }}
                     />
@@ -299,12 +200,11 @@ const ModifyCitaModal = forwardRef(
                 />
 
                 <Autocomplete
-                  options={pets}
+                  options={pets || []}
                   getOptionLabel={(option) => option.nombre || ""}
-                  value={formData.mascota || ""} // Use formData.mascota here
-                  onChange={(event, newValue) => setFormData({ ...formData, mascota: newValue })}
-                  loading={loadingPets}
-                  disabled={!formData.cliente}
+                  value={formData.mascota}
+                  onChange={(event, newValue) => {setFormData({ ...formData, mascota: newValue }); console.log(newValue)}}
+                  disabled={loadingPets}
                   renderInput={(params) => (
                     <TextField
                       {...params}
@@ -320,12 +220,6 @@ const ModifyCitaModal = forwardRef(
                             <PetsIcon fontSize="small" />
                           </InputAdornment>
                         ),
-                        endAdornment: (
-                          <>
-                            {loadingPets ? <CircularProgress color="inherit" size={21} /> : null}
-                            {params.InputProps.endAdornment}
-                          </>
-                        ),
                       }}
                       sx={{ mb: 2 }}
                     />
@@ -334,41 +228,27 @@ const ModifyCitaModal = forwardRef(
 
                 <Autocomplete
                   multiple
-                  options={services}
+                  options={otherData.services || []}
                   getOptionLabel={(option) => option.nombre || ""}
                   value={formData.services}
                   isOptionEqualToValue={(option, value) => option.servicio_id === value.servicio_id}
                   onChange={(event, newValue) => {
-                    const uniqueServices = newValue.reduce((acc, service) => {
-                      if (!acc.some((s) => s.servicio_id === service.servicio_id)) {
-                        acc.push(service);
-                      }
-                      return acc;
-                    }, []);
+                    // Filter to ensure no duplicate services are added
+                    const uniqueServices = newValue.filter(
+                      (service, index, self) =>
+                        index === self.findIndex((s) => s.servicio_id === service.servicio_id)
+                    );
                     setFormData({ ...formData, services: uniqueServices });
                   }}
-                  renderTags={(value, getTagProps) => (
-                    <div
-                      style={{
-                        overflowY: "auto",
-                        display: "flex",
-                        flexWrap: "wrap",
-                        gap: "4px",
-                        scrollbarWidth: "none",
-                      }}
-                    >
-                      {value.map((option, index) => {
-                        const tagProps = getTagProps({ index });
-                        return (
-                          <Tag
-                            key={option.servicio_id || `${option.nombre}-${index}`}
-                            label={option.nombre}
-                            {...tagProps}
-                          />
-                        );
-                      })}
-                    </div>
-                  )}
+                  renderTags={(value, getTagProps) =>
+                    value.map((option, index) => (
+                      <Tag
+                        key={option.servicio_id || index}
+                        label={option.nombre}
+                        {...getTagProps({ index })}
+                      />
+                    ))
+                  }
                   renderInput={(params) => (
                     <TextField
                       {...params}
@@ -419,11 +299,10 @@ const ModifyCitaModal = forwardRef(
               {/* Right Column */}
               <div className="w-full md:w-1/2">
                 <Autocomplete
-                  options={veterinarios}
+                  options={otherData.veterinarios || []}
                   getOptionLabel={(option) => option.usuario || ""}
-                  value={formData.veterinario || ""}
+                  value={formData.veterinario}
                   onChange={(event, newValue) => setFormData({ ...formData, veterinario: newValue })}
-                  loading={loadingVets}
                   renderInput={(params) => (
                     <TextField
                       {...params}
@@ -439,12 +318,6 @@ const ModifyCitaModal = forwardRef(
                             <HealthAndSafetyIcon fontSize="small" />
                           </InputAdornment>
                         ),
-                        endAdornment: (
-                          <>
-                            {loadingVets ? <CircularProgress color="inherit" size={20} /> : null}
-                            {params.InputProps.endAdornment}
-                          </>
-                        ),
                       }}
                       sx={{ mb: 2 }}
                     />
@@ -452,11 +325,10 @@ const ModifyCitaModal = forwardRef(
                 />
 
                 <Autocomplete
-                  options={clinicas}
+                  options={otherData.clinicas || []}
                   getOptionLabel={(option) => option.nombre || ""}
-                  value={formData.clinica || ""}
+                  value={formData.clinica}
                   onChange={(event, newValue) => setFormData({ ...formData, clinica: newValue })}
-                  loading={loadingClinics}
                   disabled={!!user.clinica}
                   renderInput={(params) => (
                     <TextField
@@ -473,24 +345,18 @@ const ModifyCitaModal = forwardRef(
                             <CorporateFareIcon fontSize="small" />
                           </InputAdornment>
                         ),
-                        endAdornment: (
-                          <>
-                            {loadingClinics ? <CircularProgress color="inherit" size={20} /> : null}
-                            {params.InputProps.endAdornment}
-                          </>
-                        ),
                       }}
                       sx={{ mb: 2 }}
                     />
                   )}
                 />
 
-                <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={enGB}>
+                <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
                   <DatePicker
                     label="Fecha"
                     value={formData.fecha || null}
                     onChange={(newDate) => {
-                      setFormData({ ...formData, fecha: isValid(newDate) ? newDate : null, hora: "" });
+                      setFormData({ ...formData, fecha: newDate, hora: "" });
                       setHorarios((prevHorarios) => prevHorarios.filter(hora => hora !== selectedItem.hora));
                     }}
                     slots={{ openPickerIcon: ArrowDropDownIcon }}
@@ -548,11 +414,24 @@ const ModifyCitaModal = forwardRef(
               </div>
             </div>
 
-            <Box className="w-full" sx={{ display: "flex", gap: 2, mt: 2}}>
-              <Button variant="outlined" onClick={() => { setFormData(initialFormData); setErrors({}); }} fullWidth disabled={loading} sx={{ borderColor: "#00308F", color: "#00308F", "&:hover": { color: "#00246d", borderColor: "#00246d" } }}>
+            <Box className="w-full" sx={{ display: "flex", gap: 2, mt: 2 }}>
+              <Button
+                variant="outlined"
+                onClick={handleReset} // Reset to initial values
+                fullWidth
+                disabled={loading}
+                sx={{ borderColor: "#00308F", color: "#00308F", "&:hover": { color: "#00246d", borderColor: "#00246d" } }}
+              >
                 Limpiar
               </Button>
-              <Button variant="contained" type="submit" fullWidth disabled={loading} startIcon={loading && <CircularProgress size={20} />} sx={{ minWidth: "160px", backgroundColor: "#00308F", "&:hover": { backgroundColor: "#00246d" } }}>
+              <Button
+                variant="contained"
+                type="submit"
+                fullWidth
+                disabled={loading}
+                startIcon={loading && <CircularProgress size={20} />}
+                sx={{ minWidth: "160px", backgroundColor: "#00308F", "&:hover": { backgroundColor: "#00246d" } }}
+              >
                 {loading ? "Modificando..." : "Modificar Cita"}
               </Button>
             </Box>
@@ -560,6 +439,7 @@ const ModifyCitaModal = forwardRef(
         </Box>
       </Modal>
     );
+
   }
 );
 

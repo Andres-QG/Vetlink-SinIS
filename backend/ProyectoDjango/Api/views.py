@@ -373,7 +373,7 @@ def consult_citas(request):
 
                 services = [
                     {
-                        "service_id": service_row[0],
+                        "servicio_id": service_row[0],
                         "nombre": service_row[1]
                     }
                     for service_row in services_cursor.fetchall()
