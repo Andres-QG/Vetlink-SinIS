@@ -28,7 +28,7 @@ const ConsultSchedules = () => {
 
   return (
     <ConsultView
-      title="Consultar Horarios"
+      title="Horarios"
       fetchUrl="http://localhost:8000/api/consult-schedules/"
       addComponent={AddSchedule}
       modifyComponent={ModifySchedule}

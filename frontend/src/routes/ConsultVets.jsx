@@ -139,7 +139,7 @@ export const ConsultVets = () => {
     <div className="flex flex-col min-h-screen">
       <div className="flex-grow">
         <div className="flex flex-col items-center justify-between mb-4 space-y-4 md:flex-row md:space-y-0">
-          <h1 className="text-2xl font-semibold">Consultar Veterinarios</h1>
+          <h1 className="text-2xl font-semibold">Veterinarios</h1>
           <div className="flex flex-col w-full space-y-4 md:w-auto md:flex-row md:items-center md:space-y-0">
             <Button
               variant="contained"
@@ -148,12 +148,12 @@ export const ConsultVets = () => {
               sx={{
                 backgroundColor: "#00308F",
                 "&:hover": { backgroundColor: "#00246d" },
-                minWidth: "240px",
+                minWidth: "190px",
                 marginBottom: { xs: "-4px", md: "0px" },
                 marginRight: { xs: "0px", md: "10px" },
                 width: { xs: "100%", md: "auto" },
               }}>
-              Agregar Veterinario
+              Agregar
             </Button>
             <GeneralizedSearchBar
               onSearch={handleSearch}

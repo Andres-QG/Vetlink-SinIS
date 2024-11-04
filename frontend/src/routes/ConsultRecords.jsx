@@ -78,7 +78,7 @@ const ConsultRecords = () => {
 
   return (
     <ConsultView
-      title="Consultar Expedientes"
+      title="Expedientes"
       fetchUrl="http://localhost:8000/api/consult-pet-records/"
       deletionUrl="http://localhost:8000/api/delete-pet-record/"
       addComponent={AddRecord}

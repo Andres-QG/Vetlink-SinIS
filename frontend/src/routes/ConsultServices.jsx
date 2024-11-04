@@ -24,7 +24,7 @@ const ConsultServices = () => {
 
   return (
     <ConsultView
-      title="Consultar Servicios"
+      title="Servicios"
       fetchUrl="http://localhost:8000/api/consult-services/"
       deletionUrl="http://localhost:8000/api/delete-service/"
       restoreUrl="http://localhost:8000/api/reactivate-service/"

@@ -25,7 +25,7 @@ const ConsultPets = () => {
 
   return (
     <ConsultView
-      title="Consultar Mascotas"
+      title="Mascotas"
       fetchUrl="http://localhost:8000/api/consult-mascotas/"
       deletionUrl="http://localhost:8000/api/delete-pet"
       restoreUrl=""

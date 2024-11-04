@@ -22,7 +22,7 @@ function Owner() {
   return (
     <>
       <ConsultView
-        title="Consultar Clínicas"
+        title="Clínicas"
         fetchUrl="http://localhost:8000/api/consult-clinics/"
         deletionUrl="http://localhost:8000/api/delete-clinic"
         addComponent={AddClinicModal}
