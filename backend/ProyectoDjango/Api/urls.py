@@ -9,14 +9,22 @@ urlpatterns = [
     path("reset-password/", reset_password, name="reset_password"),
     path("verify-code/", verify_code, name="verify_code"),
     path("check-new-pass/", check_new_pass, name="check_new_pass"),
+    path("get-user/", get_user, name="get_user"),
+
+    # Get all registers
     path("get-owners/", get_owners, name="get_owners"),
+    path("get-services/", get_services, name="get_services"),
+    path("get-clinics/", get_clinics, name="get_clinics"),
     path("get-clients/", get_clients, name="get_clients"),
     path("get-vets/", get_vets, name="get_vets"),
+    path("get-pets/", get_pets, name="get_pets"),
+
     # Client APIs
     path("consult-client/", consult_client, name="consult_client"),
     path("add-client/", add_client, name="add_client"),
     path("update-client/<str:usuario>/", update_client, name="update_client"),
     path("delete-client/<str:usuario>/", delete_client, name="delete_client"),
+
     # Clinic APIs
     path("consult-clinics/", consult_clinics, name="consult_clinics"),
     path("add-clinic/", add_clinic, name="add_clinic"),
@@ -61,6 +69,7 @@ urlpatterns = [
     path("add-cita/", add_cita, name="add_cita"),
     path("update-cita/<int:cita_id>/", update_cita, name="update_cita"),
     path("delete-cita/<int:cita_id>/", delete_cita, name="delete_cita"),
+    path("get-disp-times/", get_disp_times, name="get_disp_times"),
     
     # Horarios Veterinarios APIs
     path("consult-schedules/", consult_schedules, name="consult_schedules"),

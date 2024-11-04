@@ -13,6 +13,8 @@ from django.db import transaction
 from django.views.decorators.cache import cache_page
 from .serializers import *
 import random
+import json 
+import oracledb
 from datetime import datetime
 from django.http import JsonResponse
 from django.db import connection
@@ -407,7 +409,7 @@ def add_cita(request):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@api_view(["PUT"])
+@api_view(["GET"])
 def update_cita(request, cita_id):
     try:
         cita = Citas.objects.get(pk=cita_id)
@@ -464,6 +466,35 @@ def delete_cita(request, cita_id):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(["PUT"])
+def get_disp_times(request):
+    try:
+        vet_user = request.data.get("vet_user")
+        clinica_id = request.data.get("clinica_id")
+        full_date = request.data.get("full_date")
+
+        if not vet_user or not clinica_id or not full_date:
+            return Response(
+                {"error": "Missing required parameters: vet_user, clinica_id, full_date."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        with connection.cursor() as cursor:
+            out_param = cursor.var(str).var
+            cursor.callproc("VETLINK.HORARIOS_DISP", [vet_user, clinica_id, full_date, out_param])
+
+        # Parse JSON string and return in response
+        available_times = json.loads(out_param.getvalue())
+        return Response(available_times, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        # Log the error with full traceback
+        print("Error calling VETLINK.HORARIOS_DISP: %s", str(e))
+        
+        return Response(
+            {"error": "Error retrieving available times. Please try again later."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 @api_view(["POST"])
 def create_pet(request):
@@ -526,41 +557,60 @@ def get_user_role(request):
 
 
 @api_view(["GET"])
+def get_user(request):
+    try: 
+        user = request.session.get("user")
+        role = request.session.get("role")
+
+        data = {
+        "user": user,
+        "role": role,
+        }
+
+        if role == 2:
+            data['clinica'] = request.session.get("clinica_id")
+
+        return Response({"status": "success", "data": data})
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(["GET"])
 def get_clients(request):
-    clients = Usuarios.objects.filter(
-        rol__nombre="Cliente"
-    )  # Assuming "Cliente" represents clients in the 'Roles' table
-    serializer = NameUsuariosSerializer(clients, many=True)
-    if serializer:
-        return Response(
-            {
-                "status": "success",
-                "message": "Clientes obtenidos",
-                "clients": serializer.data,
-            }
-        )
-    else:
-        return Response({"status": "error", "message": "No se pudo obtener clientes"})
+    try:
+        with connection.cursor() as cursor:
+            out_clientes = cursor.var(str).var
+            cursor.callproc("VETLINK.OBTENER_CLIENTES_JSON", [out_clientes])
+
+        clientes_data = out_clientes.getvalue()
+        if clientes_data is None:
+            return Response({"clients": []})
+
+        clientes_json = json.loads(out_clientes.getvalue())
+        return Response({"clients": clientes_json})
+
+    except Exception as e:
+        print("Error:", str(e))
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(["GET"])
 def get_vets(request):
-    vets = Usuarios.objects.filter(
-        rol__nombre="Veterinario"
-    )  # Assuming "Veterinario" represents veterinarians
-    serializer = NameUsuariosSerializer(vets, many=True)
-    if serializer:
-        return Response(
-            {
-                "status": "success",
-                "message": "Veterinarios obtenidos",
-                "vets": serializer.data,
-            }
-        )
-    else:
-        return Response(
-            {"status": "error", "message": "No se pudo obtener veterinarios"}
-        )
+    try:
+        with connection.cursor() as cursor:
+            out_vets = cursor.var(str).var
+            cursor.callproc("VETLINK.OBTENER_VETERINARIOS_JSON", [out_vets])
+
+        vets_data = out_vets.getvalue()
+        if vets_data is None:
+            return Response({"vets": []})
+
+        vets_json = json.loads(vets_data)
+        return Response({"vets": vets_json})
+
+    except Exception as e:
+        print("Error:", str(e))
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(["GET"])
@@ -580,6 +630,61 @@ def get_owners(request):
             {"status": "error", "message": "No se pudo obtener propietarios"}
         )
 
+@api_view(["PUT"])
+def get_pets(request):
+    try:
+        in_client = request.data.get("cliente")
+        with connection.cursor() as cursor:
+            out_pets = cursor.var(str).var
+            cursor.callproc("VETLINK.OBTENER_MASCOTAS_JSON", [in_client, out_pets])
+
+        pets_data = out_pets.getvalue()
+        print(pets_data)
+        if not pets_data:
+            return Response({"pets": []})
+
+        pets_json = json.loads(pets_data)
+        return Response({"pets": pets_json})
+
+    except Exception as e:
+        print("Error:", str(e))
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+def get_services(request):
+    services = Servicios.objects.all()
+    serializer = ServiciosNameSerializer(services, many=True)
+    
+    if serializer.data:
+        return Response({
+            "status": "success",
+            "message": "Servicios obtenidos",
+            "services": serializer.data,
+        })
+    else:
+        return Response({
+            "status": "error",
+            "message": "No se pudo obtener los servicios"
+        })
+
+@api_view(["GET"])
+def get_clinics(request):
+    try:
+        with connection.cursor() as cursor:
+            out_clinicas = cursor.var(str).var
+            cursor.callproc("VETLINK.OBTENER_CLINICAS_JSON", [out_clinicas])
+            
+        clinics_data = out_clinicas.getvalue()
+        if clinics_data is None:
+            return Response({"clinics": []})
+
+        clinicas_json = json.loads(out_clinicas.getvalue())
+        return Response({"clinics": clinicas_json})
+
+    except Exception as e:
+        print("Error:", str(e))
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(["GET"])
 def consult_client(request):

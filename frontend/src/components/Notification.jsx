@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback } from "react";
 import PropTypes from "prop-types";
-import { Snackbar, Alert } from "@mui/material";
+import { Snackbar, Alert, AlertTitle } from "@mui/material";
 
 const NotificationContext = createContext();
 
@@ -19,18 +19,18 @@ export const NotificationProvider = ({ children }) => {
     setNotification({ open: false });
   };
 
-  const getAlertStyles = (type) => {
+  const getTitle = (type) => {
     switch (type) {
       case "success":
-        return { backgroundColor: "#4caf50", color: "#fff" };
+        return "Éxito";
       case "error":
-        return { backgroundColor: "#f44336", color: "#fff" };
-      case "info":
-        return { backgroundColor: "#2196f3", color: "#fff" };
+        return "Error";
       case "warning":
-        return { backgroundColor: "#ff9800", color: "#fff" };
+        return "Precaución";
+      case "info":
+        return "Información";
       default:
-        return {};
+        return "";
     }
   };
 
@@ -41,14 +41,10 @@ export const NotificationProvider = ({ children }) => {
         open={notification.open}
         autoHideDuration={3000}
         onClose={handleClose}
-        anchorOrigin={{ vertical: "center", horizontal: "center" }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Alert
-          onClose={handleClose}
-          severity={notification.type}
-          variant="filled"
-          sx={getAlertStyles(notification.type)}
-        >
+        <Alert onClose={handleClose} severity={notification.type}>
+          <AlertTitle>{getTitle(notification.type)}</AlertTitle>
           {notification.message}
         </Alert>
       </Snackbar>

@@ -7,11 +7,28 @@ class UsuariosSerializer(serializers.ModelSerializer):
         model = Usuarios
         fields = "__all__"
 
+class ServiciosNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Servicios
+        fields = ['servicio_id', 'nombre']
+
 
 class NameUsuariosSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuarios
-        fields = ["usuario", "nombre"]
+        fields = "__all__"
+
+class HorariosVeterinariosSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HorariosVeterinarios
+        fields = ['dia', 'hora_inicio', 'hora_fin', 'activo']
+
+class NameUsuariosWithHorariosSerializer(serializers.ModelSerializer):
+    horarios_veterinarios = HorariosVeterinariosSerializer(many=True, source='horariosveterinarios_set')
+
+    class Meta:
+        model = Usuarios
+        fields = ['usuario', 'nombre', 'horarios_veterinarios']
 
 
 class MascotaSerializer(serializers.ModelSerializer):
@@ -24,6 +41,12 @@ class ClinicasSerializer(serializers.ModelSerializer):
     class Meta:
         model = Clinicas
         fields = "__all__"
+
+
+class FullUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Usuarios
+        fields = ["usuario", "rol_id", "clinica_id"]
 
 
 class EspecialidadesSerializer(serializers.ModelSerializer):

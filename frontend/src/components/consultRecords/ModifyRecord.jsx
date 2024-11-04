@@ -18,6 +18,7 @@ import {
   MonitorWeight as MonitorWeightIcon,
   Pets as PetsIcon,
   MedicalInformation as MedicalInformationIcon,
+  CalendarMonth as CalendarIcon,
 } from "@mui/icons-material";
 
 const ModifyRecord = forwardRef(
@@ -164,8 +165,6 @@ const ModifyRecord = forwardRef(
 
     const handleClear = () => {
       setFormData({
-        mascota_id: "",
-        fecha: "",
         peso: "",
         diagnostico: "",
         sintomas: [],
@@ -206,45 +205,24 @@ const ModifyRecord = forwardRef(
                 <CloseIcon />
               </IconButton>
             </Stack>
-            <Autocomplete
-              options={otherData.mascotas}
-              getOptionLabel={(option) => option.mascota_id.toString()}
-              value={otherData.mascotas.find(
-                (mascota) => mascota.mascota_id === formData.mascota_id
-              )}
-              onChange={(event, newValue) => {
-                setFormData({
-                  ...formData,
-                  mascota_id: newValue ? newValue.mascota_id : "",
-                });
-                setIsModified(true);
+            <TextField
+              label="ID de la mascota*"
+              variant="outlined"
+              fullWidth
+              name="mascota_id"
+              value={formData.mascota_id}
+              error={!!errors.mascota_id}
+              helperText={errors.mascota_id}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <PetsIcon />
+                  </InputAdornment>
+                ),
+                readOnly: true,
               }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="ID de la mascota*"
-                  variant="outlined"
-                  fullWidth
-                  name="mascota_id"
-                  error={!!errors.mascota_id}
-                  helperText={errors.mascota_id}
-                  InputProps={{
-                    ...params.InputProps,
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <PetsIcon />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{ mb: 2 }}
-                />
-              )}
-              ListboxProps={{
-                style: {
-                  maxHeight: "200px",
-                  overflow: "auto",
-                },
-              }}
+              disabled
+              sx={{ mb: 2 }}
             />
             <TextField
               label="Fecha y hora de consulta*"
@@ -253,12 +231,21 @@ const ModifyRecord = forwardRef(
               fullWidth
               name="fecha"
               value={formData.fecha}
-              onChange={handleChange}
+              onChange={() => {}}
               error={!!errors.fecha}
               helperText={errors.fecha}
               InputLabelProps={{
                 shrink: true,
               }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <CalendarIcon />
+                  </InputAdornment>
+                ),
+                readOnly: true,
+              }}
+              disabled
               sx={{ mb: 2 }}
             />
             <TextField
