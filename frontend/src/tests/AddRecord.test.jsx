@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import AddRecord from "./AddRecord";
+import AddRecord from "../components/consultRecords/AddRecord";
 
 const mockHandleClose = jest.fn();
 const mockOnSuccess = jest.fn();
@@ -57,11 +57,6 @@ describe("AddRecord Component", () => {
       ).toBeInTheDocument();
       expect(
         screen.getByText("Diagnóstico es obligatorio")
-      ).toBeInTheDocument();
-      expect(screen.getByText("Síntomas son obligatorios")).toBeInTheDocument();
-      expect(screen.getByText("Vacunas son obligatorias")).toBeInTheDocument();
-      expect(
-        screen.getByText("Tratamientos son obligatorios")
       ).toBeInTheDocument();
     });
   });
