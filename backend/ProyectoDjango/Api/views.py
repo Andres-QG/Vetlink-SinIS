@@ -2149,6 +2149,7 @@ def add_servicio(request):
         minutos_sesion = request.data.get("minutos_sesion")
         costo = request.data.get("costo")
         dir_imagen = request.data.get("dir_imagen")
+        activo = True
 
         # Validar datos requeridos
         if not all([nombre, descripcion]):
@@ -2164,6 +2165,14 @@ def add_servicio(request):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        print(f"Valores a insertar:")
+        print(f"Nombre: {nombre} (Tipo: {type(nombre)})")
+        print(f"Descripción: {descripcion} (Tipo: {type(descripcion)})")
+        print(f"Número de sesiones: {numero_sesiones} (Tipo: {type(numero_sesiones)})")
+        print(f"Minutos por sesión: {minutos_sesion} (Tipo: {type(minutos_sesion)})")
+        print(f"Costo: {costo} (Tipo: {type(costo)})")
+        print(f"Dirección de imagen: {dir_imagen} (Tipo: {type(dir_imagen)})")
+
         # Crear el nuevo servicio
         nuevo_servicio = Servicios(
             nombre=nombre,
@@ -2172,7 +2181,7 @@ def add_servicio(request):
             minutos_sesion=minutos_sesion,
             costo=costo,
             dir_imagen=dir_imagen,
-            activo=True,
+            activo=activo,
         )
 
         # Guardar el servicio

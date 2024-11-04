@@ -128,40 +128,35 @@ const AddServicesModal = ({ open, handleClose, onSuccess }) => {
 
     try {
       const formattedNameForImage = formatServiceNameForImage(formData.nombre);
+
+      if (!formattedNameForImage) {
+        onSuccess("El nombre del servicio no es válido.", "error");
+        setLoading(false);
+        return;
+      }
+
       const imagePath = `./src/assets/img/Services_${formattedNameForImage}.jpg`;
 
-      // Guardar la imagen físicamente
-      const reader = new FileReader();
-      reader.readAsDataURL(formData.imagen);
-      reader.onload = async () => {
-        try {
-          // Crear objeto con los datos del servicio
-          const serviceData = {
-            nombre: formData.nombre,
-            descripcion: formData.descripcion,
-            numero_sesiones: parseInt(formData.numero_sesiones),
-            minutos_sesion: parseInt(formData.minutos_sesion),
-            costo: parseFloat(formData.costo),
-            dir_imagen: imagePath,
-          };
-
-          // Enviar datos al backend
-          await axios.post(
-            "http://localhost:8000/api/add-service/",
-            serviceData
-          );
-
-          onSuccess("Servicio agregado exitosamente.", "success");
-          setFormData(initialFormData);
-          handleClose();
-        } catch (error) {
-          const message =
-            error.response?.data?.error || "Error al agregar el servicio.";
-          onSuccess(message, "error");
-        }
+      // Crear objeto con los datos del servicio
+      const serviceData = {
+        nombre: formData.nombre,
+        descripcion: formData.descripcion,
+        numero_sesiones: parseFloat(formData.numero_sesiones),
+        minutos_sesion: parseFloat(formData.minutos_sesion),
+        costo: parseFloat(formData.costo),
+        dir_imagen: imagePath,
       };
+
+      // Enviar datos al backend
+      await axios.post("http://localhost:8000/api/add-service/", serviceData);
+
+      onSuccess("Servicio agregado exitosamente.", "success");
+      setFormData(initialFormData);
+      handleClose();
     } catch (error) {
-      onSuccess("Error al procesar la imagen.", "error");
+      const message =
+        error.response?.data?.error || "Error al agregar el servicio.";
+      onSuccess(message, "error");
     } finally {
       setLoading(false);
     }
