@@ -52,7 +52,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
   const [veterinarios, setVeterinarios] = useState([]);
   const [horarios, setHorarios] = useState([]);
   const [clinicas, setClinicas] = useState([]);
-  const [loadingClinics, setLoadingClinics] = useState([]);
+  const [loadingClinics, setLoadingClinics] = useState(false);
   const [loadingClients, setLoadingClients] = useState(true);
   const [loadingVets, setLoadingVets] = useState(true);
   const [services, setServices] = useState([]);
@@ -201,7 +201,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
             Agregar Cita
           </Typography>
 
-          <div className="flex flex-col md:flex-row gap-0 md:gap-10 w-full">
+          <div className="flex flex-col md:flex-row gap-0 md:gap-6 w-full">
             {/* Left Column */}
             <div className="w-full md:w-1/2">
               <Autocomplete
@@ -296,13 +296,16 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
                       scrollbarWidth: "none",
                     }}
                   >
-                    {value.map((option, index) => (
-                      <Tag
-                        key={option.id || `${option.nombre}-${index}`}
-                        label={option.nombre}
-                        {...getTagProps({ index })}
-                      />
-                    ))}
+                    {value.map((option, index) => {
+                      const tagProps = getTagProps({ index });
+                      return (
+                        <Tag
+                          key={option.id || `${option.nombre}-${index}`} // Pass key directly
+                          label={option.nombre}
+                          {...tagProps} // Spread remaining props
+                        />
+                      );
+                    })}
                   </div>
                 )}
                 renderInput={(params) => (
@@ -315,7 +318,6 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
                     helperText={errors.services}
                     sx={{
                       mb: 2,
-                      // Hide input field when tags are present
                       "& input": {
                         display: formData.services.length > 0 ? "none" : "block",
                         width: formData.services.length > 0 ? "0" : "auto",
@@ -332,7 +334,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
                 sx={{
                   width: "100%",
                 }}
-              /> 
+              />
 
               <TextField
                 fullWidth
@@ -482,7 +484,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
             </div>
           </div>
 
-          <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+          <Box className="w-full" sx={{ display: "flex", gap: 2, mt: 2 }}>
             <Button variant="outlined" onClick={() => { setFormData(initialFormData); setErrors({}); }} fullWidth disabled={loading} sx={{ borderColor: "#00308F", color: "#00308F", "&:hover": { color: "#00246d", borderColor: "#00246d" } }}>
               Limpiar
             </Button>

@@ -8,9 +8,6 @@ import ModifyCitaModal from "../components/consultCitas/ModifyCitaModal";
 
 function ConsultCitas() {
   const rowsPerPage = 7;
-  const [loadingClients, setLoadingClients] = useState(false);
-  const [loadingClinics, setLoadingClinics] = useState(false);
-  const [loadingVets, setLoadingVets] = useState(false);
 
   const columns = [
     { field: "cliente", headerName: "Cliente", type: "text" },

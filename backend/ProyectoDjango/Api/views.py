@@ -341,6 +341,7 @@ def consult_citas(request):
     try:
         with connection.cursor() as cursor:
             returned_cursor = cursor.connection.cursor()
+            returned_services = cursor.connection.cursor()
             # Call the stored procedure
             cursor.callproc("VETLINK.GET_ALL_CITAS", [clinica_id, returned_cursor])
 
@@ -359,12 +360,25 @@ def consult_citas(request):
                 "clinica_id": row[9] if row[9] is not None else 0,
                 "clinica": row[10] if row[10] is not None else "N/A",
                 "motivo": row[11] if row[11] is not None else "N/A",
-                "estado": row[12]
+                "estado": row[12],
+                "services": []
             }
             for row in returned_cursor.fetchall()
             ]
+            for cita in citas:
+                cita_id = cita["cita_id"]
+                services_cursor = cursor.connection.cursor()
 
-            print(citas)
+                cursor.callproc("VETLINK.GET_SERVICES_BY_CITA_ID", [cita_id, services_cursor])
+
+                services = [
+                    {
+                        "service_id": service_row[0],
+                        "nombre": service_row[1]
+                    }
+                    for service_row in services_cursor.fetchall()
+                ]
+                cita["services"] = services
  
             # Apply search filter if specified
             if search:

@@ -34,20 +34,33 @@ import { enGB } from "date-fns/locale";
 
 const ModifyCitaModal = forwardRef(
   ({ open, handleClose, onSuccess, otherData, selectedItem = {} }, ref) => {
+    const getDefaultValue = (options, key, value) => {
+      if (!options || !Array.isArray(options)) return null;
+      return options.find((option) => option[key] === value) || null;
+    };
+
     const initialFormData = {
-      cliente: selectedItem.cliente || null,
-      veterinario: selectedItem.veterinario || null,
+      cliente: null,
+      veterinario: null,
+      mascota: "",
+      fecha: null,
+      clinica: null,
+      hora: "",
+      motivo: "",
+      services: [],
+    };
+
+    const [formData, setFormData] = useState({
+      cliente: getDefaultValue(otherData.clientes, "usuario", selectedItem.cliente_usuario) || "",
+      veterinario: getDefaultValue(otherData.veterinarios, "usuario", selectedItem.veterinario_usuario) || "",
+      clinica: getDefaultValue(otherData.clinicas, "clinica_id", selectedItem.clinica_id) || "",
       mascota: selectedItem.mascota || "",
-      fecha: selectedItem.fecha || null,
-      clinica: selectedItem.clinica || null,
+      fecha: selectedItem.fecha ? (typeof selectedItem.fecha === 'string' ? new Date(selectedItem.fecha) : selectedItem.fecha) : null,
       hora: selectedItem.hora || "",
       motivo: selectedItem.motivo || "",
-      services: selectedItem.services || [],
-    };
-     
-    console.log(selectedItem)
+      services: selectedItem.services || []
+    });
 
-    const [formData, setFormData] = useState(initialFormData);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
     const [clientes, setClientes] = useState([]);
@@ -55,7 +68,7 @@ const ModifyCitaModal = forwardRef(
     const [veterinarios, setVeterinarios] = useState([]);
     const [horarios, setHorarios] = useState([]);
     const [clinicas, setClinicas] = useState([]);
-    const [loadingClinics, setLoadingClinics] = useState([]);
+    const [loadingClinics, setLoadingClinics] = useState(false);
     const [loadingClients, setLoadingClients] = useState(true);
     const [loadingVets, setLoadingVets] = useState(true);
     const [services, setServices] = useState([]);
@@ -63,20 +76,25 @@ const ModifyCitaModal = forwardRef(
     const [loadingPets, setLoadingPets] = useState(false);
     const [user, setUser] = useState({});
 
+   
     useEffect(() => {
       if (otherData) {
         setClientes(otherData.clientes || []);
         setPets(otherData.pets || []);
         setVeterinarios(otherData.veterinarios || []);
-        setHorarios(otherData.horarios || []);
         setClinicas(otherData.clinicas || []);
         setServices(otherData.services || []);
         setUser(otherData.user || {});
 
+        const initialHorarios = otherData.horarios || [];
+        if (selectedItem.hora && !initialHorarios.includes(selectedItem.hora)) {
+          initialHorarios.unshift(selectedItem.hora);
+        }
+        formData.mascota = selectedItem.mascota
+        setHorarios(initialHorarios)
         setLoadingClinics(false);
         setLoadingClients(false);
         setLoadingVets(false);
-        setLoadingTimes(false);
         setLoadingPets(false);
       }
     }, [otherData]);
@@ -116,19 +134,35 @@ const ModifyCitaModal = forwardRef(
     }, [formData.cliente]);
 
 
-
     const fetchAvailableTimes = async () => {
       try {
         if (formData.veterinario && formData.clinica && formData.fecha) {
           setLoadingTimes(true);
-          const formattedDate = formData.fecha.toISOString().split("T")[0];
+          const formattedDate = formData.fecha instanceof Date
+            ? formData.fecha.toISOString().split("T")[0]
+            : new Date(formData.fecha).toISOString().split("T")[0];
+
+          const selectedDate = formData.fecha instanceof Date
+            ? formData.fecha.toISOString().split("T")[0]
+            : new Date(formData.fecha).toISOString().split("T")[0];
+          const selectedItemDate = selectedItem.fecha
+            ? (selectedItem.fecha instanceof Date
+              ? selectedItem.fecha.toISOString().split("T")[0]
+              : new Date(selectedItem.fecha).toISOString().split("T")[0])
+            : null;
 
           const response = await axios.put("http://localhost:8000/api/get-disp-times/", {
             vet_user: formData.veterinario.usuario,
             clinica_id: formData.clinica?.clinica_id,
             full_date: formattedDate,
           });
-          setHorarios(response.data.available_times || []);
+          const newHorarios = response.data.available_times || [];
+
+          if (selectedDate === selectedItemDate && selectedItem.hora && !newHorarios.includes(selectedItem.hora)) {
+            setHorarios([selectedItem.hora, ...newHorarios]);
+          } else {
+            setHorarios([]);
+          }
         }
       } catch (error) {
         console.error("Error fetching available times:", error);
@@ -145,7 +179,7 @@ const ModifyCitaModal = forwardRef(
         setFormData((prevData) => ({ ...prevData, hora: "" }));
         setLoadingTimes(true)
       }
-    }, [formData.clinica, formData.veterinario, formData.fecha]);
+    }, [formData.clinica, formData.veterinario, formData.fecha, formData]);
 
     useEffect(() => {
       if (user.clinica) {
@@ -158,7 +192,7 @@ const ModifyCitaModal = forwardRef(
     }, [user.clinica, clinicas, setFormData]);
 
     const handleSubmit = async (e) => {
-      e.preventDefault(); // Prevent the default HTML5 validation
+      e.preventDefault();
       setLoading(true);
       if (!validate()) {
         setLoading(false);
@@ -169,7 +203,6 @@ const ModifyCitaModal = forwardRef(
         onSuccess("Cita agregada correctamente", "success");
         handleClose();
       } catch (error) {
-        console.error(error);
         onSuccess("Error al agregar cita.", "error");
       } finally {
         setLoading(false);
@@ -189,6 +222,28 @@ const ModifyCitaModal = forwardRef(
       return Object.keys(newErrors).length === 0;
     };
 
+    const handleValue = () => {
+      const selectedServices = selectedItem.services || [];
+      const combinedServices = [...formData.services, ...selectedServices];
+
+      // Filter to ensure no duplicates based on `nombre`
+      const uniqueServices = combinedServices.reduce((acc, service) => {
+        if (!acc.some((s) => s.servicio_id === service.servicio_id)) {
+          acc.push(service);
+        }
+        return acc;
+      }, []);
+
+      return uniqueServices;
+    };
+
+    useEffect(() => {
+      setFormData((prevData) => ({
+        ...prevData,
+        services: handleValue(),
+      }));
+    }, []);
+
     return (
       <Modal open={open} onClose={handleClose} aria-labelledby="modal-title" aria-describedby="modal-description">
         <Box
@@ -206,13 +261,14 @@ const ModifyCitaModal = forwardRef(
               Modificar Cita
             </Typography>
 
-            <div className="flex flex-col md:flex-row gap-0 md:gap-10 w-full">
+            <div className="flex flex-col md:flex-row gap-0 md:gap-6 w-full">
               {/* Left Column */}
               <div className="w-full md:w-1/2">
+
                 <Autocomplete
                   options={clientes}
                   getOptionLabel={(option) => option.usuario || ""}
-                  value={formData.cliente || ""}
+                  value={formData.cliente || ""} // Use formData.cliente here
                   onChange={(event, newValue) => setFormData({ ...formData, cliente: newValue })}
                   loading={loadingClients}
                   renderInput={(params) => (
@@ -245,7 +301,7 @@ const ModifyCitaModal = forwardRef(
                 <Autocomplete
                   options={pets}
                   getOptionLabel={(option) => option.nombre || ""}
-                  value={formData.mascota || ""}
+                  value={formData.mascota || ""} // Use formData.mascota here
                   onChange={(event, newValue) => setFormData({ ...formData, mascota: newValue })}
                   loading={loadingPets}
                   disabled={!formData.cliente}
@@ -280,15 +336,20 @@ const ModifyCitaModal = forwardRef(
                   multiple
                   options={services}
                   getOptionLabel={(option) => option.nombre || ""}
-                  value={formData.services || ""}
+                  value={formData.services}
+                  isOptionEqualToValue={(option, value) => option.servicio_id === value.servicio_id}
                   onChange={(event, newValue) => {
-                    setFormData({ ...formData, services: newValue });
+                    const uniqueServices = newValue.reduce((acc, service) => {
+                      if (!acc.some((s) => s.servicio_id === service.servicio_id)) {
+                        acc.push(service);
+                      }
+                      return acc;
+                    }, []);
+                    setFormData({ ...formData, services: uniqueServices });
                   }}
                   renderTags={(value, getTagProps) => (
                     <div
                       style={{
-                        minHeight: "39px",
-                        maxHeight: "39px",
                         overflowY: "auto",
                         display: "flex",
                         flexWrap: "wrap",
@@ -296,13 +357,16 @@ const ModifyCitaModal = forwardRef(
                         scrollbarWidth: "none",
                       }}
                     >
-                      {value.map((option, index) => (
-                        <Tag
-                          key={option.id || `${option.nombre}-${index}`}
-                          label={option.nombre}
-                          {...getTagProps({ index })}
-                        />
-                      ))}
+                      {value.map((option, index) => {
+                        const tagProps = getTagProps({ index });
+                        return (
+                          <Tag
+                            key={option.servicio_id || `${option.nombre}-${index}`}
+                            label={option.nombre}
+                            {...tagProps}
+                          />
+                        );
+                      })}
                     </div>
                   )}
                   renderInput={(params) => (
@@ -315,7 +379,6 @@ const ModifyCitaModal = forwardRef(
                       helperText={errors.services}
                       sx={{
                         mb: 2,
-                        // Hide input field when tags are present
                         "& input": {
                           display: formData.services.length > 0 ? "none" : "block",
                           width: formData.services.length > 0 ? "0" : "auto",
@@ -426,7 +489,10 @@ const ModifyCitaModal = forwardRef(
                   <DatePicker
                     label="Fecha"
                     value={formData.fecha || null}
-                    onChange={(newDate) => setFormData({ ...formData, fecha: isValid(newDate) ? newDate : null })}
+                    onChange={(newDate) => {
+                      setFormData({ ...formData, fecha: isValid(newDate) ? newDate : null, hora: "" });
+                      setHorarios((prevHorarios) => prevHorarios.filter(hora => hora !== selectedItem.hora));
+                    }}
                     slots={{ openPickerIcon: ArrowDropDownIcon }}
                     slotProps={{
                       textField: {
@@ -482,12 +548,12 @@ const ModifyCitaModal = forwardRef(
               </div>
             </div>
 
-            <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+            <Box className="w-full" sx={{ display: "flex", gap: 2, mt: 2}}>
               <Button variant="outlined" onClick={() => { setFormData(initialFormData); setErrors({}); }} fullWidth disabled={loading} sx={{ borderColor: "#00308F", color: "#00308F", "&:hover": { color: "#00246d", borderColor: "#00246d" } }}>
                 Limpiar
               </Button>
               <Button variant="contained" type="submit" fullWidth disabled={loading} startIcon={loading && <CircularProgress size={20} />} sx={{ minWidth: "160px", backgroundColor: "#00308F", "&:hover": { backgroundColor: "#00246d" } }}>
-                {loading ? "Agregando..." : "Agregar Cita"}
+                {loading ? "Modificando..." : "Modificar Cita"}
               </Button>
             </Box>
           </form>
