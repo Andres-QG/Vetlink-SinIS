@@ -144,6 +144,7 @@ const ModifyRecord = forwardRef(
 
     const handleError = (error) => {
       if (error.response) {
+        console.error(error.response.data);
         if (error.response.status === 404) {
           onSuccess("Expediente no encontrado.", "error");
         } else if (error.response.status === 400) {
@@ -311,7 +312,7 @@ const ModifyRecord = forwardRef(
                 <TextField
                   {...params}
                   variant="outlined"
-                  label="Síntomas*"
+                  label="Síntomas"
                   placeholder="Selecciona síntomas"
                   error={!!errors.sintomas}
                   helperText={errors.sintomas}
@@ -355,7 +356,7 @@ const ModifyRecord = forwardRef(
                 <TextField
                   {...params}
                   variant="outlined"
-                  label="Vacunas*"
+                  label="Vacunas"
                   placeholder="Selecciona vacunas"
                   error={!!errors.vacunas}
                   helperText={errors.vacunas}
@@ -401,7 +402,7 @@ const ModifyRecord = forwardRef(
                 <TextField
                   {...params}
                   variant="outlined"
-                  label="Tratamientos*"
+                  label="Tratamientos"
                   placeholder="Selecciona tratamientos"
                   error={!!errors.tratamientos}
                   helperText={errors.tratamientos}

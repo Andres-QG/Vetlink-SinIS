@@ -109,7 +109,8 @@ const ConsultView = ({
                 marginRight: { xs: "0px", md: "10px" },
                 width: { xs: "100%", md: "auto" },
                 fontSize: "0.85rem",
-              }}>
+              }}
+            >
               Agregar
             </Button>
             <SearchBar
@@ -182,6 +183,8 @@ ConsultView.propTypes = {
   ).isRequired,
   pkCol: PropTypes.string.isRequired,
   visualIdentifierCol: PropTypes.string.isRequired,
+  rowsPerPage: PropTypes.number,
+  otherData: PropTypes.object,
 };
 
 export default ConsultView;

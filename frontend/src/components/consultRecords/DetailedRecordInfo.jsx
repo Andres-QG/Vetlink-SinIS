@@ -106,7 +106,7 @@ DetailedRecordInfo.propTypes = {
   open: PropTypes.bool.isRequired,
   handleClose: PropTypes.func.isRequired,
   selectedItem: PropTypes.shape({
-    consulta_id: PropTypes.string.isRequired,
+    consulta_id: PropTypes.number.isRequired,
     nombre_mascota: PropTypes.string.isRequired,
     fecha: PropTypes.string.isRequired,
     peso: PropTypes.string.isRequired,

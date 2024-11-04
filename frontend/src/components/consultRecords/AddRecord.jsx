@@ -459,9 +459,9 @@ AddRecord.propTypes = {
   onSuccess: PropTypes.func.isRequired,
   otherData: PropTypes.shape({
     mascotas: PropTypes.array.isRequired,
-    vacunas: PropTypes.array.isRequired,
-    sintomas: PropTypes.array.isRequired,
-    tratamientos: PropTypes.array.isRequired,
+    vacunas: PropTypes.string.isRequired,
+    sintomas: PropTypes.string.isRequired,
+    tratamientos: PropTypes.string.isRequired,
   }).isRequired,
 };
 

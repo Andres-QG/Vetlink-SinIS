@@ -152,24 +152,6 @@ const GeneralTable = ({
     setSelectedItem(null);
   };
 
-  const renderEstadoChip = (estado) => {
-    const color =
-      estado === "Activo" ? "rgba(184,230,215,255)" : "rgba(255,124,125,255)";
-    const label = estado === "Activo" ? "Activo" : "Inactivo";
-    return (
-      <Chip
-        label={label}
-        sx={{
-          backgroundColor: color,
-          color: "black",
-          width: "80px",
-          display: "flex",
-          justifyContent: "center",
-        }}
-      />
-    );
-  };
-
   return (
     <>
       {isMobile ? (
@@ -183,52 +165,76 @@ const GeneralTable = ({
                     col.type !== "action" && (
                       <Typography variant="body2" key={col.field}>
                         <strong>{col.headerName}:</strong>{" "}
-                        {col.type === "chip"
-                          ? renderEstadoChip(
+                        {col.type === "chip" ? (
+                          <Chip
+                            label={
                               item[col.field] === true ||
-                                item[col.field] === "activo"
+                              item[col.field] === "activo"
                                 ? "Activo"
                                 : "Inactivo"
-                            )
-                          : item[col.field]}
+                            }
+                            style={{
+                              backgroundColor:
+                                item[col.field] === true ||
+                                item[col.field] === "activo"
+                                  ? col.chipColors?.["activo"]
+                                  : col.chipColors?.["inactivo"] || "gray",
+                            }}
+                          />
+                        ) : (
+                          item[col.field]
+                        )}
                       </Typography>
                     )
                 )}
                 <Box
                   sx={{
                     display: "flex",
-                    flexDirection: "row",
+                    flexDirection: "column",
                     gap: 1,
                     mt: 2,
-                    alignItems: "center",
-                  }}>
+                    alignItems: "flex-start",
+                  }}
+                >
                   {columns
                     .filter((col) => col.type === "action")
                     .map((col) => (
                       <IconButton
                         key={`action-${col.field}`}
-                        onClick={() => col.onClick(item)}>
+                        onClick={() => col.onClick(item)}
+                      >
                         {col.icon}
                       </IconButton>
                     ))}
                   {DetailsModal && (
                     <Button
                       onClick={() => handleOpenDetailsModal(item)}
-                      startIcon={<Info />}>
+                      startIcon={<Info />}
+                    >
                       Más detalles
                     </Button>
                   )}
                   <Button
                     onClick={() => handleOpenModModal(item)}
-                    startIcon={<Edit />}>
+                    startIcon={<Edit />}
+                  >
                     Modificar
                   </Button>
                   {item.activo === true || item.activo === "activo" ? (
                     <Button
                       onClick={() => handleOpenModal(item)}
                       startIcon={<Delete />}
-                      color="error">
+                      color="error"
+                    >
                       Desactivar
+                    </Button>
+                  ) : deletionUrl && !restoreUrl ? (
+                    <Button
+                      onClick={() => handleOpenModal(item)}
+                      startIcon={<Delete />}
+                      color="error"
+                    >
+                      Eliminar
                     </Button>
                   ) : null}
                   {restoreUrl &&
@@ -236,7 +242,8 @@ const GeneralTable = ({
                       <Button
                         onClick={() => handleReactivate(item)}
                         startIcon={<Restore style={{ color: green[500] }} />}
-                        style={{ color: green[500] }}>
+                        style={{ color: green[500] }}
+                      >
                         Reactivar
                       </Button>
                     )}
@@ -273,7 +280,8 @@ const GeneralTable = ({
                         style={{
                           fontWeight: "bold",
                           backgroundColor: "#f0f0f0",
-                        }}>
+                        }}
+                      >
                         {col.headerName}
                       </TableCell>
                     )
@@ -282,7 +290,8 @@ const GeneralTable = ({
                   style={{
                     fontWeight: "bold",
                     backgroundColor: "#f0f0f0",
-                  }}>
+                  }}
+                >
                   Acciones
                 </TableCell>
               </TableRow>
@@ -294,57 +303,68 @@ const GeneralTable = ({
                     (col) =>
                       col.type !== "action" && (
                         <TableCell
-                          key={`cell-${item[pkCol] || index}-${col.field}`}>
-                          {col.type === "chip"
-                            ? renderEstadoChip(
+                          key={`cell-${item[pkCol] || index}-${col.field}`}
+                        >
+                          {col.type === "chip" ? (
+                            <Chip
+                              label={
                                 item[col.field] === true ||
-                                  item[col.field] === "activo"
+                                item[col.field] === "activo"
                                   ? "Activo"
                                   : "Inactivo"
-                              )
-                            : item[col.field]}
+                              }
+                              style={{
+                                position: "relative",
+                                left: "-8px",
+                                backgroundColor:
+                                  item[col.field] === true ||
+                                  item[col.field] === "activo"
+                                    ? col.chipColors?.["activo"]
+                                    : col.chipColors?.["inactivo"] || "gray",
+                              }}
+                            />
+                          ) : (
+                            item[col.field]
+                          )}
                         </TableCell>
                       )
                   )}
                   <TableCell key={`actions-${item[pkCol] || index}`}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexDirection: "row",
-                        gap: 1,
-                        alignItems: "center",
-                      }}>
-                      {columns
-                        .filter((col) => col.type === "action")
-                        .map((col) => (
-                          <IconButton
-                            key={`action-${col.field}`}
-                            onClick={() => col.onClick(item)}>
-                            {col.icon}
-                          </IconButton>
-                        ))}
-                      {DetailsModal && (
+                    {columns
+                      .filter((col) => col.type === "action")
+                      .map((col) => (
                         <IconButton
-                          onClick={() => handleOpenDetailsModal(item)}>
-                          <Info />
+                          key={`action-${col.field}`}
+                          onClick={() => col.onClick(item)}
+                        >
+                          {col.icon}
                         </IconButton>
-                      )}
-                      <IconButton onClick={() => handleOpenModModal(item)}>
-                        <Edit />
+                      ))}
+                    {DetailsModal && (
+                      <IconButton onClick={() => handleOpenDetailsModal(item)}>
+                        <Info />
                       </IconButton>
-                      {item.activo === true || item.activo === "activo" ? (
-                        <IconButton onClick={() => handleOpenModal(item)}>
-                          <Delete color="error" />
-                        </IconButton>
-                      ) : null}
-                      {restoreUrl &&
-                        (item.activo === false ||
-                          item.activo === "inactivo") && (
-                          <IconButton onClick={() => handleReactivate(item)}>
-                            <Restore style={{ color: green[500] }} />
-                          </IconButton>
-                        )}
-                    </Box>
+                    )}
+                    <IconButton onClick={() => handleOpenModModal(item)}>
+                      <Edit />
+                    </IconButton>
+                    {item.activo === true || item.activo === "activo" ? (
+                      <IconButton onClick={() => handleOpenModal(item)}>
+                        <Delete color="error" />
+                      </IconButton>
+                    ) : deletionUrl && !restoreUrl ? (
+                      <IconButton onClick={() => handleOpenModal(item)}>
+                        <Delete color="error" />
+                      </IconButton>
+                    ) : null}
+                    {restoreUrl &&
+                      (item.activo === false || item.activo === "inactivo") && (
+                        <Button
+                          onClick={() => handleReactivate(item)}
+                          startIcon={<Restore style={{ color: green[500] }} />}
+                          style={{ color: green[500] }}
+                        />
+                      )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -363,7 +383,8 @@ const GeneralTable = ({
                   sx={{
                     borderBottom: "none",
                     padding: "8px 0",
-                  }}>
+                  }}
+                >
                   <TablePagination
                     component="div"
                     count={totalCount}
@@ -391,15 +412,19 @@ const GeneralTable = ({
       <Modal open={openModal} onClose={handleCloseModal}>
         <Box
           className="p-6 bg-white rounded-lg shadow-lg"
-          sx={{ width: 400, margin: "auto", marginTop: "10%" }}>
+          sx={{ width: 400, margin: "auto", marginTop: "10%" }}
+        >
           <Typography variant="h6" component="h2">
-            ¿Estás seguro de que deseas desactivar{" "}
+            <Typography variant="h6" component="h2">
+              ¿Estás seguro de que deseas{" "}
+              {restoreUrl ? "desactivar" : "eliminar"}{" "}
+            </Typography>
             {selectedItem?.[visualIdentifierCol]}?
           </Typography>
           <Typography sx={{ mt: 2 }}>Esta acción se puede deshacer.</Typography>
           <Box mt={4} display="flex" justifyContent="space-between">
             <Button variant="contained" color="error" onClick={handleDelete}>
-              Desactivar
+              {restoreUrl ? "Desactivar" : "Eliminar"}
             </Button>
             <Button variant="outlined" onClick={handleCloseModal}>
               Cancelar
@@ -459,7 +484,7 @@ GeneralTable.propTypes = {
   fetchData: PropTypes.func.isRequired,
   ModModal: PropTypes.elementType.isRequired,
   DetailsModal: PropTypes.elementType,
-  otherData: PropTypes.array,
+  otherData: PropTypes.object,
 };
 
 export default GeneralTable;
