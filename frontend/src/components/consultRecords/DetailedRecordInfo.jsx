@@ -13,9 +13,15 @@ const DetailedRecordInfo = ({ open, handleClose, selectedItem }) => {
     nombre_mascota: selectedItem.nombre_mascota,
     fecha: selectedItem.fecha,
     peso: selectedItem.peso,
-    sintomas: selectedItem.sintomas.split(","),
-    vacunas: selectedItem.vacunas.split(","),
-    tratamientos: selectedItem.tratamientos.split(","),
+    sintomas: selectedItem.sintomas
+      ? selectedItem.sintomas.split(",")
+      : ["Ningún síntoma registrado"],
+    vacunas: selectedItem.vacunas
+      ? selectedItem.vacunas.split(",")
+      : ["Ningúna vacuna registrada"],
+    tratamientos: selectedItem.tratamientos
+      ? selectedItem.tratamientos.split(",")
+      : ["Ningún tratamiento registrado"],
   };
 
   return (
@@ -100,7 +106,7 @@ DetailedRecordInfo.propTypes = {
   open: PropTypes.bool.isRequired,
   handleClose: PropTypes.func.isRequired,
   selectedItem: PropTypes.shape({
-    consulta_id: PropTypes.string.isRequired,
+    consulta_id: PropTypes.number.isRequired,
     nombre_mascota: PropTypes.string.isRequired,
     fecha: PropTypes.string.isRequired,
     peso: PropTypes.string.isRequired,

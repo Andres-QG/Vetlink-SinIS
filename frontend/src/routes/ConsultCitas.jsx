@@ -86,7 +86,7 @@ function ConsultCitas() {
   return (
     <>
       <ConsultView
-        title="Consultar Citas"
+        title="Citas"
         fetchUrl="http://localhost:8000/api/consult-citas/"
         deletionUrl="http://localhost:8000/api/delete-citas"
         addComponent={AddCitaModal}

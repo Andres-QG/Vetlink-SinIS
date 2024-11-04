@@ -484,7 +484,7 @@ GeneralTable.propTypes = {
   fetchData: PropTypes.func.isRequired,
   ModModal: PropTypes.elementType.isRequired,
   DetailsModal: PropTypes.elementType,
-  otherData: PropTypes.array,
+  otherData: PropTypes.object,
 };
 
 export default GeneralTable;

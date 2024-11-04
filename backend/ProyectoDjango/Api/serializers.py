@@ -63,9 +63,9 @@ class ExpedienteSerializer(serializers.Serializer):
     fecha = serializers.DateTimeField()
     diagnostico = serializers.CharField(max_length=255)
     peso = serializers.FloatField()
-    vacunas = serializers.CharField(max_length=255)   # Lista separada por comas
-    sintomas = serializers.CharField(max_length=255)  # Lista separada por comas
-    tratamientos = serializers.CharField(max_length=255)  # Lista separada por comas
+    vacunas = serializers.CharField(max_length=255, allow_blank=True)   # Lista separada por comas
+    sintomas = serializers.CharField(max_length=255, allow_blank=True)  # Lista separada por comas
+    tratamientos = serializers.CharField(max_length=255, allow_blank=True)  # Lista separada por comas
 
 class CitasSerializer(serializers.ModelSerializer):
     class Meta:

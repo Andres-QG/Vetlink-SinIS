@@ -1444,31 +1444,34 @@ def add_pet_record(request):
             return Response({"error": "Mascota no encontrada"}, status=404)
 
         # Verificar si todas las vacunas existen
-        vacunas_list = [vacuna.strip().lower() for vacuna in vacunas.split(",")]
-        for vacuna in vacunas_list:
-            if not Vacunas.objects.filter(nombre__iexact=vacuna).exists():
-                return Response(
-                    {"error": f"Vacuna con nombre {vacuna} no encontrada"}, status=404
-                )
+        vacunas_list = [vacuna.strip().lower() for vacuna in vacunas.split(",") if vacuna.strip()]
+        if vacunas_list:
+            for vacuna in vacunas_list:
+                if not Vacunas.objects.filter(nombre__iexact=vacuna).exists():
+                    return Response(
+                        {"error": f"Vacuna con nombre {vacuna} no encontrada"}, status=404
+                    )
 
         # Verificar si todos los síntomas existen
-        sintomas_list = [sintoma.strip().lower() for sintoma in sintomas.split(",")]
-        for sintoma in sintomas_list:
-            if not Sintomas.objects.filter(nombre__iexact=sintoma).exists():
-                return Response(
-                    {"error": f"Síntoma con nombre {sintoma} no encontrado"}, status=404
-                )
+        sintomas_list = [sintoma.strip().lower() for sintoma in sintomas.split(",") if sintoma.strip()]
+        if sintomas_list:
+            for sintoma in sintomas_list:
+                if not Sintomas.objects.filter(nombre__iexact=sintoma).exists():
+                    return Response(
+                        {"error": f"Síntoma con nombre {sintoma} no encontrado"}, status=404
+                    )
 
         # Verificar si todos los tratamientos existen
         tratamientos_list = [
-            tratamiento.strip().lower() for tratamiento in tratamientos.split(",")
+            tratamiento.strip().lower() for tratamiento in tratamientos.split(",") if tratamiento.strip()
         ]
-        for tratamiento in tratamientos_list:
-            if not Tratamientos.objects.filter(nombre__iexact=tratamiento).exists():
-                return Response(
-                    {"error": f"Tratamiento con nombre {tratamiento} no encontrado"},
-                    status=404,
-                )
+        if tratamientos_list:
+            for tratamiento in tratamientos_list:
+                if not Tratamientos.objects.filter(nombre__iexact=tratamiento).exists():
+                    return Response(
+                        {"error": f"Tratamiento con nombre {tratamiento} no encontrado"},
+                        status=404,
+                    )
 
         # Proceder a agregar el expediente
         with connection.cursor() as cursor:
@@ -1482,6 +1485,7 @@ def add_pet_record(request):
     except Mascotas.DoesNotExist:
         return Response({"error": "Mascota no encontrada"}, status=404)
     except Exception as e:
+        print({"error": str(e)})
         return Response({"error": str(e)}, status=500)
 
 
@@ -1582,42 +1586,40 @@ def update_pet_record(request, mascota_id, consulta_id):
         "tratamientos"
     )  # Se espera una cadena con tratamientos separados por coma
 
-    # Validar los datos necesarios
-    if not all([diagnostico, peso, vacunas, sintomas, tratamientos]):
-        return Response(
-            {"error": "Todos los campos son obligatorios."},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
     try:
         # Normalizar y verificar si todas las vacunas existen
-        vacunas_list = [vacuna.strip().lower() for vacuna in vacunas.split(",")]
-        for vacuna in vacunas_list:
-            if not Vacunas.objects.filter(nombre__iexact=vacuna).exists():
-                return Response(
-                    {"error": f"Vacuna con nombre {vacuna} no encontrada"},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
+        vacunas_list = [vacuna.strip().lower() for vacuna in vacunas.split(",") if vacuna.strip()]
+        print("vacunas_list: ", vacunas_list)
+        if vacunas_list:
+            for vacuna in vacunas_list:
+                if not Vacunas.objects.filter(nombre__iexact=vacuna).exists():
+                    return Response(
+                        {"error": f"Vacuna con nombre {vacuna} no encontrada"},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
 
         # Normalizar y verificar si todos los síntomas existen
-        sintomas_list = [sintoma.strip().lower() for sintoma in sintomas.split(",")]
-        for sintoma in sintomas_list:
-            if not Sintomas.objects.filter(nombre__iexact=sintoma).exists():
-                return Response(
-                    {"error": f"Síntoma con nombre {sintoma} no encontrado"},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
+        sintomas_list = [sintoma.strip().lower() for sintoma in sintomas.split(",") if sintoma.strip()]
+        if sintomas_list:
+            for sintoma in sintomas_list:
+                if not Sintomas.objects.filter(nombre__iexact=sintoma).exists():
+                    return Response(
+                        {"error": f"Síntoma con nombre {sintoma} no encontrado"},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
 
         # Normalizar y verificar si todos los tratamientos existen
         tratamientos_list = [
             tratamiento.strip().lower() for tratamiento in tratamientos.split(",")
+                                                            if tratamiento.strip()
         ]
-        for tratamiento in tratamientos_list:
-            if not Tratamientos.objects.filter(nombre__iexact=tratamiento).exists():
-                return Response(
-                    {"error": f"Tratamiento con nombre {tratamiento} no encontrado"},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
+        if tratamientos_list:
+            for tratamiento in tratamientos_list:
+                if not Tratamientos.objects.filter(nombre__iexact=tratamiento).exists():
+                    return Response(
+                        {"error": f"Tratamiento con nombre {tratamiento} no encontrado"},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
 
         with connection.cursor() as cursor:
             cursor.callproc(
