@@ -68,11 +68,13 @@ const AddRecord = forwardRef(
     const handleSubmit = async (e) => {
       e.preventDefault();
       if (!validateForm()) {
+        console.log("Form validation failed", errors);
         return;
       }
       setLoading(true);
 
       const formDataToSend = prepareFormData();
+      console.log("Form data to send:", formDataToSend);
 
       try {
         await sendFormData(formDataToSend);
@@ -100,6 +102,7 @@ const AddRecord = forwardRef(
     };
 
     const sendFormData = async (formDataToSend) => {
+      console.log("Sending form data:", formDataToSend);
       const response = await axios.post(
         "http://localhost:8000/api/add-pet-record/",
         formDataToSend,
@@ -109,8 +112,10 @@ const AddRecord = forwardRef(
           },
         }
       );
+      console.log("Response:", response);
 
       if (response.status === 201) {
+        console.log("Expediente agregado exitosamente.");
         onSuccess("Expediente agregado exitosamente.", "success");
       }
     };
@@ -181,6 +186,7 @@ const AddRecord = forwardRef(
             </Stack>
 
             <Autocomplete
+              disablePortal
               options={otherData.mascotas}
               getOptionLabel={(option) =>
                 `${option.mascota_id} - ${option.nombre} (dueño: ${option.usuario_cliente})`
@@ -209,6 +215,10 @@ const AddRecord = forwardRef(
                     ),
                   }}
                   sx={{ mb: 2 }}
+                  inputProps={{
+                    ...params.inputProps,
+                    "data-testid": "mascotaid-input",
+                  }}
                 />
               )}
               ListboxProps={{

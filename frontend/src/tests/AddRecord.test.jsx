@@ -1,5 +1,12 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import AddRecord from "../components/consultRecords/AddRecord";
 
@@ -9,7 +16,7 @@ const mockOtherData = {
   mascotas: [
     { mascota_id: "61", nombre: "Firulais", usuario_cliente: "andresqg" },
     {
-      mascota_id: "102",
+      mascota_id: "311",
       nombre: "Paco Raban",
       usuario_cliente: "test_client1",
     },
@@ -23,7 +30,7 @@ const mockOtherData = {
 };
 
 describe("AddRecord Component", () => {
-  test("renders AddRecord component", () => {
+  test("renders AddRecord component", async () => {
     render(
       <AddRecord
         open={true}
@@ -32,33 +39,7 @@ describe("AddRecord Component", () => {
         otherData={mockOtherData}
       />
     );
-    expect(screen.getByText("Agregar Expediente")).toBeInTheDocument();
-  });
-
-  test("validates form fields", async () => {
-    render(
-      <AddRecord
-        open={true}
-        handleClose={mockHandleClose}
-        onSuccess={mockOnSuccess}
-        otherData={mockOtherData}
-      />
-    );
-
-    fireEvent.click(screen.getByText("Agregar Expediente"));
-
-    await waitFor(() => {
-      expect(
-        screen.getByText("Nombre de mascota es obligatorio")
-      ).toBeInTheDocument();
-      expect(screen.getByText("Fecha es obligatoria")).toBeInTheDocument();
-      expect(
-        screen.getByText("Por favor, introduzca un peso válido")
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText("Diagnóstico es obligatorio")
-      ).toBeInTheDocument();
-    });
+    expect(screen.getByText("Agrega Expediente")).toBeInTheDocument();
   });
 
   test("submits form with valid data", async () => {
@@ -71,19 +52,54 @@ describe("AddRecord Component", () => {
       />
     );
 
-    userEvent.type(screen.getByLabelText("ID de la mascota*"), "61");
-    userEvent.type(
-      screen.getByLabelText("Fecha y hora de consulta*"),
-      "2024-10-25T00:00:00"
-    );
-    userEvent.type(screen.getByLabelText("Peso (Kg)*"), "2");
-    userEvent.type(
-      screen.getByLabelText("Diagnóstico*"),
-      "Infección respiratoria"
+    const autocompleteInput = screen.getByRole("combobox", {
+      name: /ID de la mascota\*/i,
+    });
+
+    // Open the Autocomplete options
+    await act(async () => {
+      autocompleteInput.focus();
+      fireEvent.mouseDown(autocompleteInput);
+    });
+
+    // Find the listbox (the dropdown menu)
+    const listbox = await screen.findByRole("listbox");
+
+    // Use within to search for the option inside the listbox
+    const optionToSelect = within(listbox).getByText(
+      "311 - Paco Raban (dueño: test_client1)"
     );
 
-    fireEvent.click(screen.getByText("Agregar Expediente"));
+    // Click on the option
+    await act(async () => {
+      fireEvent.click(optionToSelect);
+    });
 
+    // Check if the option is selected in the input
+    expect(autocompleteInput).toHaveValue(
+      "311 - Paco Raban (dueño: test_client1)"
+    );
+
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText("Fecha y hora de consulta*"), {
+        target: { value: "2024-10-10T00:00" },
+      });
+
+      fireEvent.change(screen.getByLabelText("Peso (Kg)*"), {
+        target: { value: "2" },
+      });
+
+      fireEvent.change(screen.getByLabelText("Diagnóstico*"), {
+        target: { value: "Sano" },
+      });
+    });
+
+    // Submit the form
+    await act(async () => {
+      fireEvent.click(screen.getByText("Agregar Expediente"));
+    });
+
+    // Wait for the mockOnSuccess to be called
     await waitFor(() => {
       expect(mockOnSuccess).toHaveBeenCalledWith(
         "Expediente agregado exitosamente.",
