@@ -1465,6 +1465,7 @@ def add_pet_record(request):
     except Mascotas.DoesNotExist:
         return Response({"error": "Mascota no encontrada"}, status=404)
     except Exception as e:
+        print({"error": str(e)})
         return Response({"error": str(e)}, status=500)
 
 
