@@ -2012,7 +2012,7 @@ def modify_vet_schedule(request, horario_id):
             {"error": f"Error al modificar el horario: {str(e)}"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
-        
+
 @api_view(['DELETE'])
 def delete_vet_schedule(request, horario_id):
     try:
@@ -2030,9 +2030,6 @@ def delete_vet_schedule(request, horario_id):
         else:
             # Otro error
             return Response({'error': 'Error al eliminar el horario.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-    
-
 
 
 @api_view(["GET"])
@@ -2145,12 +2142,20 @@ def reactivate_service(request, servicio_id):
 @api_view(["POST"])
 def add_servicio(request):
     try:
+        # Obtener datos del request
         nombre = request.data.get("nombre")
         descripcion = request.data.get("descripcion")
-        numero_sesiones = request.data.get("numero_sesiones", 1)
+        numero_sesiones = request.data.get("numero_sesiones")
         minutos_sesion = request.data.get("minutos_sesion")
         costo = request.data.get("costo")
-        activo = True  # Asumimos que el servicio se crea como activo por defecto
+        dir_imagen = request.data.get("dir_imagen")
+
+        # Validar datos requeridos
+        if not all([nombre, descripcion]):
+            return Response(
+                {"error": "Campos  requeridos"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # Verificar si ya existe un servicio con el mismo nombre
         if Servicios.objects.filter(nombre=nombre).exists():
@@ -2159,30 +2164,29 @@ def add_servicio(request):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Generar automáticamente dir_imagen
-        dir_imagen = f"./src/assets/img/Services_{nombre}.jpg"
-
+        # Crear el nuevo servicio
         nuevo_servicio = Servicios(
             nombre=nombre,
             descripcion=descripcion,
             numero_sesiones=numero_sesiones,
             minutos_sesion=minutos_sesion,
             costo=costo,
-            activo=activo,
             dir_imagen=dir_imagen,
+            activo=True,
         )
+
+        # Guardar el servicio
         nuevo_servicio.save()
+
         return Response(
-            {"message": "Servicio agregado con éxito."},
-            status=status.HTTP_201_CREATED,
+            {"message": "Servicio agregado con éxito."}, status=status.HTTP_201_CREATED
         )
+
     except Exception as e:
-        print(e)
-        return Response(
-            {"error": str(e)},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        )
-        
+        print(f"Error al agregar servicio: {str(e)}")
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 @api_view(['GET'])
 def consult_my_pets(request):
     try:
@@ -2280,7 +2284,7 @@ def add_mypet(request):
         else:
             print(f'Error en add_mypet: {str(e)}')
             return Response({'error': 'Error al agregar la mascota.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+
 @api_view(['PUT'])
 @transaction.atomic
 def update_mypet(request, mascota_id):
@@ -2336,7 +2340,7 @@ def update_mypet(request, mascota_id):
         else:
             print(f'Error en update_mypet: {str(e)}')
             return Response({'error': 'Error al modificar la mascota.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+
 @api_view(["DELETE"])
 @transaction.atomic
 def delete_my_pet(request, mascota_id):
