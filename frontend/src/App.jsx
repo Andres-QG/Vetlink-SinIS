@@ -62,7 +62,9 @@ function App() {
               path="/signup"
               element={
                 <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
-                  <Signup />
+                  <NotificationProvider>
+                    <Signup />
+                  </NotificationProvider>
                 </DashBoardLayout>
               }
             />
