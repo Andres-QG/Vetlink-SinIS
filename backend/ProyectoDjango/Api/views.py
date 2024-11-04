@@ -327,46 +327,63 @@ def consult_citas(request):
     search = request.GET.get("search", "")
     column = request.GET.get("column", "fecha")
     order = request.GET.get("order", "asc")
+    clinica_id = request.GET.get("clinica_id")  # Optional clinic filter
 
-    if column == "cliente":
-        column = "usuario_cliente__nombre"
-    elif column == "veterinario":
-        column = "usuario_veterinario__nombre"
-    elif column == "mascota":
-        column = "mascota__nombre"
+    # Map the column names to match the stored procedure's response if necessary
+    column_mapping = {
+        "cliente": "CLIENTE",
+        "veterinario": "VETERINARIO",
+        "mascota": "NOMBRE",
+        "fecha": "FECHA"
+    }
+    column = column_mapping.get(column, column)
 
     try:
-        citas = Citas.objects.all()
+        with connection.cursor() as cursor:
+            returned_cursor = cursor.connection.cursor()
+            # Call the stored procedure
+            cursor.callproc("VETLINK.GET_ALL_CITAS", [clinica_id, returned_cursor])
 
-        if search:
-            if column == "fecha":
-                citas = citas.filter(fecha__icontains=search)
-            else:
-                citas = citas.filter(**{f"{column}__icontains": search})
+            # Fetch the results from returned_cursor instead of cursor
+            citas = [
+            {
+                "cita_id": row[0],
+                "cliente_nombre": row[1],
+                "cliente_usuario": row[2],
+                "veterinario_nombre": row[3],
+                "veterinario_usuario": row[4],
+                "mascota_id": row[5],
+                "mascota": row[6],
+                "fecha": row[7].strftime('%Y-%m-%d'),  # Format date for consistency
+                "hora": row[8],
+                "motivo": row[9] if row[9] is not None else "N/A",  # Handle null values
+                "estado": row[10]
+            }
+            for row in returned_cursor.fetchall()
+            ]
+ 
 
-        citas = citas.order_by(f"-{column}" if order == "desc" else column)
+            # Apply search filter if specified
+            if search:
+                citas = [
+                    cita for cita in citas if search.lower() in str(cita[column]).lower()
+                ]
 
+        # Sort the results based on specified column and order
+        citas = sorted(citas, key=lambda x: x[column.lower()], reverse=(order == "desc"))
+
+        # Paginate the results
         paginator = CustomPagination()
         result_page = paginator.paginate_queryset(citas, request)
 
-        serializer_data = [
-            {
-                "cita_id": cita.cita_id,
-                "cliente": cita.usuario_cliente.nombre,
-                "veterinario": cita.usuario_veterinario.nombre,
-                "mascota": cita.mascota.nombre,
-                "fecha": cita.fecha,
-                "hora": cita.hora,
-                "motivo": cita.motivo,
-                "estado": cita.estado,
-            }
-            for cita in result_page
-        ]
+        # Return paginated response
+        return paginator.get_paginated_response(result_page)
 
-        return paginator.get_paginated_response(serializer_data)
     except Exception as e:
+        # Handle exceptions and log errors if needed
+        print(f"Error: {e}")
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+ 
 
 @api_view(["POST"])
 @transaction.atomic

@@ -8,14 +8,14 @@ function ConsultCitas() {
   const rowsPerPage = 7;
 
   const columns = [
-  { field: "cliente", headerName: "Cliente", type: "text" },
-  { field: "veterinario", headerName: "Veterinario", type: "text" },
-  { field: "mascota", headerName: "Mascota", type: "text" },
-  { field: "fecha", headerName: "Fecha", type: "text" },
-  { field: "hora", headerName: "Hora", type: "text" },
-  { field: "motivo", headerName: "Motivo", type: "text" },
-  { field: "estado", headerName: "Estado", type: "text" },
-];
+    { field: "cliente_nombre", headerName: "Cliente", type: "text" },
+    { field: "veterinario_nombre", headerName: "Veterinario", type: "text" },
+    { field: "mascota", headerName: "Mascota", type: "text" },
+    { field: "fecha", headerName: "Fecha", type: "text" },
+    { field: "hora", headerName: "Hora", type: "text" },
+    { field: "motivo", headerName: "Motivo", type: "text" },
+    { field: "estado", headerName: "Estado", type: "text" },
+  ];
  
   return (
     <>
