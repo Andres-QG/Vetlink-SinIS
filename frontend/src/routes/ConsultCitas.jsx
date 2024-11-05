@@ -8,6 +8,7 @@ import ModifyCitaModal from "../components/consultCitas/ModifyCitaModal";
 
 function ConsultCitas() {
   const rowsPerPage = 7;
+  const [user, setUser] = useState({})
 
   const columns = [
     { field: "cliente", headerName: "Cliente", type: "text" },
@@ -70,6 +71,7 @@ function ConsultCitas() {
           clientes: clientes || [],
           veterinarios: veterinarios || [],
         });
+        setUser(user)
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -77,24 +79,43 @@ function ConsultCitas() {
 
     fetchData();
   }, []);
- 
+
   return (
     <>
-      <ConsultView
-        title="Citas"
-        fetchUrl="http://localhost:8000/api/consult-citas/"
-        deletionUrl="http://localhost:8000/api/delete-cita/"
-        addComponent={AddCitaModal}
-        modifyComponent={ModifyCitaModal}
-        rowsPerPage={rowsPerPage}
-        columns={columns}
-        pkCol="cita_id"
-        visualIdentifierCol="cliente"
-        otherData={otherData}
-        customDeleteTitle={"¿Desea eliminar esta cita?"}
-        disableAddButton= {true}
-        hideActions={true}
-      />
+      {user.role === 3 ? (
+        <ConsultView
+          title="Citas"
+          fetchUrl="http://localhost:8000/api/consult-citas/"
+          deletionUrl="http://localhost:8000/api/delete-cita/"
+          addComponent={AddCitaModal}
+          modifyComponent={ModifyCitaModal}
+          rowsPerPage={rowsPerPage}
+          columns={columns}
+          pkCol="cita_id"
+          visualIdentifierCol="cliente"
+          otherData={otherData}
+          customDeleteTitle="¿Desea eliminar esta cita?"
+          disableAddButton={true}
+          hideAddButton={true}
+          hideActions={true}
+        />
+      ) : (
+        <ConsultView
+          title="Citas"
+          fetchUrl="http://localhost:8000/api/consult-citas/"
+          deletionUrl="http://localhost:8000/api/delete-cita/"
+          addComponent={AddCitaModal}
+          modifyComponent={ModifyCitaModal}
+          rowsPerPage={rowsPerPage}
+          columns={columns}
+          pkCol="cita_id"
+          visualIdentifierCol="cliente"
+          otherData={otherData}
+          customDeleteTitle="¿Desea eliminar esta cita?"
+          hideAddButton={false}
+          hideActions={false}
+        />
+      )}
     </>
   );
 };

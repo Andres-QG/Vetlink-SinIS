@@ -25,6 +25,7 @@ const ConsultView = ({
   disableModifyAction = false,
   disableDeleteAction = false,
   disableReactivateAction = false, // Nuevo prop
+  hideAddButton = false,
   hideActions = false,
 }) => {
   const [data, setData] = useState([]);
@@ -103,7 +104,7 @@ const ConsultView = ({
         <div className="flex flex-col items-center justify-between mb-4 space-y-4 md:flex-row md:space-y-0">
           <h1 className="text-2xl font-semibold">{title}</h1>
           <div className="flex flex-col w-full space-y-4 md:w-auto md:flex-row md:items-center md:space-y-0">
-            {!disableAddButton && (
+            {!hideAddButton && (
               <Button
                 variant="contained"
                 startIcon={<Add />}
