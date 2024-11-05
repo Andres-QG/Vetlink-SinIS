@@ -135,6 +135,7 @@ const ModifyCitaModal = forwardRef(
 
 
     const handleReset = () => {
+      setLoading(true)
       setFormData({
         cliente: null,
         veterinario: null,
@@ -153,19 +154,38 @@ const ModifyCitaModal = forwardRef(
           setHorarios(otherData.horarios);
         }
       }
+      setLoading(false)
     };
-
 
     const handleSubmit = async (e) => {
       e.preventDefault();
+      setLoading(true)
+      if (!validate()) {
+        setLoading(false);
+        return;
+      }
       try {
-        await axios.post("http://localhost:8000/api/add-cita/", formData);
+        await axios.post(`http://localhost:8000/api/update-cita/${selectedItem.cita_id}/`, formData);
         onSuccess("Cita modificada correctamente", "success");
         handleClose();
       } catch (error) {
         onSuccess("Error al modificar cita.", "error");
       }
+      setLoading(false)
     };
+
+    const validate = () => {
+      const newErrors = {};
+      if (!formData.cliente) newErrors.cliente = "Cliente requerido.";
+      if (!formData.veterinario) newErrors.veterinario = "Veterinario requerido.";
+      if (!formData.mascota) newErrors.mascota = "Mascota requerida.";
+      if (!formData.fecha) newErrors.fecha = "Fecha requerida.";
+      if (!formData.hora) newErrors.hora = "Hora requerida.";
+      if (!formData.clinica) newErrors.clinica = "Clínica requerida.";
+      if (formData.services.length === 0) newErrors.services = "Al menos un servicio es requerido.";
+      setErrors(newErrors);
+      return Object.keys(newErrors).length === 0;
+    }; 
 
     return (
       <Modal open={open} onClose={handleClose} aria-labelledby="modal-title" aria-describedby="modal-description">
@@ -180,17 +200,28 @@ const ModifyCitaModal = forwardRef(
             <Close />
           </IconButton>
           <form onSubmit={handleSubmit} className="w-full flex flex-col items-center" noValidate>
-            <Typography id="modal-title" variant="h6" component="h2" sx={{ textAlign: "center", marginBottom: "20px", fontWeight: "bold", color: "#333", borderBottom: "1px solid #ddd", paddingBottom: "10px" }}>
+            <Typography
+              id="modal-title"
+              variant="h6"
+              component="h2"
+              sx={{
+                textAlign: "center",
+                marginBottom: "20px",
+                fontWeight: "bold",
+                color: "#333",
+                borderBottom: "1px solid #ddd",
+                paddingBottom: "10px",
+              }}
+            >
               Modificar Cita
             </Typography>
 
             <div className="flex flex-col md:flex-row gap-0 md:gap-6 w-full">
-              {/* Left Column */}
               <div className="w-full md:w-1/2">
                 <Autocomplete
                   options={otherData.clientes || []}
                   getOptionLabel={(option) => option.usuario || ""}
-                  value={formData.cliente}
+                  value={formData.cliente || null}
                   onChange={(event, newValue) => setFormData({ ...formData, cliente: newValue })}
                   renderInput={(params) => (
                     <TextField
@@ -216,8 +247,8 @@ const ModifyCitaModal = forwardRef(
                 <Autocomplete
                   options={pets || []}
                   getOptionLabel={(option) => option.nombre || ""}
-                  value={formData.mascota}
-                  onChange={(event, newValue) => {setFormData({ ...formData, mascota: newValue }); console.log(newValue)}}
+                  value={formData.mascota || null}
+                  onChange={(event, newValue) => setFormData({ ...formData, mascota: newValue })}
                   disabled={loadingPets}
                   renderInput={(params) => (
                     <TextField
@@ -244,10 +275,9 @@ const ModifyCitaModal = forwardRef(
                   multiple
                   options={otherData.services || []}
                   getOptionLabel={(option) => option.nombre || ""}
-                  value={formData.services}
+                  value={formData.services || []}
                   isOptionEqualToValue={(option, value) => option.servicio_id === value.servicio_id}
                   onChange={(event, newValue) => {
-                    // Filter to ensure no duplicate services are added
                     const uniqueServices = newValue.filter(
                       (service, index, self) =>
                         index === self.findIndex((s) => s.servicio_id === service.servicio_id)
@@ -256,11 +286,7 @@ const ModifyCitaModal = forwardRef(
                   }}
                   renderTags={(value, getTagProps) =>
                     value.map((option, index) => (
-                      <Tag
-                        key={option.servicio_id || index}
-                        label={option.nombre}
-                        {...getTagProps({ index })}
-                      />
+                      <Tag key={option.servicio_id || index} label={option.nombre} {...getTagProps({ index })} />
                     ))
                   }
                   renderInput={(params) => (
@@ -295,7 +321,7 @@ const ModifyCitaModal = forwardRef(
                   fullWidth
                   label="Motivo"
                   name="motivo"
-                  value={formData.motivo}
+                  value={formData.motivo || ""}
                   onChange={(e) => setFormData({ ...formData, motivo: e.target.value })}
                   sx={{ mb: 2 }}
                   error={!!errors.motivo}
@@ -310,12 +336,11 @@ const ModifyCitaModal = forwardRef(
                 />
               </div>
 
-              {/* Right Column */}
               <div className="w-full md:w-1/2">
                 <Autocomplete
                   options={otherData.veterinarios || []}
                   getOptionLabel={(option) => option.usuario || ""}
-                  value={formData.veterinario}
+                  value={formData.veterinario || null}
                   onChange={(event, newValue) => setFormData({ ...formData, veterinario: newValue })}
                   renderInput={(params) => (
                     <TextField
@@ -341,7 +366,7 @@ const ModifyCitaModal = forwardRef(
                 <Autocomplete
                   options={otherData.clinicas || []}
                   getOptionLabel={(option) => option.nombre || ""}
-                  value={formData.clinica}
+                  value={formData.clinica || null}
                   onChange={(event, newValue) => setFormData({ ...formData, clinica: newValue })}
                   disabled={!!user.clinica}
                   renderInput={(params) => (
@@ -371,7 +396,7 @@ const ModifyCitaModal = forwardRef(
                     value={formData.fecha || null}
                     onChange={(newDate) => {
                       setFormData({ ...formData, fecha: newDate, hora: "" });
-                      setHorarios((prevHorarios) => prevHorarios.filter(hora => hora !== selectedItem.hora));
+                      setHorarios((prevHorarios) => prevHorarios.filter((hora) => hora !== selectedItem.hora));
                     }}
                     slots={{ openPickerIcon: ArrowDropDownIcon }}
                     slotProps={{
@@ -431,7 +456,7 @@ const ModifyCitaModal = forwardRef(
             <Box className="w-full" sx={{ display: "flex", gap: 2, mt: 2 }}>
               <Button
                 variant="outlined"
-                onClick={handleReset} // Reset to initial values
+                onClick={handleReset}
                 fullWidth
                 disabled={loading}
                 sx={{ borderColor: "#00308F", color: "#00308F", "&:hover": { color: "#00246d", borderColor: "#00246d" } }}
@@ -453,7 +478,6 @@ const ModifyCitaModal = forwardRef(
         </Box>
       </Modal>
     );
-
   }
 );
 

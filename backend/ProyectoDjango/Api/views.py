@@ -445,47 +445,54 @@ def add_cita(request):
         print(str(e))
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
-@api_view(["GET"])
+@api_view(["POST"])
 def update_cita(request, cita_id):
     try:
-        cita = Citas.objects.get(pk=cita_id)
-
-        cliente_id = request.data.get("cliente_id")
-        veterinario_id = request.data.get("veterinario_id")
-        mascota_id = request.data.get("mascota_id")
+        print(request.data)
+        cliente_id = request.data.get("cliente", {}).get("usuario")
+        veterinario_id = request.data.get("veterinario", {}).get("usuario")
+        mascota_id = request.data.get("mascota", {}).get("mascota_id")
         fecha = request.data.get("fecha")
         hora = request.data.get("hora")
         motivo = request.data.get("motivo")
-        estado = request.data.get("estado")
 
-        if cliente_id:
-            cita.usuario_cliente = Usuarios.objects.get(usuario=cliente_id)
-        if veterinario_id:
-            cita.usuario_veterinario = Usuarios.objects.get(usuario=veterinario_id)
-        if mascota_id:
-            cita.mascota = Mascotas.objects.get(pk=mascota_id)
-        if fecha:
-            cita.fecha = fecha
-        if hora:
-            cita.hora = hora
-        if motivo:
-            cita.motivo = motivo
-        if estado:
-            cita.estado = estado
+        clinica_id = request.data.get("clinica").get("clinica_id")
+        services = [s['servicio_id'] for s in request.data.get("services", [])]
 
-        cita.save()
+        if isinstance(fecha, datetime):
+            formatted_fecha = fecha.strftime("%Y-%m-%d")
+        else:
+            formatted_fecha = datetime.strptime(fecha, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%Y-%m-%d")
+
+        print(formatted_fecha)
+
+
+        with connection.cursor() as cursor:
+            cursor.callproc("UPDATE_CITA", [
+                cita_id,
+                cliente_id,
+                veterinario_id,
+                mascota_id,
+                formatted_fecha,
+                hora,
+                motivo,
+                clinica_id
+            ])
+            
+            for service in services:
+                cursor.callproc("UPDATE_CITA_SERVICIO", [cita_id, service])
+        
         return Response(
-            {"message": "Cita actualizada con éxito."}, status=status.HTTP_200_OK
+            {"message": "Cita y servicios actualizados con éxito."},
+            status=status.HTTP_200_OK
         )
 
-    except Citas.DoesNotExist:
-        return Response(
-            {"error": "Cita no encontrada"}, status=status.HTTP_404_NOT_FOUND
-        )
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+        print(str(e))
+        return Response(
+            {"error": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 @api_view(["DELETE"])
 def delete_cita(request, cita_id):
