@@ -45,30 +45,49 @@ const DashboardLayout = ({
   const { role, fetchUserRole } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
-  const [isActive, setIsActive] = useState(document.cookie.includes("true"));
+  const [isActive, setIsActive] = useState(
+    document.cookie.includes("active=true")
+  );
   const [collapsed, setCollapsed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 768);
 
   useEffect(() => {
-    setIsActive(document.cookie.includes("true"));
+    setIsActive(document.cookie.includes("active=true"));
     fetchUserRole();
 
     const handleResize = () => {
       setIsSmallScreen(window.innerWidth < 768);
     };
 
+    const interval = setInterval(() => {
+      const sessionCookie = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("active="));
+      const currentCookieState = sessionCookie
+        ? sessionCookie.split("=")[1] === "true"
+        : false;
+
+      if (currentCookieState !== isActive) {
+        setIsActive(currentCookieState);
+        if (!currentCookieState) {
+          refreshSession();
+        }
+      }
+    }, 15000);
+
     window.addEventListener("resize", handleResize);
     return () => {
       window.removeEventListener("resize", handleResize);
+      clearInterval(interval);
     };
-  }, [document.cookie, fetchUserRole]);
+  }, [fetchUserRole, isActive]);
 
   const handleClick = (route) => {
     navigate(`/${route}`);
   };
 
-  const logOut = async () => {
+  const refreshSession = async () => {
     try {
       await axios.post(
         "http://localhost:8000/api/log-out/",
@@ -76,7 +95,24 @@ const DashboardLayout = ({
         { withCredentials: true }
       );
       document.cookie = "active=false;path=/;";
-      navigate("/login");
+      window.location.reload();
+    } catch (error) {
+      console.error("Error en el cerrando sesión:", error);
+    }
+  };
+
+  const logOut = async () => {
+    try {
+      // Cerrar sesión en el backend
+      await axios.post(
+        "http://localhost:8000/api/log-out/",
+        {},
+        { withCredentials: true }
+      );
+      // Actualizar la cookie y el estado de la sesión inmediatamente
+      document.cookie = "active=false;path=/;";
+      setIsActive(false); // Refleja el cambio de inmediato en la UI
+      navigate("/login"); // Navegar al login
     } catch (error) {
       console.error("Error cerrando sesión:", error);
     }
