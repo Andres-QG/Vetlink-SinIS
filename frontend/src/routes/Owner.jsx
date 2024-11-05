@@ -40,7 +40,8 @@ function Owner() {
       <ConsultView
         title="Clínicas"
         fetchUrl="http://localhost:8000/api/consult-clinics/"
-        deletionUrl="http://localhost:8000/api/delete-clinic"
+        deletionUrl="http://localhost:8000/api/delete-clinic/"
+        restoreUrl="http://localhost:8000/api/reactivate-clinic/"
         otherData={owners}
         addComponent={AddClinicModal}
         modifyComponent={ModifyClinicModal}
