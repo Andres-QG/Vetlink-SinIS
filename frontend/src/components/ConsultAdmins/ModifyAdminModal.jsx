@@ -21,18 +21,25 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 
-const ModifyAdminModal = ({ open, onClose, data, fetchData, showSnackbar }) => {
+const ModifyAdminModal = ({
+  open,
+  handleClose,
+  selectedItem,
+  fetchData,
+  showSnackbar,
+}) => {
   const initialFormData = {
-    cedula: "",
-    correo: "",
-    nombre: "",
-    apellido1: "",
-    apellido2: "",
-    telefono: "",
-    clinica: "",
+    cedula: selectedItem?.cedula || "",
+    correo: selectedItem?.correo || "",
+    nombre: selectedItem?.nombre || "",
+    apellido1: selectedItem?.apellido1 || "",
+    apellido2: selectedItem?.apellido2 || "",
+    telefono: selectedItem?.telefono || "",
+    clinica: selectedItem?.clinica_id || "",
   };
 
   const [formData, setFormData] = useState(initialFormData);
+  const [originalData, setOriginalData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
   const [miniLoad, setMiniLoad] = useState(true);
   const [errors, setErrors] = useState({});
@@ -63,18 +70,20 @@ const ModifyAdminModal = ({ open, onClose, data, fetchData, showSnackbar }) => {
   }, [showSnackbar]);
 
   useEffect(() => {
-    if (data) {
-      setFormData({
-        cedula: data.cedula || "",
-        correo: data.correo || "",
-        nombre: data.nombre || "",
-        apellido1: data.apellido1 || "",
-        apellido2: data.apellido2 || "",
-        telefono: data.telefono || "",
-        clinica: data.clinica_id || "",
-      });
+    if (selectedItem) {
+      const updatedFormData = {
+        cedula: selectedItem.cedula || "",
+        correo: selectedItem.correo || "",
+        nombre: selectedItem.nombre || "",
+        apellido1: selectedItem.apellido1 || "",
+        apellido2: selectedItem.apellido2 || "",
+        telefono: selectedItem.telefono || "",
+        clinica: selectedItem.clinica_id || "",
+      };
+      setFormData(updatedFormData);
+      setOriginalData(updatedFormData);
     }
-  }, [data]);
+  }, [selectedItem]);
 
   const validate = () => {
     const newErrors = {};
@@ -115,12 +124,12 @@ const ModifyAdminModal = ({ open, onClose, data, fetchData, showSnackbar }) => {
     setLoading(true);
     try {
       await axios.put(
-        `http://localhost:8000/api/update-admin/${data.usuario}/`,
+        `http://localhost:8000/api/update-admin/${selectedItem.usuario}/`,
         formData
       );
       showSnackbar("Administrador modificado con éxito.", "success");
       fetchData();
-      onClose();
+      handleClose();
     } catch (error) {
       const backendError = error.response?.data?.error;
       showSnackbar(
@@ -133,12 +142,12 @@ const ModifyAdminModal = ({ open, onClose, data, fetchData, showSnackbar }) => {
   };
 
   const handleClear = () => {
-    setFormData(initialFormData);
+    setFormData(originalData);
     setErrors({});
   };
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={handleClose}>
       <Box
         sx={{
           position: "absolute",
@@ -150,12 +159,10 @@ const ModifyAdminModal = ({ open, onClose, data, fetchData, showSnackbar }) => {
           p: 4,
           borderRadius: "10px",
           boxShadow: 24,
-        }}
-      >
+        }}>
         <IconButton
-          onClick={onClose}
-          sx={{ position: "absolute", top: 8, right: 8 }}
-        >
+          onClick={handleClose}
+          sx={{ position: "absolute", top: 8, right: 8 }}>
           <Close />
         </IconButton>
         <Typography
@@ -168,8 +175,7 @@ const ModifyAdminModal = ({ open, onClose, data, fetchData, showSnackbar }) => {
             color: "#333",
             borderBottom: "1px solid #ddd",
             paddingBottom: "10px",
-          }}
-        >
+          }}>
           Modificar Administrador
         </Typography>
 
@@ -310,8 +316,7 @@ const ModifyAdminModal = ({ open, onClose, data, fetchData, showSnackbar }) => {
                     <CircularProgress size={20} />{" "}
                   </InputAdornment>
                 ),
-              }}
-            >
+              }}>
               {clinics.map((clinic) => (
                 <MenuItem key={clinic.clinica_id} value={clinic.clinica_id}>
                   {clinic.clinica}
@@ -331,8 +336,7 @@ const ModifyAdminModal = ({ open, onClose, data, fetchData, showSnackbar }) => {
               borderColor: "#00308F",
               color: "#00308F",
               "&:hover": { color: "#00246d", borderColor: "#00246d" },
-            }}
-          >
+            }}>
             Limpiar
           </Button>
           <Button
@@ -344,8 +348,7 @@ const ModifyAdminModal = ({ open, onClose, data, fetchData, showSnackbar }) => {
             sx={{
               backgroundColor: "#00308F",
               "&:hover": { backgroundColor: "#00246d" },
-            }}
-          >
+            }}>
             {loading ? "Guardando..." : "Guardar Cambios"}
           </Button>
         </Box>
@@ -355,3 +358,4 @@ const ModifyAdminModal = ({ open, onClose, data, fetchData, showSnackbar }) => {
 };
 
 export default ModifyAdminModal;
+ 
