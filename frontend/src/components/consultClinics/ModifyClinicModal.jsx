@@ -20,7 +20,7 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 
-const ModifyClinicModal = ({ onSuccess, open, handleClose, selectedItem = undefined}) => {
+const ModifyClinicModal = ({ onSuccess, open, otherData, handleClose, selectedItem = undefined}) => {
   const initialFormData = {
     clinica_id: selectedItem.clinica_id || "",
     clinica: selectedItem?.clinica || "",
@@ -34,7 +34,7 @@ const ModifyClinicModal = ({ onSuccess, open, handleClose, selectedItem = undefi
   const [formData, setFormData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({}); // Estado para los errores de validación
-  const [owners, setOwners] = useState([]);
+  const owners = otherData.owners || [];
 
   useEffect(() => {
     const fetchOwners = async () => {

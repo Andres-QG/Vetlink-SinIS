@@ -1,3 +1,6 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+
 import ConsultView from "../components/Consult/ConsultView";
 
 import AddClinicModal from "../components/consultClinics/AddClinicModal";
@@ -5,6 +8,7 @@ import ModifyClinicModal from "../components/consultClinics/ModifyClinicModal";
 
 function Owner() {
   const rowsPerPage = 7;
+  const [owners, setOwners] = useState({ owners: [] });
 
   const columns = [
     { field: "clinica", headerName: "Clínica", type: "text" },
@@ -19,12 +23,25 @@ function Owner() {
     },
   ];
 
+  useEffect(() => {
+    const fetchOwners = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/api/get-owners/");
+        setOwners({ owners: response.data.owners });
+      } catch (error) {
+        console.error("Error fetching owners:", error);
+      }
+    };
+    fetchOwners();
+  }, []);
+
   return (
     <>
       <ConsultView
         title="Clínicas"
         fetchUrl="http://localhost:8000/api/consult-clinics/"
         deletionUrl="http://localhost:8000/api/delete-clinic"
+        otherData={owners}
         addComponent={AddClinicModal}
         modifyComponent={ModifyClinicModal}
         rowsPerPage={rowsPerPage}

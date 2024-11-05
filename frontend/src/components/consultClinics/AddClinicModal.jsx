@@ -20,7 +20,7 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 
-const AddClinicModal = ({ open, handleClose, onSuccess }) => {
+const AddClinicModal = ({ open, handleClose, otherData, onSuccess }) => {
   const initialFormData = {
     clinica: "",
     direccion: "",
@@ -28,22 +28,12 @@ const AddClinicModal = ({ open, handleClose, onSuccess }) => {
     usuario: "",
   };
 
+  console.log(otherData)
+
   const [formData, setFormData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({}); // Estado para los errores de validación
-  const [owners, setOwners] = useState([]);
-
-  useEffect(() => {
-    const fetchOwners = async () => {
-      try {
-        const response = await axios.get("http://localhost:8000/api/get-owners/");
-        setOwners(response.data.owners);
-      } catch (error) {
-        console.error("Error fetching owners:", error);
-      }
-    };
-    fetchOwners();
-  }, []);
+  const [errors, setErrors] = useState({});
+  const owners = otherData.owners || [];
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -114,7 +104,7 @@ const AddClinicModal = ({ open, handleClose, onSuccess }) => {
   return (
     <Modal
       open={open}
-      handleClose={handleClose}
+      onClose={handleClose}
       aria-labelledby="modal-title"
       aria-describedby="modal-description"
     >
@@ -163,6 +153,7 @@ const AddClinicModal = ({ open, handleClose, onSuccess }) => {
             fullWidth
             label="Clinica"
             name="clinica"
+            placeholder="Digíte el nombre de la clínica"
             value={formData.clinica}
             onChange={handleChange}
             error={!!errors.clinica}
@@ -181,6 +172,7 @@ const AddClinicModal = ({ open, handleClose, onSuccess }) => {
             fullWidth
             label="Direccion"
             name="direccion"
+            placeholder="Digíte la dirección"
             value={formData.direccion}
             onChange={handleChange}
             sx={{ mb: 2 }}
@@ -199,6 +191,7 @@ const AddClinicModal = ({ open, handleClose, onSuccess }) => {
             fullWidth
             label="Teléfono"
             name="telefono"
+            placeholder="Digíte el teléfono"
             value={formData.telefono}
             onChange={handleChange}
             sx={{ mb: 2 }}
@@ -236,14 +229,15 @@ const AddClinicModal = ({ open, handleClose, onSuccess }) => {
             }}
           >
             <MenuItem value="" disabled>
-              Selecciona un dueño
+              Seleccione un dueño
             </MenuItem>
             {owners.map((owner) => (
-              <MenuItem key={owner.usuario} value={owner.nombre} >
+              <MenuItem key={owner.usuario} value={owner.nombre}>
                 {owner.nombre}
               </MenuItem>
             ))}
           </TextField>
+
           {/* Botones de Agregar y Limpiar */}
         </form>
         <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
