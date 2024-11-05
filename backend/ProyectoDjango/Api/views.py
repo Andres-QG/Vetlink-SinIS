@@ -327,46 +327,80 @@ def consult_citas(request):
     search = request.GET.get("search", "")
     column = request.GET.get("column", "fecha")
     order = request.GET.get("order", "asc")
+    clinica_id = request.GET.get("clinica_id")  # Optional clinic filter
 
-    if column == "cliente":
-        column = "usuario_cliente__nombre"
-    elif column == "veterinario":
-        column = "usuario_veterinario__nombre"
-    elif column == "mascota":
-        column = "mascota__nombre"
+    # Map the column names to match the stored procedure's response if necessary
+    column_mapping = {
+        "cliente": "CLIENTE",
+        "veterinario": "VETERINARIO",
+        "mascota": "NOMBRE",
+        "fecha": "FECHA"
+    }
+    column = column_mapping.get(column, column)
 
     try:
-        citas = Citas.objects.all()
+        with connection.cursor() as cursor:
+            returned_cursor = cursor.connection.cursor()
+            returned_services = cursor.connection.cursor()
+            # Call the stored procedure
+            cursor.callproc("VETLINK.GET_ALL_CITAS", [clinica_id, returned_cursor])
 
-        if search:
-            if column == "fecha":
-                citas = citas.filter(fecha__icontains=search)
-            else:
-                citas = citas.filter(**{f"{column}__icontains": search})
+            # Fetch the results from returned_cursor instead of cursor
+            citas = [
+            {
+                "cita_id": row[0],
+                "cliente": row[1],
+                "cliente_usuario": row[2],
+                "veterinario": row[3],
+                "veterinario_usuario": row[4],
+                "mascota_id": row[5],
+                "mascota": row[6],
+                "fecha": row[7].strftime('%Y-%m-%d'),
+                "hora": row[8],
+                "clinica_id": row[9] if row[9] is not None else 0,
+                "clinica": row[10] if row[10] is not None else "N/A",
+                "motivo": row[11] if row[11] is not None else "N/A",
+                "estado": row[12],
+                "services": []
+            }
+            for row in returned_cursor.fetchall()
+            ]
+            for cita in citas:
+                cita_id = cita["cita_id"]
+                services_cursor = cursor.connection.cursor()
 
-        citas = citas.order_by(f"-{column}" if order == "desc" else column)
+                cursor.callproc("VETLINK.GET_SERVICES_BY_CITA_ID", [cita_id, services_cursor])
 
+                services = [
+                    {
+                        "servicio_id": service_row[0],
+                        "nombre": service_row[1]
+                    }
+                    for service_row in services_cursor.fetchall()
+                ]
+                cita["services"] = services
+ 
+            # Apply search filter if specified
+            if search:
+                citas = [
+                    cita for cita in citas if search.lower() in str(cita[column]).lower()
+                ]
+
+        # Sort the results based on specified column and order
+        citas = sorted(citas, key=lambda x: x[column.lower()], reverse=(order == "desc"))
+
+        # Paginate the results
         paginator = CustomPagination()
         result_page = paginator.paginate_queryset(citas, request)
 
-        serializer_data = [
-            {
-                "cita_id": cita.cita_id,
-                "cliente": cita.usuario_cliente.nombre,
-                "veterinario": cita.usuario_veterinario.nombre,
-                "mascota": cita.mascota.nombre,
-                "fecha": cita.fecha,
-                "hora": cita.hora,
-                "motivo": cita.motivo,
-                "estado": cita.estado,
-            }
-            for cita in result_page
-        ]
+        # Return paginated response
+        return paginator.get_paginated_response(result_page)
 
-        return paginator.get_paginated_response(serializer_data)
     except Exception as e:
+        # Handle exceptions and log errors if needed
+        print(f"Error: {e}")
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+ 
 
 @api_view(["POST"])
 @transaction.atomic
@@ -411,62 +445,71 @@ def add_cita(request):
         print(str(e))
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
-@api_view(["GET"])
+@api_view(["POST"])
 def update_cita(request, cita_id):
     try:
-        cita = Citas.objects.get(pk=cita_id)
-
-        cliente_id = request.data.get("cliente_id")
-        veterinario_id = request.data.get("veterinario_id")
-        mascota_id = request.data.get("mascota_id")
+        print(request.data)
+        cliente_id = request.data.get("cliente", {}).get("usuario")
+        veterinario_id = request.data.get("veterinario", {}).get("usuario")
+        mascota_id = request.data.get("mascota", {}).get("mascota_id")
         fecha = request.data.get("fecha")
         hora = request.data.get("hora")
         motivo = request.data.get("motivo")
-        estado = request.data.get("estado")
 
-        if cliente_id:
-            cita.usuario_cliente = Usuarios.objects.get(usuario=cliente_id)
-        if veterinario_id:
-            cita.usuario_veterinario = Usuarios.objects.get(usuario=veterinario_id)
-        if mascota_id:
-            cita.mascota = Mascotas.objects.get(pk=mascota_id)
-        if fecha:
-            cita.fecha = fecha
-        if hora:
-            cita.hora = hora
-        if motivo:
-            cita.motivo = motivo
-        if estado:
-            cita.estado = estado
+        clinica_id = request.data.get("clinica").get("clinica_id")
+        services = [s['servicio_id'] for s in request.data.get("services", [])]
 
-        cita.save()
+        if isinstance(fecha, datetime):
+            formatted_fecha = fecha.strftime("%Y-%m-%d")
+        else:
+            formatted_fecha = datetime.strptime(fecha, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%Y-%m-%d")
+
+        print(formatted_fecha)
+
+
+        with connection.cursor() as cursor:
+            cursor.callproc("UPDATE_CITA", [
+                cita_id,
+                cliente_id,
+                veterinario_id,
+                mascota_id,
+                formatted_fecha,
+                hora,
+                motivo,
+                clinica_id
+            ])
+            
+            for service in services:
+                cursor.callproc("UPDATE_CITA_SERVICIO", [cita_id, service])
+        
         return Response(
-            {"message": "Cita actualizada con éxito."}, status=status.HTTP_200_OK
+            {"message": "Cita y servicios actualizados con éxito."},
+            status=status.HTTP_200_OK
         )
 
-    except Citas.DoesNotExist:
-        return Response(
-            {"error": "Cita no encontrada"}, status=status.HTTP_404_NOT_FOUND
-        )
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+        print(str(e))
+        return Response(
+            {"error": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 @api_view(["DELETE"])
 def delete_cita(request, cita_id):
     try:
-        cita = Citas.objects.get(pk=cita_id)
-        cita.activo = False
-        cita.save()
+        # Call the stored procedure to set estado as "Inactiva"
+        with connection.cursor() as cursor:
+            cursor.callproc("VETLINK.DELETE_CITA", [cita_id])
+
         return Response(
             {"message": "Cita eliminada correctamente"}, status=status.HTTP_200_OK
         )
-    except Citas.DoesNotExist:
-        return Response(
-            {"error": "Cita no encontrada"}, status=status.HTTP_404_NOT_FOUND
-        )
     except Exception as e:
+        print(str(e))
+        if "Citas.DoesNotExist" in str(e):
+            return Response(
+                {"error": "Cita no encontrada"}, status=status.HTTP_404_NOT_FOUND
+            )
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(["PUT"])
