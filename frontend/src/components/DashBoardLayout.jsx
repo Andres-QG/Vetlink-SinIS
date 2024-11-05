@@ -8,15 +8,16 @@ import {
   Tooltip,
   Drawer,
   Button,
+  FloatButton,
+  Popover,
 } from "antd";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
-import ComputerIcon from "@mui/icons-material/Computer";
+import { Menu as MenuIcon } from "@mui/icons-material";
+import { RightOutlined, CloseOutlined } from "@ant-design/icons";
 import MedicalServices from "@mui/icons-material/MedicalServices";
 import AssignmentIcon from "@mui/icons-material/Assignment";
-import SearchIcon from "@mui/icons-material/Search";
 import PersonIcon from "@mui/icons-material/Person";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
@@ -28,9 +29,9 @@ import ClinicIcon from "@mui/icons-material/LocalHospital";
 import AdminIcon from "@mui/icons-material/SupervisedUserCircle";
 import CalendarIcon from "@mui/icons-material/Event";
 import ClientsIcon from "@mui/icons-material/Group";
-import PetsIconAlt from "@mui/icons-material/Pets";
 import VetsIcon from "@mui/icons-material/MedicalServices";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import PetsIconAlt from "@mui/icons-material/Pets";
 
 const { Header, Content, Sider, Footer } = Layout;
 
@@ -47,28 +48,60 @@ const DashboardLayout = ({
   const { role, fetchUserRole } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
-  const [isActive, setIsActive] = useState(document.cookie.includes("true"));
+  const [isActive, setIsActive] = useState(
+    document.cookie.includes("active=true")
+  );
   const [collapsed, setCollapsed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 768);
 
   useEffect(() => {
-    setIsActive(document.cookie.includes("true"));
+    setIsActive(document.cookie.includes("active=true"));
     fetchUserRole();
 
-    // Escuchar cambios de tamaño de pantalla para actualizar el estado de `isSmallScreen`
     const handleResize = () => {
       setIsSmallScreen(window.innerWidth < 768);
     };
 
+    const interval = setInterval(() => {
+      const sessionCookie = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("active="));
+      const currentCookieState = sessionCookie
+        ? sessionCookie.split("=")[1] === "true"
+        : false;
+
+      if (currentCookieState !== isActive) {
+        setIsActive(currentCookieState);
+        if (!currentCookieState) {
+          refreshSession();
+        }
+      }
+    }, 15000);
+
     window.addEventListener("resize", handleResize);
     return () => {
       window.removeEventListener("resize", handleResize);
+      clearInterval(interval);
     };
-  }, [document.cookie, fetchUserRole]);
+  }, [fetchUserRole, isActive]);
 
   const handleClick = (route) => {
     navigate(`/${route}`);
+  };
+
+  const refreshSession = async () => {
+    try {
+      await axios.post(
+        "http://localhost:8000/api/log-out/",
+        {},
+        { withCredentials: true }
+      );
+      document.cookie = "active=false;path=/;";
+      window.location.reload();
+    } catch (error) {
+      console.error("Error en el cerrando sesión:", error);
+    }
   };
 
   const logOut = async () => {
@@ -79,6 +112,7 @@ const DashboardLayout = ({
         { withCredentials: true }
       );
       document.cookie = "active=false;path=/;";
+      setIsActive(false);
       navigate("/login");
     } catch (error) {
       console.error("Error cerrando sesión:", error);
@@ -119,46 +153,34 @@ const DashboardLayout = ({
     ],
   };
 
-  const createHeaderItems = () => {
-    let items = [
-      {
-        key: "1",
-        label: "Sobre nosotros",
-        onClick: () => handleClick("about"),
-      },
-      {
-        key: "2",
-        label: "Servicios",
-        onClick: () => handleClick("services"),
-      },
-      {
-        key: "3",
-        label: "Contacto",
-        onClick: () => handleClick("#"),
-      },
-    ];
-
-    if (role === 1 || role === 2 || role === 3) {
-      items.push({
-        key: "adminPanel",
-        label: "Administrar",
-        onClick: () => handleClick("dashboard"),
-      });
-    }
-
-    if (role === 4) {
-      items.push({
-        key: "clientPanel",
-        label: "Mi Panel",
-        onClick: () => handleClick("dashboard"),
-      });
-    }
-
-    return items;
-  };
+  const createHeaderItems = () => [
+    { key: "1", label: "Sobre nosotros", onClick: () => handleClick("about") },
+    { key: "2", label: "Servicios", onClick: () => handleClick("services") },
+    { key: "3", label: "Contacto", onClick: () => handleClick("#") },
+    ...(role === 1 || role === 2 || role === 3
+      ? [
+          {
+            key: "adminPanel",
+            label: "Administrar",
+            onClick: () => handleClick("dashboard"),
+          },
+        ]
+      : []),
+    ...(role === 4
+      ? [
+          {
+            key: "clientPanel",
+            label: "Mi Panel",
+            onClick: () => handleClick("dashboard"),
+          },
+        ]
+      : []),
+  ];
 
   const selectedHeaderKey = () => {
     switch (location.pathname) {
+      case "/":
+        return "LandingPage";
       case "/services":
         return "2";
       case "/dashboard":
@@ -168,22 +190,15 @@ const DashboardLayout = ({
     }
   };
 
-  const createSidebarItems = () => {
-    let items = [
-      {
-        key: "dashboard",
-        icon: <DashboardIcon />,
-        label: "Dashboard",
-        onClick: () => handleClick("dashboard"),
-      },
-    ];
-
-    if (role <= 3) {
-      items.push({
-        key: "sub1",
-        icon: <SearchIcon />,
-        label: "Consultas",
-        children: [
+  const createSidebarItems = () => [
+    {
+      key: "dashboard",
+      icon: <DashboardIcon />,
+      label: "Dashboard",
+      onClick: () => handleClick("dashboard"),
+    },
+    ...(role <= 3
+      ? [
           {
             key: "consultSchedules",
             icon: <CalendarIcon />,
@@ -202,69 +217,67 @@ const DashboardLayout = ({
             label: "Expedientes",
             onClick: () => handleClick("consultrecords"),
           },
-
-          ...(role === 1 || role === 2
-            ? [
-                {
-                  key: "consultclients",
-                  icon: <ClientsIcon />,
-                  label: "Clientes",
-                  onClick: () => handleClick("consultclients"),
-                },
-                {
-                  key: "consultvets",
-                  icon: <VetsIcon />,
-                  label: "Veterinarios",
-                  onClick: () => handleClick("consultvets"),
-                },
-                {
-                  key: "consultservices",
-                  icon: <MedicalServices />,
-                  label: "Servicios",
-                  onClick: () => handleClick("consultservices"),
-                },
-              ]
-            : []),
-          ...(role === 1
-            ? [
-                {
-                  key: "consultClinics",
-                  icon: <ClinicIcon />,
-                  label: "Clínicas",
-                  onClick: () => handleClick("clinics"),
-                },
-                {
-                  key: "consultAdmins",
-                  icon: <AdminIcon />,
-                  label: "Administradores",
-                  onClick: () => handleClick("consultAdmins"),
-                },
-              ]
-            : []),
-
-        ],
-      });
-    }
-
-    if (role === 4) {
-      items.push({
-        key: "consultMyPets",
-        icon: <PetsIcon />,
-        label: "Mis Mascotas",
-        onClick: () => handleClick("consultMyPets"),
-      });
-    }
-    if (role <= 4) {
-      items.push({
-        key: "consultCitas",
-        icon: <CalendarMonthIcon />,
-        label: "Citas",
-        onClick: () => handleClick("appointments"),
-      });
-    }
-
-    return items;
-  };
+        ]
+      : []),
+    ...(role === 1 || role === 2
+      ? [
+          {
+            key: "consultclients",
+            icon: <ClientsIcon />,
+            label: "Clientes",
+            onClick: () => handleClick("consultclients"),
+          },
+          {
+            key: "consultvets",
+            icon: <VetsIcon />,
+            label: "Veterinarios",
+            onClick: () => handleClick("consultvets"),
+          },
+          {
+            key: "consultservices",
+            icon: <MedicalServices />,
+            label: "Servicios",
+            onClick: () => handleClick("consultservices"),
+          },
+        ]
+      : []),
+    ...(role === 1
+      ? [
+          {
+            key: "consultClinics",
+            icon: <ClinicIcon />,
+            label: "Clínicas",
+            onClick: () => handleClick("clinics"),
+          },
+          {
+            key: "consultAdmins",
+            icon: <AdminIcon />,
+            label: "Administradores",
+            onClick: () => handleClick("consultAdmins"),
+          },
+        ]
+      : []),
+    ...(role === 4
+      ? [
+          {
+            key: "consultMyPets",
+            icon: <PetsIcon />,
+            label: "Mis Mascotas",
+            onClick: () => handleClick("consultMyPets"),
+          },
+        ]
+      : []),
+    ...(role <= 4
+      ? [
+          {
+            key: "consultCitas",
+            icon: <CalendarMonthIcon />,
+            label: "Citas",
+            onClick: () => handleClick("appointments"),
+          },
+        ]
+      : []),
+  ];
 
   const selectedKey = () => {
     switch (location.pathname) {
@@ -278,6 +291,10 @@ const DashboardLayout = ({
         return "consultvets";
       case "/consultservices":
         return "consultservices";
+      case "/consultrecords":
+        return "consultrecords";
+      case "/clinics":
+        return "consultClinics";
       case "/consultMyPets":
         return "consultMyPets";
       case "/Owner":
@@ -340,25 +357,38 @@ const DashboardLayout = ({
           </div>
         </Tooltip>
 
-        <Menu
-          theme="dark"
-          mode="horizontal"
-          selectedKeys={[selectedHeaderKey()]}
-          items={createHeaderItems()}
-          style={{
-            flex: 1,
-            minWidth: 0,
-            display: "flex",
-            justifyContent: "center",
-            flexWrap: "wrap",
-          }}
-        />
-        {!hideSidebar && (
-          <Button
-            icon={<MenuUnfoldOutlined />}
-            onClick={toggleDrawer}
-            className="lg:hidden"
-            style={{ marginLeft: "16px" }}
+        {isSmallScreen ? (
+          <Popover
+            content={
+              <Menu
+                items={createHeaderItems()}
+                selectedKeys={[selectedHeaderKey()]}
+              />
+            }
+            trigger="click"
+          >
+            <Button
+              icon={<MenuIcon />}
+              style={{
+                backgroundColor: "#001529",
+                color: "white",
+                border: "none",
+              }}
+            />
+          </Popover>
+        ) : (
+          <Menu
+            theme="dark"
+            mode="horizontal"
+            selectedKeys={[selectedHeaderKey()]}
+            items={createHeaderItems()}
+            style={{
+              flex: 1,
+              minWidth: 0,
+              display: "flex",
+              justifyContent: "center",
+              flexWrap: "wrap",
+            }}
           />
         )}
         <Dropdown
@@ -376,7 +406,7 @@ const DashboardLayout = ({
         </Dropdown>
       </Header>
 
-      <Layout style={{ marginTop: 64 /* Compensar el header fijo */ }}>
+      <Layout style={{ marginTop: 64 }}>
         {!hideSidebar && !isSmallScreen && (
           <Sider
             width={200}
@@ -403,22 +433,33 @@ const DashboardLayout = ({
           </Sider>
         )}
 
-        {/* Drawer en pantallas pequeñas */}
         {!hideSidebar && isSmallScreen && (
-          <Drawer
-            width={200}
-            title="Menú"
-            placement="left"
-            onClose={toggleDrawer}
-            open={drawerOpen}
-            styles={{ body: { padding: 0 } }}
-          >
-            <Menu
-              mode="inline"
-              selectedKeys={[selectedKey()]}
-              items={createSidebarItems()}
+          <>
+            <FloatButton
+              icon={drawerOpen ? <CloseOutlined /> : <RightOutlined />}
+              onClick={toggleDrawer}
+              style={{
+                bottom: 24,
+                right: 24,
+                color: "white",
+                border: "2px solid #001529", // Cambia #0BA6A9 por el color de borde que prefieras
+              }}
             />
-          </Drawer>
+            <Drawer
+              width={200}
+              title="Menú"
+              placement="left"
+              onClose={toggleDrawer}
+              open={drawerOpen}
+              styles={{ body: { padding: 0 } }}
+            >
+              <Menu
+                mode="inline"
+                selectedKeys={[selectedKey()]}
+                items={createSidebarItems()}
+              />
+            </Drawer>
+          </>
         )}
 
         <Layout
