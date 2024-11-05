@@ -45,18 +45,34 @@ const AddRecord = forwardRef(
 
     const validateForm = () => {
       const newErrors = {};
-
-      if (!formData.mascota_id) {
-        newErrors.mascota_id = "Nombre de mascota es obligatorio";
+      if (
+        !formData.mascota_id ||
+        isNaN(formData.mascota_id) ||
+        Number(formData.mascota_id) <= 0
+      ) {
+        newErrors.mascota_id = "Por favor, introduzca un ID de mascota válido";
       }
+
       if (!formData.fecha) {
         newErrors.fecha = "Fecha es obligatoria";
+      } else if (new Date(formData.fecha) > new Date()) {
+        newErrors.fecha = "La fecha no puede ser en el futuro";
       }
+
       if (!formData.peso || isNaN(formData.peso) || formData.peso <= 0) {
         newErrors.peso = "Por favor, introduzca un peso válido";
+      } else {
+        const integerPart = formData.peso.toString().split(".")[0];
+        if (integerPart.length > 4) {
+          newErrors.peso = "El peso no puede tener más de 4 dígitos";
+        }
       }
+
       if (!formData.diagnostico) {
         newErrors.diagnostico = "Diagnóstico es obligatorio";
+      } else if (formData.diagnostico.length > 255) {
+        newErrors.diagnostico =
+          "El diagnóstico no puede exceder 255 caracteres";
       }
 
       setErrors(newErrors);
@@ -68,13 +84,11 @@ const AddRecord = forwardRef(
     const handleSubmit = async (e) => {
       e.preventDefault();
       if (!validateForm()) {
-        console.log("Form validation failed", errors);
         return;
       }
       setLoading(true);
 
       const formDataToSend = prepareFormData();
-      console.log("Form data to send:", formDataToSend);
 
       try {
         await sendFormData(formDataToSend);
@@ -102,7 +116,6 @@ const AddRecord = forwardRef(
     };
 
     const sendFormData = async (formDataToSend) => {
-      console.log("Sending form data:", formDataToSend);
       const response = await axios.post(
         "http://localhost:8000/api/add-pet-record/",
         formDataToSend,
@@ -112,10 +125,8 @@ const AddRecord = forwardRef(
           },
         }
       );
-      console.log("Response:", response);
 
       if (response.status === 201) {
-        console.log("Expediente agregado exitosamente.");
         onSuccess("Expediente agregado exitosamente.", "success");
       }
     };
