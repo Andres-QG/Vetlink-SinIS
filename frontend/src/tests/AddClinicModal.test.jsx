@@ -8,6 +8,13 @@ jest.mock("axios");
 const mockHandleClose = jest.fn();
 const mockOnSuccess = jest.fn();
 
+const mockOtherData = {
+    owners: [
+        { usuario: "owner1", nombre: "Owner One" },
+        { usuario: "owner2", nombre: "Owner Two" },
+    ],
+};
+
 describe("AddClinicModal Component", () => {
     beforeEach(() => {
         render(
@@ -15,16 +22,18 @@ describe("AddClinicModal Component", () => {
                 open={true}
                 handleClose={mockHandleClose}
                 onSuccess={mockOnSuccess}
+                otherData={mockOtherData}
             />
         );
     });
 
     it("renders input fields for clinic details", () => {
-        expect(screen.getByText("Clinica")).toBeInTheDocument();
-        expect(screen.getByText("Direccion")).toBeInTheDocument();
-        expect(screen.getByText("Teléfono")).toBeInTheDocument();
-        expect(screen.getByText("Dueño")).toBeInTheDocument();
+        expect(screen.getByLabelText("Clinica *")).toBeInTheDocument();
+        expect(screen.getByLabelText("Direccion *")).toBeInTheDocument();
+        expect(screen.getByLabelText("Teléfono *")).toBeInTheDocument();
+        expect(screen.getByLabelText("Dueño *")).toBeInTheDocument();
     });
+
     it("displays validation error if 'Clinica' field is empty", async () => {
         const submitButton = screen.getByRole("button", { name: /Agregar Clinica/i });
         fireEvent.click(submitButton);
@@ -52,26 +61,54 @@ describe("AddClinicModal Component", () => {
         });
     });
 
-
     it("displays validation error if 'Teléfono' field is invalid", async () => {
-    fireEvent.change(screen.getByPlaceholderText("Digíte el teléfono"), { target: { value: "123" } });
-      const submitButton = screen.getByRole("button", { name: /Agregar Clinica/i });
-      fireEvent.click(submitButton);
+        fireEvent.change(screen.getByLabelText("Teléfono *"), { target: { value: "123" } });
+        const submitButton = screen.getByRole("button", { name: /Agregar Clinica/i });
+        fireEvent.click(submitButton);
 
-      await waitFor(() => {
-          expect(screen.getByText("El teléfono debe tener 8 dígitos.")).toBeInTheDocument();
-      });
-  });
+        await waitFor(() => {
+            expect(screen.getByText("El teléfono debe tener 8 dígitos.")).toBeInTheDocument();
+        });
+    });
 
-  it("resets the form when 'Limpiar' button is clicked", () => {
-    fireEvent.change(screen.getByLabelText("Clinica *"), { target: { value: "Test Clinic" } });
-    fireEvent.change(screen.getByLabelText("Direccion *"), { target: { value: "Test Address" } });
-    fireEvent.change(screen.getByLabelText("Teléfono *"), { target: { value: "12345678" } });
+    it("displays owners from otherData in the 'Dueño' dropdown", () => {
+        fireEvent.mouseDown(screen.getByLabelText("Dueño *"));
+        expect(screen.getByText("Owner One")).toBeInTheDocument();
+        expect(screen.getByText("Owner Two")).toBeInTheDocument();
+    });
 
-    fireEvent.click(screen.getByRole("button", { name: /Limpiar/i }));
+    it("calls onSuccess with success message on successful submission", async () => {
+        axios.post.mockResolvedValueOnce({ data: { message: "Clínica agregada correctamente" } });
 
-    expect(screen.getByLabelText("Clinica *")).toHaveValue("");
-    expect(screen.getByLabelText("Direccion *")).toHaveValue("");
-    expect(screen.getByLabelText("Teléfono *")).toHaveValue("");
-  });
+        fireEvent.change(screen.getByLabelText("Clinica *"), { target: { value: "Test Clinic" } });
+        fireEvent.change(screen.getByLabelText("Direccion *"), { target: { value: "Test Address" } });
+        fireEvent.change(screen.getByLabelText("Teléfono *"), { target: { value: "12345678" } });
+        fireEvent.mouseDown(screen.getByLabelText("Dueño *"));
+        fireEvent.click(screen.getByText("Owner One"));
+
+        const submitButton = screen.getByRole("button", { name: /Agregar Clinica/i });
+        fireEvent.click(submitButton);
+
+        await waitFor(() => {
+            expect(mockOnSuccess).toHaveBeenCalledWith("Clínica agregada correctamente", "success");
+            expect(mockHandleClose).toHaveBeenCalled();
+        });
+    });
+
+    it("displays error message if API call fails", async () => {
+        axios.post.mockRejectedValueOnce(new Error("Network error"));
+
+        fireEvent.change(screen.getByLabelText("Clinica *"), { target: { value: "Test Clinic" } });
+        fireEvent.change(screen.getByLabelText("Direccion *"), { target: { value: "Test Address" } });
+        fireEvent.change(screen.getByLabelText("Teléfono *"), { target: { value: "12345678" } });
+        fireEvent.mouseDown(screen.getByLabelText("Dueño *"));
+        fireEvent.click(screen.getByText("Owner One"));
+
+        const submitButton = screen.getByRole("button", { name: /Agregar Clinica/i });
+        fireEvent.click(submitButton);
+
+        await waitFor(() => {
+            expect(mockOnSuccess).toHaveBeenCalledWith("Datos inválidos. Revise los campos e intente nuevamente.", "error");
+        });
+    });
 });
