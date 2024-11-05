@@ -19,8 +19,16 @@ import {
   Card,
   CardContent,
   Chip,
+  CircularProgress,
+  Stack,
 } from "@mui/material";
-import { Edit, Delete, Info, Restore } from "@mui/icons-material";
+import {
+  Edit,
+  Delete,
+  Info,
+  Restore,
+  Close as CloseIcon,
+} from "@mui/icons-material";
 import { useNotification } from "../Notification";
 import { green } from "@mui/material/colors";
 
@@ -36,13 +44,21 @@ const GeneralTable = ({
   restoreUrl,
   pkCol,
   visualIdentifierCol,
+  customDeleteTitle,
   fetchData,
   ModModal,
   DetailsModal,
-  customDeleteTitle, // Nuevo prop opcional
+  disableModifyAction = false,
+  disableDeleteAction = false,
+  disableReactivateAction = false,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const notify = useNotification();
+  const [openModal, setOpenModal] = useState(false);
+  const [openModModal, setOpenModModal] = useState(false);
+  const [openDetailsModal, setOpenDetailsModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [loadingDelete, setLoadingDelete] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -56,14 +72,7 @@ const GeneralTable = ({
     };
   }, []);
 
-  const getItemAriaLabel = (type) => {
-    return `Ir a la página ${type}`;
-  };
-
-  const [openModal, setOpenModal] = useState(false);
-  const [openModModal, setOpenModModal] = useState(false);
-  const [openDetailsModal, setOpenDetailsModal] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
+  const getItemAriaLabel = (type) => `Ir a la página ${type}`;
 
   const handleOpenModal = (item) => {
     setSelectedItem(item);
@@ -79,6 +88,7 @@ const GeneralTable = ({
     handleCloseModal();
     if (!selectedItem) return;
 
+    setLoadingDelete(true);
     try {
       const url = `${deletionUrl}${selectedItem[pkCol]}/`;
       await axios.delete(url);
@@ -103,6 +113,8 @@ const GeneralTable = ({
       } else {
         notify(`Error desconocido: ${error.message}`, "error");
       }
+    } finally {
+      setLoadingDelete(false);
     }
   };
 
@@ -196,16 +208,6 @@ const GeneralTable = ({
                     alignItems: "flex-start",
                   }}
                 >
-                  {columns
-                    .filter((col) => col.type === "action")
-                    .map((col) => (
-                      <IconButton
-                        key={`action-${col.field}`}
-                        onClick={() => col.onClick(item)}
-                      >
-                        {col.icon}
-                      </IconButton>
-                    ))}
                   {DetailsModal && (
                     <Button
                       onClick={() => handleOpenDetailsModal(item)}
@@ -217,6 +219,7 @@ const GeneralTable = ({
                   <Button
                     onClick={() => handleOpenModModal(item)}
                     startIcon={<Edit />}
+                    disabled={disableModifyAction}
                   >
                     Modificar
                   </Button>
@@ -225,6 +228,7 @@ const GeneralTable = ({
                       onClick={() => handleOpenModal(item)}
                       startIcon={<Delete />}
                       color="error"
+                      disabled={disableDeleteAction}
                     >
                       Desactivar
                     </Button>
@@ -233,6 +237,7 @@ const GeneralTable = ({
                       onClick={() => handleOpenModal(item)}
                       startIcon={<Delete />}
                       color="error"
+                      disabled={disableDeleteAction}
                     >
                       Eliminar
                     </Button>
@@ -243,6 +248,7 @@ const GeneralTable = ({
                         onClick={() => handleReactivate(item)}
                         startIcon={<Restore style={{ color: green[500] }} />}
                         style={{ color: green[500] }}
+                        disabled={disableReactivateAction}
                       >
                         Reactivar
                       </Button>
@@ -329,40 +335,46 @@ const GeneralTable = ({
                       )
                   )}
                   <TableCell key={`actions-${item[pkCol] || index}`}>
-                    {columns
-                      .filter((col) => col.type === "action")
-                      .map((col) => (
-                        <IconButton
-                          key={`action-${col.field}`}
-                          onClick={() => col.onClick(item)}
-                        >
-                          {col.icon}
-                        </IconButton>
-                      ))}
                     {DetailsModal && (
-                      <IconButton onClick={() => handleOpenDetailsModal(item)}>
+                      <IconButton
+                        onClick={() => handleOpenDetailsModal(item)}
+                        disabled={disableModifyAction}
+                      >
                         <Info />
                       </IconButton>
                     )}
-                    <IconButton onClick={() => handleOpenModModal(item)}>
+                    <IconButton
+                      onClick={() => handleOpenModModal(item)}
+                      disabled={disableModifyAction}
+                    >
                       <Edit />
                     </IconButton>
                     {item.activo === true || item.activo === "activo" ? (
-                      <IconButton onClick={() => handleOpenModal(item)}>
-                        <Delete color="error" />
+                      <IconButton
+                        onClick={() => handleOpenModal(item)}
+                        color="error"
+                        disabled={disableDeleteAction}
+                      >
+                        <Delete />
                       </IconButton>
                     ) : deletionUrl && !restoreUrl ? (
-                      <IconButton onClick={() => handleOpenModal(item)}>
-                        <Delete color="error" />
+                      <IconButton
+                        onClick={() => handleOpenModal(item)}
+                        color="error"
+                        disabled={disableDeleteAction}
+                      >
+                        <Delete />
                       </IconButton>
                     ) : null}
                     {restoreUrl &&
                       (item.activo === false || item.activo === "inactivo") && (
-                        <Button
+                        <IconButton
                           onClick={() => handleReactivate(item)}
-                          startIcon={<Restore style={{ color: green[500] }} />}
                           style={{ color: green[500] }}
-                        />
+                          disabled={disableReactivateAction}
+                        >
+                          <Restore />
+                        </IconButton>
                       )}
                   </TableCell>
                 </TableRow>
@@ -391,9 +403,7 @@ const GeneralTable = ({
                     page={page - 1}
                     onPageChange={(_, newPage) => onPageChange(newPage + 1)}
                     labelDisplayedRows={({ from, to, count }) =>
-                      `${from}-${to} de ${
-                        count !== -1 ? count : `más de ${to}`
-                      }`
+                      `${from}-${to} de ${count !== -1 ? count : `más de ${to}`}`
                     }
                     rowsPerPageOptions={[]}
                     showFirstButton={true}
@@ -410,22 +420,68 @@ const GeneralTable = ({
       {/* Modal de confirmación para desactivar */}
       <Modal open={openModal} onClose={handleCloseModal}>
         <Box
-          className="p-6 bg-white rounded-lg shadow-lg"
-          sx={{ width: 400, margin: "auto", marginTop: "10%" }}
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            p: { xs: 2, sm: 3 },
+            borderRadius: 2,
+            boxShadow: 3,
+            bgcolor: "#fff",
+            width: "90%",
+            maxWidth: "400px",
+            textAlign: "center",
+          }}
         >
-          <Typography variant="h6" component="h2">
+          <IconButton
+            onClick={handleCloseModal}
+            sx={{
+              position: "absolute",
+              top: "4px",
+              right: "8px",
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+          <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
             {customDeleteTitle ||
-              `¿Estás seguro de que deseas ${restoreUrl ? "desactivar" : "eliminar"} ${selectedItem?.[visualIdentifierCol]}?`}
+              `¿Estás seguro de que deseas ${
+                restoreUrl ? "desactivar" : "eliminar"
+              } ${selectedItem?.[visualIdentifierCol]}?`}
           </Typography>
-          <Typography sx={{ mt: 2 }}>Esta acción se puede deshacer.</Typography>
-          <Box mt={4} display="flex" justifyContent="space-between">
-            <Button variant="contained" color="error" onClick={handleDelete}>
-              {restoreUrl ? "Desactivar" : "Eliminar"}
-            </Button>
-            <Button variant="outlined" onClick={handleCloseModal}>
+          <Typography variant="body1" sx={{ mb: 4 }}>
+            Esta acción{" "}
+            {restoreUrl
+              ? "se puede deshacer activándola nuevamente."
+              : "es irreversible."}
+          </Typography>
+          <Stack direction="row" spacing={2} sx={{ justifyContent: "center" }}>
+            <Button
+              onClick={handleCloseModal}
+              variant="outlined"
+              sx={{ borderColor: "#00308F", color: "#00308F" }}
+            >
               Cancelar
             </Button>
-          </Box>
+            <Button
+              onClick={handleDelete}
+              variant="contained"
+              color="error"
+              disabled={loadingDelete}
+              startIcon={loadingDelete && <CircularProgress size={20} />}
+              sx={{
+                backgroundColor: "#D32F2F",
+                "&:hover": { backgroundColor: "#B71C1C" },
+              }}
+            >
+              {loadingDelete
+                ? "Eliminando..."
+                : restoreUrl
+                  ? "Desactivar"
+                  : "Eliminar"}
+            </Button>
+          </Stack>
         </Box>
       </Modal>
 
@@ -477,11 +533,15 @@ GeneralTable.propTypes = {
   restoreUrl: PropTypes.string,
   pkCol: PropTypes.string.isRequired,
   visualIdentifierCol: PropTypes.string.isRequired,
+  customDeleteTitle: PropTypes.string,
   fetchData: PropTypes.func.isRequired,
   ModModal: PropTypes.elementType.isRequired,
   DetailsModal: PropTypes.elementType,
-  customDeleteTitle: PropTypes.string, // Definición del nuevo prop opcional
   otherData: PropTypes.object,
+  disableAddButton: PropTypes.bool,
+  disableModifyAction: PropTypes.bool,
+  disableDeleteAction: PropTypes.bool,
+  disableReactivateAction: PropTypes.bool,
 };
 
 export default GeneralTable;
