@@ -2034,7 +2034,26 @@ def delete_vet_schedule(request, horario_id):
             return Response({'error': 'Error al eliminar el horario.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
     
+@api_view(['PUT'])
+def reactivate_vet_schedule(request, horario_id):
+    try:
+        with connection.cursor() as cursor:
+            # Llamar al procedimiento almacenado para reactivar el horario
+            cursor.callproc('VETLINK.RECUPERAR_HORARIO_VETERINARIO', [horario_id])
 
+        return Response({'message': 'Horario reactivado exitosamente.'}, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        error_message = str(e)
+        if 'ORA-20001' in error_message:
+            # Error de conflicto de horarios desde el procedimiento almacenado
+            return Response({'error': 'Conflicto de horarios detectado al intentar reactivar el horario.'}, status=status.HTTP_400_BAD_REQUEST)
+        elif 'ORA-20002' in error_message:
+            # Error personalizado si el horario no existe
+            return Response({'error': 'El horario especificado no existe.'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            # Otro error
+            return Response({'error': 'Error al reactivar el horario.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(["GET"])

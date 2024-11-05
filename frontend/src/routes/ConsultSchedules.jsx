@@ -32,11 +32,12 @@ const ConsultSchedules = () => {
       fetchUrl="http://localhost:8000/api/consult-schedules/"
       addComponent={AddSchedule}
       modifyComponent={ModifySchedule}
-      deletionUrl="http://localhost:8000/api/delete-vet-schedule"
+      deletionUrl="http://localhost:8000/api/delete-vet-schedule/"
+      restoreUrl="http://localhost:8000/api/reactivate-vet-schedule/"
       rowsPerPage={rowsPerPage}
       columns={columns}
       pkCol="horario_id"
-      visualIdentifierCol="dia"
+      customDeleteTitle={"¿Estás seguro de que deseas eliminar este horario?"}
     />
   );
 };

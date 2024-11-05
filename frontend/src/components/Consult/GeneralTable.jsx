@@ -39,6 +39,7 @@ const GeneralTable = ({
   fetchData,
   ModModal,
   DetailsModal,
+  customDeleteTitle, // Nuevo prop opcional
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const notify = useNotification();
@@ -155,7 +156,6 @@ const GeneralTable = ({
   return (
     <>
       {isMobile ? (
-        // Vista móvil
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {data.map((item) => (
             <Card key={item[pkCol]} variant="outlined" sx={{ padding: 1 }}>
@@ -267,7 +267,6 @@ const GeneralTable = ({
           />
         </Box>
       ) : (
-        // Vista de escritorio
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
@@ -415,11 +414,8 @@ const GeneralTable = ({
           sx={{ width: 400, margin: "auto", marginTop: "10%" }}
         >
           <Typography variant="h6" component="h2">
-            <Typography variant="h6" component="h2">
-              ¿Estás seguro de que deseas{" "}
-              {restoreUrl ? "desactivar" : "eliminar"}{" "}
-            </Typography>
-            {selectedItem?.[visualIdentifierCol]}?
+            {customDeleteTitle ||
+              `¿Estás seguro de que deseas ${restoreUrl ? "desactivar" : "eliminar"} ${selectedItem?.[visualIdentifierCol]}?`}
           </Typography>
           <Typography sx={{ mt: 2 }}>Esta acción se puede deshacer.</Typography>
           <Box mt={4} display="flex" justifyContent="space-between">
@@ -484,6 +480,7 @@ GeneralTable.propTypes = {
   fetchData: PropTypes.func.isRequired,
   ModModal: PropTypes.elementType.isRequired,
   DetailsModal: PropTypes.elementType,
+  customDeleteTitle: PropTypes.string, // Definición del nuevo prop opcional
   otherData: PropTypes.object,
 };
 

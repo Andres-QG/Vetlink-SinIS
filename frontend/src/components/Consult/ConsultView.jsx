@@ -19,6 +19,7 @@ const ConsultView = ({
   pkCol,
   visualIdentifierCol,
   rowsPerPage,
+  customDeleteTitle, // Nuevo prop opcional
   otherData,
 }) => {
   const [data, setData] = useState([]);
@@ -139,6 +140,7 @@ const ConsultView = ({
             restoreUrl={restoreUrl}
             pkCol={pkCol}
             visualIdentifierCol={visualIdentifierCol}
+            customDeleteTitle={customDeleteTitle} // Pasamos el nuevo prop a GeneralTable
             fetchData={fetchAllData}
             ModModal={ModifyComponent}
             DetailsModal={DetailedInfoComponent}
@@ -184,6 +186,7 @@ ConsultView.propTypes = {
   pkCol: PropTypes.string.isRequired,
   visualIdentifierCol: PropTypes.string.isRequired,
   rowsPerPage: PropTypes.number,
+  customDeleteTitle: PropTypes.string, // Definición del nuevo prop opcional
   otherData: PropTypes.object,
 };
 

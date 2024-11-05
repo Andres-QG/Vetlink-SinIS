@@ -78,6 +78,7 @@ urlpatterns = [
     path("get-admin-clinic/", get_admin_clinic, name="get_admin_clinic"),
     path("modify-vet-schedule/<int:horario_id>/", modify_vet_schedule, name="modify_vet_schedule"),
     path('delete-vet-schedule/<int:horario_id>/', delete_vet_schedule, name='delete_vet_schedule'),
+    path('reactivate-vet-schedule/<int:horario_id>/', reactivate_vet_schedule, name='reactivate_vet_schedule'),
     
     # Reactivate APIs
     path("reactivate-user/<str:usuario>/", reactivate_user, name="reactivate_user"),
