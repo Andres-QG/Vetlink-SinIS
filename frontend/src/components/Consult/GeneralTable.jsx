@@ -222,17 +222,6 @@ const GeneralTable = ({
                     startIcon={<Edit />}
                     color="primary"
                     disabled={disableModifyAction}
-                    sx={{
-                      backgroundColor: "#00308F",
-                      "&:hover": {
-                        backgroundColor: "#00246d",
-                      },
-                      minWidth: "190px",
-                      marginBottom: { xs: "-4px", md: "0px" },
-                      marginRight: { xs: "0px", md: "10px" },
-                      width: { xs: "100%", md: "auto" },
-                      fontSize: "0.85rem",
-                    }}
                   >
                     Modificar
                   </Button>
