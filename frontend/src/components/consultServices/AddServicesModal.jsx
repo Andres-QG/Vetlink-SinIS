@@ -1,3 +1,5 @@
+// AddServicesModal.jsx
+
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import {
@@ -20,17 +22,6 @@ import {
   Image,
 } from "@mui/icons-material";
 import axios from "axios";
-
-const formatServiceNameForImage = (nombre) => {
-  return nombre
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/ñ/g, "n")
-    .replace(/ü/g, "u")
-    .replace(/[^a-z0-9 ]/g, "")
-    .replace(/\s+/g, "_");
-};
 
 const validateServiceName = (nombre) => {
   const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/;
@@ -81,8 +72,8 @@ const AddServicesModal = ({ open, handleClose, onSuccess }) => {
 
     if (!formData.imagen) {
       newErrors.imagen = "Debe seleccionar una imagen.";
-    } else if (formData.imagen.type !== "image/jpeg") {
-      newErrors.imagen = "La imagen debe ser un archivo .jpg";
+    } else if (!formData.imagen.type.startsWith("image/")) {
+      newErrors.imagen = "El archivo debe ser una imagen.";
     }
 
     setErrors(newErrors);
@@ -94,10 +85,10 @@ const AddServicesModal = ({ open, handleClose, onSuccess }) => {
 
     if (name === "imagen") {
       if (files && files[0]) {
-        if (files[0].type !== "image/jpeg") {
+        if (!files[0].type.startsWith("image/")) {
           setErrors({
             ...errors,
-            imagen: "La imagen debe ser un archivo .jpg",
+            imagen: "El archivo debe ser una imagen",
           });
           return;
         }
@@ -105,11 +96,10 @@ const AddServicesModal = ({ open, handleClose, onSuccess }) => {
         setErrors({ ...errors, imagen: "" });
       }
     } else if (name === "nombre") {
+      setFormData({ ...formData, nombre: value });
       if (validateServiceName(value)) {
-        setFormData({ ...formData, nombre: value });
         setErrors({ ...errors, nombre: "" });
       } else {
-        setFormData({ ...formData, nombre: value });
         setErrors({
           ...errors,
           nombre:
@@ -127,28 +117,23 @@ const AddServicesModal = ({ open, handleClose, onSuccess }) => {
     setLoading(true);
 
     try {
-      const formattedNameForImage = formatServiceNameForImage(formData.nombre);
+      const formDataToSend = new FormData();
+      formDataToSend.append("nombre", formData.nombre);
+      formDataToSend.append("descripcion", formData.descripcion);
+      formDataToSend.append("numero_sesiones", formData.numero_sesiones);
+      formDataToSend.append("minutos_sesion", formData.minutos_sesion);
+      formDataToSend.append("costo", formData.costo);
+      formDataToSend.append("imagen", formData.imagen);
 
-      if (!formattedNameForImage) {
-        onSuccess("El nombre del servicio no es válido.", "error");
-        setLoading(false);
-        return;
-      }
-
-      const imagePath = `./src/assets/img/Services_${formattedNameForImage}.jpg`;
-
-      // Crear objeto con los datos del servicio
-      const serviceData = {
-        nombre: formData.nombre,
-        descripcion: formData.descripcion,
-        numero_sesiones: parseFloat(formData.numero_sesiones),
-        minutos_sesion: parseFloat(formData.minutos_sesion),
-        costo: parseFloat(formData.costo),
-        dir_imagen: imagePath,
-      };
-
-      // Enviar datos al backend
-      await axios.post("http://localhost:8000/api/add-service/", serviceData);
+      await axios.post(
+        "http://localhost:8000/api/add-service/",
+        formDataToSend,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
       onSuccess("Servicio agregado exitosamente.", "success");
       setFormData(initialFormData);
@@ -302,12 +287,10 @@ const AddServicesModal = ({ open, handleClose, onSuccess }) => {
             fullWidth
             sx={{ mt: 2, mb: 1 }}
             startIcon={<Image />}>
-            {formData.imagen
-              ? "Imagen seleccionada"
-              : "Seleccionar imagen (.jpg)"}
+            {formData.imagen ? "Imagen seleccionada" : "Seleccionar imagen"}
             <input
               type="file"
-              accept=".jpg"
+              accept="image/*"
               name="imagen"
               hidden
               onChange={handleChange}

@@ -3,16 +3,21 @@ import AddServicesModal from "../components/consultServices/AddServicesModal";
 import ModifyServicesModal from "../components/consultServices/ModifyServicesModal";
 
 const ConsultServices = () => {
-  const rowsPerPage = 7;
+  const rowsPerPage = 10;
   const columns = [
     { field: "nombre", headerName: "Nombre", type: "text" },
     { field: "descripcion", headerName: "Descripción", type: "text" },
     {
       field: "numero_sesiones",
-      headerName: "Número de Sesiones",
+      headerName: "Número de sesiones",
       type: "text",
     },
-    { field: "minutos_sesion", headerName: "Minutos por Sesión", type: "text" },
+    {
+      field: "minutos_sesion",
+      headerName: "Minutos por sesión",
+      type: "text",
+    },
+
     { field: "costo", headerName: "Costo", type: "text" },
     {
       field: "activo",

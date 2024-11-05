@@ -18,6 +18,9 @@ import json
 from datetime import datetime
 from django.http import JsonResponse
 from django.db import connection
+import os
+from django.conf import settings
+import re
 
 
 class CustomPagination(PageNumberPagination):
@@ -2078,6 +2081,9 @@ def update_servicio(request, servicio_id):
         numero_sesiones = request.data.get("numero_sesiones")
         minutos_sesion = request.data.get("minutos_sesion")
         costo = request.data.get("costo")
+        imagen = request.FILES.get(
+            "imagen"
+        )  # Obtener la nueva imagen desde el formulario
 
         # Actualizar los datos del servicio
         if nombre:
@@ -2091,10 +2097,44 @@ def update_servicio(request, servicio_id):
         if costo:
             servicio.costo = costo
 
+        # Manejar la imagen
+        if imagen:
+            # Eliminar la imagen anterior si existe
+            if servicio.dir_imagen:
+                ruta_imagen_anterior = os.path.join(
+                    settings.BASE_DIR, servicio.dir_imagen
+                )
+                if os.path.exists(ruta_imagen_anterior):
+                    os.remove(ruta_imagen_anterior)
+
+            # Guardar la nueva imagen
+            nombre_formateado = format_service_name(servicio.nombre)
+            ruta_carpeta = os.path.join(
+                "static", "assets", "img", f"Service_{nombre_formateado}"
+            )
+            ruta_completa = os.path.normpath(
+                os.path.join(settings.BASE_DIR, ruta_carpeta)
+            )
+
+            # Crear la carpeta si no existe
+            os.makedirs(ruta_completa, exist_ok=True)
+
+            # Guardar la imagen en la carpeta especificada
+            ruta_imagen = os.path.join(ruta_carpeta, imagen.name)
+            ruta_imagen_completa = os.path.normpath(
+                os.path.join(settings.BASE_DIR, ruta_imagen)
+            )
+
+            with open(ruta_imagen_completa, "wb+") as destino:
+                for chunk in imagen.chunks():
+                    destino.write(chunk)
+
+            # Actualizar el path de la imagen en el servicio
+            servicio.dir_imagen = ruta_imagen.replace("\\", "/")
+
         servicio.save()
         return Response(
-            {"message": "Servicio actualizado con éxito."},
-            status=status.HTTP_200_OK,
+            {"message": "Servicio actualizado con éxito."}, status=status.HTTP_200_OK
         )
     except Servicios.DoesNotExist:
         return Response(
@@ -2139,60 +2179,76 @@ def reactivate_service(request, servicio_id):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+def format_service_name(nombre):
+    # Remover caracteres especiales y espacios
+    return re.sub(r"[^A-Za-z0-9]+", "", nombre)
+
+
+import os
+import re
+from django.conf import settings
+
+
+def format_service_name(nombre):
+    # Remover caracteres especiales y espacios
+    return re.sub(r"[^A-Za-z0-9]+", "", nombre)
+
+
 @api_view(["POST"])
 def add_servicio(request):
+    nombre = request.data.get("nombre")
+    descripcion = request.data.get("descripcion")
+    numero_sesiones = request.data.get("numero_sesiones")
+    minutos_sesion = request.data.get("minutos_sesion")
+    costo = request.data.get("costo")
+    activo = True
+    imagen = request.FILES.get("imagen")  # Obtener la imagen desde el formulario
+
+    if not all([nombre, descripcion, numero_sesiones, minutos_sesion, costo, imagen]):
+        return Response(
+            {"error": "Todos los campos son requeridos."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     try:
-        # Obtener datos del request
-        nombre = request.data.get("nombre")
-        descripcion = request.data.get("descripcion")
-        numero_sesiones = request.data.get("numero_sesiones")
-        minutos_sesion = request.data.get("minutos_sesion")
-        costo = request.data.get("costo")
-        dir_imagen = request.data.get("dir_imagen")
-        activo = True
+        # Formatear el nombre para el directorio
+        nombre_formateado = format_service_name(nombre)
+        ruta_carpeta = os.path.join(
+            "static", "assets", "img", f"Service_{nombre_formateado}"
+        )
+        ruta_completa = os.path.normpath(os.path.join(settings.BASE_DIR, ruta_carpeta))
 
-        # Validar datos requeridos
-        if not all([nombre, descripcion]):
-            return Response(
-                {"error": "Campos  requeridos"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        # Crear la carpeta si no existe
+        os.makedirs(ruta_completa, exist_ok=True)
 
-        # Verificar si ya existe un servicio con el mismo nombre
-        if Servicios.objects.filter(nombre=nombre).exists():
-            return Response(
-                {"error": "Ya existe un servicio con ese nombre."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        # Guardar la imagen en la carpeta especificada
+        ruta_imagen = os.path.join(ruta_carpeta, imagen.name)
+        ruta_imagen_completa = os.path.normpath(
+            os.path.join(settings.BASE_DIR, ruta_imagen)
+        )
 
-        print(f"Valores a insertar:")
-        print(f"Nombre: {nombre} (Tipo: {type(nombre)})")
-        print(f"Descripción: {descripcion} (Tipo: {type(descripcion)})")
-        print(f"Número de sesiones: {numero_sesiones} (Tipo: {type(numero_sesiones)})")
-        print(f"Minutos por sesión: {minutos_sesion} (Tipo: {type(minutos_sesion)})")
-        print(f"Costo: {costo} (Tipo: {type(costo)})")
-        print(f"Dirección de imagen: {dir_imagen} (Tipo: {type(dir_imagen)})")
+        with open(ruta_imagen_completa, "wb+") as destino:
+            for chunk in imagen.chunks():
+                destino.write(chunk)
 
-        # Crear el nuevo servicio
-        nuevo_servicio = Servicios(
+        # Guardar el registro en la base de datos con la ruta de la imagen
+        servicio = Servicios.objects.create(
             nombre=nombre,
             descripcion=descripcion,
             numero_sesiones=numero_sesiones,
             minutos_sesion=minutos_sesion,
             costo=costo,
-            dir_imagen=dir_imagen,
             activo=activo,
+            dir_imagen=ruta_imagen.replace(
+                "\\", "/"
+            ),  # Reemplazar las barras invertidas por barras
         )
-
-        # Guardar el servicio
-        nuevo_servicio.save()
 
         return Response(
-            {"message": "Servicio agregado con éxito."}, status=status.HTTP_201_CREATED
+            {"message": "Servicio agregado exitosamente."},
+            status=status.HTTP_201_CREATED,
         )
-
     except Exception as e:
-        print(f"Error al agregar servicio: {str(e)}")
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
