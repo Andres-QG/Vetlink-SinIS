@@ -287,8 +287,6 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
                 renderTags={(value, getTagProps) => (
                   <div
                     style={{
-                      minHeight: "39px",
-                      maxHeight: "39px",
                       overflowY: "auto",
                       display: "flex",
                       flexWrap: "wrap",

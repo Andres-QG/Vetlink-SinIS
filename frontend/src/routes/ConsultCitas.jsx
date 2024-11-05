@@ -71,7 +71,6 @@ function ConsultCitas() {
           clientes: clientes || [],
           veterinarios: veterinarios || [],
         });
-        console.log(otherData)
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -85,7 +84,7 @@ function ConsultCitas() {
       <ConsultView
         title="Citas"
         fetchUrl="http://localhost:8000/api/consult-citas/"
-        deletionUrl="http://localhost:8000/api/delete-citas"
+        deletionUrl="http://localhost:8000/api/delete-cita/"
         addComponent={AddCitaModal}
         modifyComponent={ModifyCitaModal}
         rowsPerPage={rowsPerPage}

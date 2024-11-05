@@ -497,17 +497,19 @@ def update_cita(request, cita_id):
 @api_view(["DELETE"])
 def delete_cita(request, cita_id):
     try:
-        cita = Citas.objects.get(pk=cita_id)
-        cita.activo = False
-        cita.save()
+        # Call the stored procedure to set estado as "Inactiva"
+        with connection.cursor() as cursor:
+            cursor.callproc("VETLINK.DELETE_CITA", [cita_id])
+
         return Response(
             {"message": "Cita eliminada correctamente"}, status=status.HTTP_200_OK
         )
-    except Citas.DoesNotExist:
-        return Response(
-            {"error": "Cita no encontrada"}, status=status.HTTP_404_NOT_FOUND
-        )
     except Exception as e:
+        print(str(e))
+        if "Citas.DoesNotExist" in str(e):
+            return Response(
+                {"error": "Cita no encontrada"}, status=status.HTTP_404_NOT_FOUND
+            )
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(["PUT"])
