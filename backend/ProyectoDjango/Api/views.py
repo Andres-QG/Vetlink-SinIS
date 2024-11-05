@@ -14,10 +14,13 @@ from django.views.decorators.cache import cache_page
 from .serializers import *
 from datetime import datetime
 import random
-import json 
+import json
 from datetime import datetime
 from django.http import JsonResponse
 from django.db import connection
+import os
+from django.conf import settings
+import re
 
 
 class CustomPagination(PageNumberPagination):
@@ -329,7 +332,7 @@ def consult_citas(request):
     order = request.GET.get("order", "asc")
     clinica_id = request.session.get("clinica_id")  # Optional clinic filter
     cliente = ""
-    if request.session.get('role') == 4:
+    if request.session.get("role") == 4:
         cliente = request.session.get("user")
 
     # Map the column names to match the stored procedure's response if necessary
@@ -337,7 +340,7 @@ def consult_citas(request):
         "cliente": "CLIENTE",
         "veterinario": "VETERINARIO",
         "mascota": "NOMBRE",
-        "fecha": "FECHA"
+        "fecha": "FECHA",
     }
     column = column_mapping.get(column, column)
 
@@ -346,51 +349,56 @@ def consult_citas(request):
             returned_cursor = cursor.connection.cursor()
             returned_services = cursor.connection.cursor()
             # Call the stored procedure
-            cursor.callproc("VETLINK.GET_ALL_CITAS", [clinica_id, cliente, returned_cursor])
+            cursor.callproc(
+                "VETLINK.GET_ALL_CITAS", [clinica_id, cliente, returned_cursor]
+            )
 
             # Fetch the results from returned_cursor instead of cursor
             citas = [
-            {
-                "cita_id": row[0],
-                "cliente": row[1],
-                "cliente_usuario": row[2],
-                "veterinario": row[3],
-                "veterinario_usuario": row[4],
-                "mascota_id": row[5],
-                "mascota": row[6],
-                "fecha": row[7].strftime('%Y-%m-%d'),
-                "hora": row[8],
-                "clinica_id": row[9] if row[9] is not None else 0,
-                "clinica": row[10] if row[10] is not None else "N/A",
-                "motivo": row[11] if row[11] is not None else "N/A",
-                "estado": row[12],
-                "services": []
-            }
-            for row in returned_cursor.fetchall()
+                {
+                    "cita_id": row[0],
+                    "cliente": row[1],
+                    "cliente_usuario": row[2],
+                    "veterinario": row[3],
+                    "veterinario_usuario": row[4],
+                    "mascota_id": row[5],
+                    "mascota": row[6],
+                    "fecha": row[7].strftime("%Y-%m-%d"),
+                    "hora": row[8],
+                    "clinica_id": row[9] if row[9] is not None else 0,
+                    "clinica": row[10] if row[10] is not None else "N/A",
+                    "motivo": row[11] if row[11] is not None else "N/A",
+                    "estado": row[12],
+                    "services": [],
+                }
+                for row in returned_cursor.fetchall()
             ]
             for cita in citas:
                 cita_id = cita["cita_id"]
                 services_cursor = cursor.connection.cursor()
 
-                cursor.callproc("VETLINK.GET_SERVICES_BY_CITA_ID", [cita_id, services_cursor])
+                cursor.callproc(
+                    "VETLINK.GET_SERVICES_BY_CITA_ID", [cita_id, services_cursor]
+                )
 
                 services = [
-                    {
-                        "servicio_id": service_row[0],
-                        "nombre": service_row[1]
-                    }
+                    {"servicio_id": service_row[0], "nombre": service_row[1]}
                     for service_row in services_cursor.fetchall()
                 ]
                 cita["services"] = services
- 
+
             # Apply search filter if specified
             if search:
                 citas = [
-                    cita for cita in citas if search.lower() in str(cita[column]).lower()
+                    cita
+                    for cita in citas
+                    if search.lower() in str(cita[column]).lower()
                 ]
 
         # Sort the results based on specified column and order
-        citas = sorted(citas, key=lambda x: x[column.lower()], reverse=(order == "desc"))
+        citas = sorted(
+            citas, key=lambda x: x[column.lower()], reverse=(order == "desc")
+        )
 
         # Paginate the results
         paginator = CustomPagination()
@@ -403,7 +411,7 @@ def consult_citas(request):
         # Handle exceptions and log errors if needed
         print(f"Error: {e}")
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
- 
+
 
 @api_view(["POST"])
 @transaction.atomic
@@ -427,26 +435,30 @@ def add_cita(request):
             servs_ids.append(serv.get("servicio_id"))
 
         servs_ids = [str(serv.get("servicio_id")) for serv in servicios]
-        service_ids_string = ",".join(servs_ids)  
+        service_ids_string = ",".join(servs_ids)
 
         with connection.cursor() as cursor:
-            cursor.callproc("VETLINK.ADD_CITA", [
-                cliente_id,          # P_CLIENTE_ID
-                veterinario_id,      # P_VETERINARIO_ID
-                mascota_id,          # P_MASCOTA_ID
-                formatted_fecha,     # P_FECHA (formatted as 'YYYY-MM-DD')
-                hora,                # P_HORA
-                motivo,              # P_MOTIVO
-                estado,              # P_ESTADO
-                clinica_id,          # P_CLINICA
-                service_ids_string   # P_SERVICIOS
-            ]) 
+            cursor.callproc(
+                "VETLINK.ADD_CITA",
+                [
+                    cliente_id,  # P_CLIENTE_ID
+                    veterinario_id,  # P_VETERINARIO_ID
+                    mascota_id,  # P_MASCOTA_ID
+                    formatted_fecha,  # P_FECHA (formatted as 'YYYY-MM-DD')
+                    hora,  # P_HORA
+                    motivo,  # P_MOTIVO
+                    estado,  # P_ESTADO
+                    clinica_id,  # P_CLINICA
+                    service_ids_string,  # P_SERVICIOS
+                ],
+            )
 
         return Response({"Success": True})
 
     except Exception as e:
         print(str(e))
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(["POST"])
 def update_cita(request, cita_id):
@@ -460,42 +472,44 @@ def update_cita(request, cita_id):
         motivo = request.data.get("motivo")
 
         clinica_id = request.data.get("clinica").get("clinica_id")
-        services = [s['servicio_id'] for s in request.data.get("services", [])]
+        services = [s["servicio_id"] for s in request.data.get("services", [])]
 
         if isinstance(fecha, datetime):
             formatted_fecha = fecha.strftime("%Y-%m-%d")
         else:
-            formatted_fecha = datetime.strptime(fecha, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%Y-%m-%d")
+            formatted_fecha = datetime.strptime(
+                fecha, "%Y-%m-%dT%H:%M:%S.%fZ"
+            ).strftime("%Y-%m-%d")
 
         print(formatted_fecha)
 
-
         with connection.cursor() as cursor:
-            cursor.callproc("UPDATE_CITA", [
-                cita_id,
-                cliente_id,
-                veterinario_id,
-                mascota_id,
-                formatted_fecha,
-                hora,
-                motivo,
-                clinica_id
-            ])
-            
+            cursor.callproc(
+                "UPDATE_CITA",
+                [
+                    cita_id,
+                    cliente_id,
+                    veterinario_id,
+                    mascota_id,
+                    formatted_fecha,
+                    hora,
+                    motivo,
+                    clinica_id,
+                ],
+            )
+
             for service in services:
                 cursor.callproc("UPDATE_CITA_SERVICIO", [cita_id, service])
-        
+
         return Response(
             {"message": "Cita y servicios actualizados con éxito."},
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
 
     except Exception as e:
         print(str(e))
-        return Response(
-            {"error": str(e)},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(["DELETE"])
 def delete_cita(request, cita_id):
@@ -515,6 +529,7 @@ def delete_cita(request, cita_id):
             )
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 @api_view(["PUT"])
 def get_disp_times(request):
     try:
@@ -524,13 +539,17 @@ def get_disp_times(request):
 
         if not vet_user or not clinica_id or not full_date:
             return Response(
-                {"error": "Missing required parameters: vet_user, clinica_id, full_date."},
-                status=status.HTTP_400_BAD_REQUEST
+                {
+                    "error": "Missing required parameters: vet_user, clinica_id, full_date."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         with connection.cursor() as cursor:
             out_param = cursor.var(str).var
-            cursor.callproc("VETLINK.HORARIOS_DISP", [vet_user, clinica_id, full_date, out_param])
+            cursor.callproc(
+                "VETLINK.HORARIOS_DISP", [vet_user, clinica_id, full_date, out_param]
+            )
 
         # Parse JSON string and return in response
         available_times = json.loads(out_param.getvalue())
@@ -539,11 +558,12 @@ def get_disp_times(request):
     except Exception as e:
         # Log the error with full traceback
         print("Error calling VETLINK.HORARIOS_DISP: %s", str(e))
-        
+
         return Response(
             {"error": "Error retrieving available times. Please try again later."},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
 
 @api_view(["POST"])
 def create_pet(request):
@@ -606,22 +626,23 @@ def get_user_role(request):
 
 @api_view(["GET"])
 def get_user(request):
-    try: 
+    try:
         user = request.session.get("user")
         role = request.session.get("role")
 
         data = {
-        "user": user,
-        "role": role,
+            "user": user,
+            "role": role,
         }
 
         if role == 2:
-            data['clinica'] = request.session.get("clinica_id")
+            data["clinica"] = request.session.get("clinica_id")
 
         return Response({"status": "success", "data": data})
 
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(["GET"])
 def get_clients(request):
@@ -678,6 +699,7 @@ def get_owners(request):
             {"status": "error", "message": "No se pudo obtener propietarios"}
         )
 
+
 @api_view(["PUT"])
 def get_pets(request):
     try:
@@ -702,18 +724,20 @@ def get_pets(request):
 def get_services(request):
     services = Servicios.objects.all()
     serializer = ServiciosNameSerializer(services, many=True)
-    
+
     if serializer.data:
-        return Response({
-            "status": "success",
-            "message": "Servicios obtenidos",
-            "services": serializer.data,
-        })
+        return Response(
+            {
+                "status": "success",
+                "message": "Servicios obtenidos",
+                "services": serializer.data,
+            }
+        )
     else:
-        return Response({
-            "status": "error",
-            "message": "No se pudo obtener los servicios"
-        })
+        return Response(
+            {"status": "error", "message": "No se pudo obtener los servicios"}
+        )
+
 
 @api_view(["GET"])
 def get_clinics(request):
@@ -721,7 +745,7 @@ def get_clinics(request):
         with connection.cursor() as cursor:
             out_clinicas = cursor.var(str).var
             cursor.callproc("VETLINK.OBTENER_CLINICAS_JSON", [out_clinicas])
-            
+
         clinics_data = out_clinicas.getvalue()
         if clinics_data is None:
             return Response({"clinics": []})
@@ -732,6 +756,7 @@ def get_clinics(request):
     except Exception as e:
         print("Error:", str(e))
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(["GET"])
 def consult_client(request):
@@ -1470,32 +1495,44 @@ def add_pet_record(request):
             return Response({"error": "Mascota no encontrada"}, status=404)
 
         # Verificar si todas las vacunas existen
-        vacunas_list = [vacuna.strip().lower() for vacuna in vacunas.split(",") if vacuna.strip()]
+        vacunas_list = [
+            vacuna.strip().lower() for vacuna in vacunas.split(",") if vacuna.strip()
+        ]
         if vacunas_list:
             for vacuna in vacunas_list:
                 if not Vacunas.objects.filter(nombre__iexact=vacuna).exists():
                     return Response(
-                        {"error": f"Vacuna con nombre {vacuna} no encontrada"}, status=404
+                        {"error": f"Vacuna con nombre {vacuna} no encontrada"},
+                        status=404,
                     )
 
         # Verificar si todos los síntomas existen
-        sintomas_list = [sintoma.strip().lower() for sintoma in sintomas.split(",") if sintoma.strip()]
+        sintomas_list = [
+            sintoma.strip().lower()
+            for sintoma in sintomas.split(",")
+            if sintoma.strip()
+        ]
         if sintomas_list:
             for sintoma in sintomas_list:
                 if not Sintomas.objects.filter(nombre__iexact=sintoma).exists():
                     return Response(
-                        {"error": f"Síntoma con nombre {sintoma} no encontrado"}, status=404
+                        {"error": f"Síntoma con nombre {sintoma} no encontrado"},
+                        status=404,
                     )
 
         # Verificar si todos los tratamientos existen
         tratamientos_list = [
-            tratamiento.strip().lower() for tratamiento in tratamientos.split(",") if tratamiento.strip()
+            tratamiento.strip().lower()
+            for tratamiento in tratamientos.split(",")
+            if tratamiento.strip()
         ]
         if tratamientos_list:
             for tratamiento in tratamientos_list:
                 if not Tratamientos.objects.filter(nombre__iexact=tratamiento).exists():
                     return Response(
-                        {"error": f"Tratamiento con nombre {tratamiento} no encontrado"},
+                        {
+                            "error": f"Tratamiento con nombre {tratamiento} no encontrado"
+                        },
                         status=404,
                     )
 
@@ -1578,24 +1615,24 @@ def consult_treatments(request):
         return Response([], status=status.HTTP_200_OK)
 
 
-@api_view(['DELETE'])
-def delete_pet_record(request,consulta_id):
+@api_view(["DELETE"])
+def delete_pet_record(request, consulta_id):
     try:
-        
+
         # Si ambas existen, proceder a eliminar el expediente
         with connection.cursor() as cursor:
             cursor.callproc("VETLINK.Eliminar_Expediente", [consulta_id])
-        
-        return Response({'message': 'Expediente eliminado correctamente'}, status=200)
-    
+
+        return Response({"message": "Expediente eliminado correctamente"}, status=200)
+
     except Mascotas.DoesNotExist:
-        return Response({'error': 'Mascota no encontrada'}, status=404)
-    
+        return Response({"error": "Mascota no encontrada"}, status=404)
+
     except ConsultaMascotas.DoesNotExist:
-        return Response({'error': 'Consulta no encontrada'}, status=404)
-    
+        return Response({"error": "Consulta no encontrada"}, status=404)
+
     except Exception as e:
-        return Response({'error': str(e)}, status=500)
+        return Response({"error": str(e)}, status=500)
 
 
 @api_view(["PUT"])
@@ -1614,7 +1651,9 @@ def update_pet_record(request, mascota_id, consulta_id):
 
     try:
         # Normalizar y verificar si todas las vacunas existen
-        vacunas_list = [vacuna.strip().lower() for vacuna in vacunas.split(",") if vacuna.strip()]
+        vacunas_list = [
+            vacuna.strip().lower() for vacuna in vacunas.split(",") if vacuna.strip()
+        ]
         print("vacunas_list: ", vacunas_list)
         if vacunas_list:
             for vacuna in vacunas_list:
@@ -1625,7 +1664,11 @@ def update_pet_record(request, mascota_id, consulta_id):
                     )
 
         # Normalizar y verificar si todos los síntomas existen
-        sintomas_list = [sintoma.strip().lower() for sintoma in sintomas.split(",") if sintoma.strip()]
+        sintomas_list = [
+            sintoma.strip().lower()
+            for sintoma in sintomas.split(",")
+            if sintoma.strip()
+        ]
         if sintomas_list:
             for sintoma in sintomas_list:
                 if not Sintomas.objects.filter(nombre__iexact=sintoma).exists():
@@ -1636,14 +1679,17 @@ def update_pet_record(request, mascota_id, consulta_id):
 
         # Normalizar y verificar si todos los tratamientos existen
         tratamientos_list = [
-            tratamiento.strip().lower() for tratamiento in tratamientos.split(",")
-                                                            if tratamiento.strip()
+            tratamiento.strip().lower()
+            for tratamiento in tratamientos.split(",")
+            if tratamiento.strip()
         ]
         if tratamientos_list:
             for tratamiento in tratamientos_list:
                 if not Tratamientos.objects.filter(nombre__iexact=tratamiento).exists():
                     return Response(
-                        {"error": f"Tratamiento con nombre {tratamiento} no encontrado"},
+                        {
+                            "error": f"Tratamiento con nombre {tratamiento} no encontrado"
+                        },
                         status=status.HTTP_404_NOT_FOUND,
                     )
 
@@ -1753,23 +1799,23 @@ def consult_schedules(request):
                 # Obtener el nombre de la clínica
                 try:
                     clinica_nombre = (
-                        Clinicas.objects.get(clinica_id=schedule['CLINICA_ID']).nombre
-                        if schedule['CLINICA_ID']
+                        Clinicas.objects.get(clinica_id=schedule["CLINICA_ID"]).nombre
+                        if schedule["CLINICA_ID"]
                         else "Desconocida"
                     )
                 except Clinicas.DoesNotExist:
                     clinica_nombre = "Clínica no encontrada"
 
                 schedule_data = {
-                    "horario_id": schedule['HORARIO_ID'],
-                    "usuario_veterinario": schedule['USUARIO_VETERINARIO'],
-                    "nombre_veterinario": schedule['NOMBRE_VETERINARIO'],  # Nuevo campo
-                    "dia": schedule['DIA'],
-                    "hora_inicio": schedule['HORA_INICIO'],
-                    "hora_fin": schedule['HORA_FIN'],
-                    "clinica_id": schedule['CLINICA_ID'],  # Nuevo campo
+                    "horario_id": schedule["HORARIO_ID"],
+                    "usuario_veterinario": schedule["USUARIO_VETERINARIO"],
+                    "nombre_veterinario": schedule["NOMBRE_VETERINARIO"],  # Nuevo campo
+                    "dia": schedule["DIA"],
+                    "hora_inicio": schedule["HORA_INICIO"],
+                    "hora_fin": schedule["HORA_FIN"],
+                    "clinica_id": schedule["CLINICA_ID"],  # Nuevo campo
                     "clinica": clinica_nombre,
-                    "activo": True if schedule['ACTIVO'] == 1 else False,
+                    "activo": True if schedule["ACTIVO"] == 1 else False,
                 }
                 schedules_list.append(schedule_data)
 
@@ -2060,46 +2106,68 @@ def modify_vet_schedule(request, horario_id):
             {"error": f"Error al modificar el horario: {str(e)}"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
-        
-@api_view(['DELETE'])
+
+
+@api_view(["DELETE"])
 def delete_vet_schedule(request, horario_id):
     try:
         with connection.cursor() as cursor:
             # Llamar al procedimiento almacenado
-            cursor.callproc('VETLINK.ELIMINAR_HORARIO_VETERINARIO', [horario_id])
+            cursor.callproc("VETLINK.ELIMINAR_HORARIO_VETERINARIO", [horario_id])
 
-        return Response({'message': 'Horario eliminado exitosamente.'}, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "Horario eliminado exitosamente."}, status=status.HTTP_200_OK
+        )
 
     except Exception as e:
         error_message = str(e)
-        if 'ORA-20001' in error_message:
+        if "ORA-20001" in error_message:
             # Error personalizado desde el procedimiento almacenado
-            return Response({'error': error_message.split('ORA-20001: ')[-1]}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": error_message.split("ORA-20001: ")[-1]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         else:
             # Otro error
-            return Response({'error': 'Error al eliminar el horario.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-    
-@api_view(['PUT'])
+            return Response(
+                {"error": "Error al eliminar el horario."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+@api_view(["PUT"])
 def reactivate_vet_schedule(request, horario_id):
     try:
         with connection.cursor() as cursor:
             # Llamar al procedimiento almacenado para reactivar el horario
-            cursor.callproc('VETLINK.RECUPERAR_HORARIO_VETERINARIO', [horario_id])
+            cursor.callproc("VETLINK.RECUPERAR_HORARIO_VETERINARIO", [horario_id])
 
-        return Response({'message': 'Horario reactivado exitosamente.'}, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "Horario reactivado exitosamente."}, status=status.HTTP_200_OK
+        )
 
     except Exception as e:
         error_message = str(e)
-        if 'ORA-20001' in error_message:
+        if "ORA-20001" in error_message:
             # Error de conflicto de horarios desde el procedimiento almacenado
-            return Response({'error': 'Conflicto de horarios detectado al intentar reactivar el horario.'}, status=status.HTTP_400_BAD_REQUEST)
-        elif 'ORA-20002' in error_message:
+            return Response(
+                {
+                    "error": "Conflicto de horarios detectado al intentar reactivar el horario."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        elif "ORA-20002" in error_message:
             # Error personalizado si el horario no existe
-            return Response({'error': 'El horario especificado no existe.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "El horario especificado no existe."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         else:
             # Otro error
-            return Response({'error': 'Error al reactivar el horario.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": "Error al reactivar el horario."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 @api_view(["GET"])
@@ -2148,6 +2216,9 @@ def update_servicio(request, servicio_id):
         numero_sesiones = request.data.get("numero_sesiones")
         minutos_sesion = request.data.get("minutos_sesion")
         costo = request.data.get("costo")
+        imagen = request.FILES.get(
+            "imagen"
+        )  # Obtener la nueva imagen desde el formulario
 
         # Actualizar los datos del servicio
         if nombre:
@@ -2161,10 +2232,44 @@ def update_servicio(request, servicio_id):
         if costo:
             servicio.costo = costo
 
+        # Manejar la imagen
+        if imagen:
+            # Eliminar la imagen anterior si existe
+            if servicio.dir_imagen:
+                ruta_imagen_anterior = os.path.join(
+                    settings.BASE_DIR, servicio.dir_imagen
+                )
+                if os.path.exists(ruta_imagen_anterior):
+                    os.remove(ruta_imagen_anterior)
+
+            # Guardar la nueva imagen
+            nombre_formateado = format_service_name(servicio.nombre)
+            ruta_carpeta = os.path.join(
+                "static", "assets", "img", f"Service_{nombre_formateado}"
+            )
+            ruta_completa = os.path.normpath(
+                os.path.join(settings.BASE_DIR, ruta_carpeta)
+            )
+
+            # Crear la carpeta si no existe
+            os.makedirs(ruta_completa, exist_ok=True)
+
+            # Guardar la imagen en la carpeta especificada
+            ruta_imagen = os.path.join(ruta_carpeta, imagen.name)
+            ruta_imagen_completa = os.path.normpath(
+                os.path.join(settings.BASE_DIR, ruta_imagen)
+            )
+
+            with open(ruta_imagen_completa, "wb+") as destino:
+                for chunk in imagen.chunks():
+                    destino.write(chunk)
+
+            # Actualizar el path de la imagen en el servicio
+            servicio.dir_imagen = ruta_imagen.replace("\\", "/")
+
         servicio.save()
         return Response(
-            {"message": "Servicio actualizado con éxito."},
-            status=status.HTTP_200_OK,
+            {"message": "Servicio actualizado con éxito."}, status=status.HTTP_200_OK
         )
     except Servicios.DoesNotExist:
         return Response(
@@ -2209,82 +2314,127 @@ def reactivate_service(request, servicio_id):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+def format_service_name(nombre):
+    # Remover caracteres especiales y espacios
+    return re.sub(r"[^A-Za-z0-9]+", "", nombre)
+
+
+import os
+import re
+from django.conf import settings
+
+
+def format_service_name(nombre):
+    # Remover caracteres especiales y espacios
+    return re.sub(r"[^A-Za-z0-9]+", "", nombre)
+
+
 @api_view(["POST"])
 def add_servicio(request):
+    nombre = request.data.get("nombre")
+    descripcion = request.data.get("descripcion")
+    numero_sesiones = request.data.get("numero_sesiones")
+    minutos_sesion = request.data.get("minutos_sesion")
+    costo = request.data.get("costo")
+    activo = True
+    imagen = request.FILES.get("imagen")  # Obtener la imagen desde el formulario
+
+    if not all([nombre, descripcion, numero_sesiones, minutos_sesion, costo, imagen]):
+        return Response(
+            {"error": "Todos los campos son requeridos."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     try:
-        nombre = request.data.get("nombre")
-        descripcion = request.data.get("descripcion")
-        numero_sesiones = request.data.get("numero_sesiones", 1)
-        minutos_sesion = request.data.get("minutos_sesion")
-        costo = request.data.get("costo")
-        activo = True  # Asumimos que el servicio se crea como activo por defecto
+        # Formatear el nombre para el directorio
+        nombre_formateado = format_service_name(nombre)
+        ruta_carpeta = os.path.join(
+            "static", "assets", "img", f"Service_{nombre_formateado}"
+        )
+        ruta_completa = os.path.normpath(os.path.join(settings.BASE_DIR, ruta_carpeta))
 
-        # Verificar si ya existe un servicio con el mismo nombre
-        if Servicios.objects.filter(nombre=nombre).exists():
-            return Response(
-                {"error": "Ya existe un servicio con ese nombre."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        # Crear la carpeta si no existe
+        os.makedirs(ruta_completa, exist_ok=True)
 
-        # Generar automáticamente dir_imagen
-        dir_imagen = f"./src/assets/img/Services_{nombre}.jpg"
+        # Guardar la imagen en la carpeta especificada
+        ruta_imagen = os.path.join(ruta_carpeta, imagen.name)
+        ruta_imagen_completa = os.path.normpath(
+            os.path.join(settings.BASE_DIR, ruta_imagen)
+        )
 
-        nuevo_servicio = Servicios(
+        with open(ruta_imagen_completa, "wb+") as destino:
+            for chunk in imagen.chunks():
+                destino.write(chunk)
+
+        # Guardar el registro en la base de datos con la ruta de la imagen
+        servicio = Servicios.objects.create(
             nombre=nombre,
             descripcion=descripcion,
             numero_sesiones=numero_sesiones,
             minutos_sesion=minutos_sesion,
             costo=costo,
             activo=activo,
-            dir_imagen=dir_imagen,
+            dir_imagen=ruta_imagen.replace(
+                "\\", "/"
+            ),  # Reemplazar las barras invertidas por barras
         )
-        nuevo_servicio.save()
+
         return Response(
-            {"message": "Servicio agregado con éxito."},
+            {"message": "Servicio agregado exitosamente."},
             status=status.HTTP_201_CREATED,
         )
     except Exception as e:
-        print(e)
-        return Response(
-            {"error": str(e)},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        )
-        
-@api_view(['GET'])
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
 def consult_my_pets(request):
     try:
         # Obtener el usuario y rol de la sesión
-        usuario = request.session.get('user')
-        rol_id = request.session.get('role')
+        usuario = request.session.get("user")
+        rol_id = request.session.get("role")
 
         if not usuario or not rol_id:
-            return Response({'error': 'Usuario no autenticado.'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"error": "Usuario no autenticado."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         # Verificar que el rol sea de cliente (por ejemplo, rol_id == 4)
         if rol_id != 4:
-            return Response({'error': 'No tiene permisos para consultar esta información.'}, status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {"error": "No tiene permisos para consultar esta información."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         with connection.cursor() as cursor:
             out_cursor = cursor.connection.cursor()
-            cursor.callproc('VETLINK.CONSULTAR_MIS_MASCOTAS', [usuario, out_cursor])
+            cursor.callproc("VETLINK.CONSULTAR_MIS_MASCOTAS", [usuario, out_cursor])
 
             # Obtener los nombres de las columnas
             columns = [col[0] for col in out_cursor.description]
             pets = [dict(zip(columns, row)) for row in out_cursor.fetchall()]
 
             if not pets:
-                return Response({'message': 'No tienes mascotas registradas.'}, status=status.HTTP_200_OK)
+                return Response(
+                    {"message": "No tienes mascotas registradas."},
+                    status=status.HTTP_200_OK,
+                )
 
             # Convertir FECHA_NACIMIENTO de cadena a fecha si es necesario
             for pet in pets:
-                if pet['FECHA_NACIMIENTO']:
-                    pet['FECHA_NACIMIENTO'] = pet['FECHA_NACIMIENTO']
+                if pet["FECHA_NACIMIENTO"]:
+                    pet["FECHA_NACIMIENTO"] = pet["FECHA_NACIMIENTO"]
 
-            return Response({'results': pets}, status=status.HTTP_200_OK)
+            return Response({"results": pets}, status=status.HTTP_200_OK)
 
     except Exception as e:
-        print(f'Error en consult_my_pets: {str(e)}')
-        return Response({'error': 'Error al consultar las mascotas.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        print(f"Error en consult_my_pets: {str(e)}")
+        return Response(
+            {"error": "Error al consultar las mascotas."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -2292,140 +2442,198 @@ from rest_framework import status
 from django.db import connection, transaction
 from datetime import datetime
 
-@api_view(['POST'])
+
+@api_view(["POST"])
 @transaction.atomic
 def add_mypet(request):
     try:
         # Obtener el usuario y rol de la sesión
-        usuario = request.session.get('user')
-        rol_id = request.session.get('role')
+        usuario = request.session.get("user")
+        rol_id = request.session.get("role")
 
         # Validación de autenticación y permisos de cliente
         if not usuario or not rol_id:
-            return Response({'error': 'Usuario no autenticado.'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"error": "Usuario no autenticado."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         if rol_id != 4:
-            return Response({'error': 'No tiene permisos para agregar mascotas.'}, status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {"error": "No tiene permisos para agregar mascotas."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         # Obtener y validar los datos de la mascota del cuerpo de la solicitud
-        nombre = request.data.get('nombre')
-        fecha_nacimiento_str = request.data.get('fecha_nacimiento')
-        especie = request.data.get('especie')
-        raza = request.data.get('raza')
-        sexo = request.data.get('sexo')
+        nombre = request.data.get("nombre")
+        fecha_nacimiento_str = request.data.get("fecha_nacimiento")
+        especie = request.data.get("especie")
+        raza = request.data.get("raza")
+        sexo = request.data.get("sexo")
 
         # Validar que todos los campos requeridos están presentes
         if not all([nombre, fecha_nacimiento_str, especie, sexo]):
-            return Response({'error': 'Faltan campos obligatorios.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Faltan campos obligatorios."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # Convertir la fecha de nacimiento a un objeto datetime
         try:
-            fecha_nacimiento = datetime.strptime(fecha_nacimiento_str, '%Y-%m-%d')
+            fecha_nacimiento = datetime.strptime(fecha_nacimiento_str, "%Y-%m-%d")
         except ValueError:
-            return Response({'error': 'Formato de fecha inválido. Debe ser YYYY-MM-DD.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Formato de fecha inválido. Debe ser YYYY-MM-DD."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # Llamar al procedimiento almacenado para agregar la mascota
         with connection.cursor() as cursor:
-            cursor.callproc('VETLINK.AGREGAR_MIMASCOTA', [
-                usuario,             # p_usuario_cliente
-                nombre,              # p_nombre
-                fecha_nacimiento,    # p_fecha_nacimiento
-                especie,             # p_especie
-                raza,                # p_raza
-                sexo,                # p_sexo
-                1                    # p_activo (valor por defecto)
-            ])
+            cursor.callproc(
+                "VETLINK.AGREGAR_MIMASCOTA",
+                [
+                    usuario,  # p_usuario_cliente
+                    nombre,  # p_nombre
+                    fecha_nacimiento,  # p_fecha_nacimiento
+                    especie,  # p_especie
+                    raza,  # p_raza
+                    sexo,  # p_sexo
+                    1,  # p_activo (valor por defecto)
+                ],
+            )
 
         # Retornar mensaje de éxito si el procedimiento fue exitoso
-        return Response({'message': 'Mascota agregada exitosamente'}, status=status.HTTP_201_CREATED)
+        return Response(
+            {"message": "Mascota agregada exitosamente"}, status=status.HTTP_201_CREATED
+        )
 
     except Exception as e:
         # Captura el mensaje de error desde Oracle
         error_message = str(e)
-        if 'ORA-' in error_message:
-            return Response({'error': error_message}, status=status.HTTP_400_BAD_REQUEST)
+        if "ORA-" in error_message:
+            return Response(
+                {"error": error_message}, status=status.HTTP_400_BAD_REQUEST
+            )
         else:
-            print(f'Error en add_mypet: {str(e)}')
-            return Response({'error': 'Error al agregar la mascota.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-@api_view(['PUT'])
+            print(f"Error en add_mypet: {str(e)}")
+            return Response(
+                {"error": "Error al agregar la mascota."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+@api_view(["PUT"])
 @transaction.atomic
 def update_mypet(request, mascota_id):
     try:
         # Obtener el usuario y rol de la sesión
-        usuario = request.session.get('user')
-        rol_id = request.session.get('role')
+        usuario = request.session.get("user")
+        rol_id = request.session.get("role")
 
         # Validación de autenticación y permisos de cliente
         if not usuario or not rol_id:
-            return Response({'error': 'Usuario no autenticado.'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"error": "Usuario no autenticado."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         if rol_id != 4:
-            return Response({'error': 'No tiene permisos para modificar mascotas.'}, status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {"error": "No tiene permisos para modificar mascotas."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         # Obtener y validar los datos de la mascota del cuerpo de la solicitud
-        nombre = request.data.get('nombre')
-        fecha_nacimiento_str = request.data.get('fecha_nacimiento')
-        especie = request.data.get('especie')
-        raza = request.data.get('raza')
-        sexo = request.data.get('sexo')
+        nombre = request.data.get("nombre")
+        fecha_nacimiento_str = request.data.get("fecha_nacimiento")
+        especie = request.data.get("especie")
+        raza = request.data.get("raza")
+        sexo = request.data.get("sexo")
 
         # Validar que todos los campos requeridos están presentes
         if not all([nombre, fecha_nacimiento_str, especie, sexo]):
-            return Response({'error': 'Faltan campos obligatorios.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Faltan campos obligatorios."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # Convertir la fecha de nacimiento a un objeto datetime
         try:
-            fecha_nacimiento = datetime.strptime(fecha_nacimiento_str, '%Y-%m-%d')
+            fecha_nacimiento = datetime.strptime(fecha_nacimiento_str, "%Y-%m-%d")
         except ValueError:
-            return Response({'error': 'Formato de fecha inválido. Debe ser YYYY-MM-DD.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Formato de fecha inválido. Debe ser YYYY-MM-DD."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # Llamar al procedimiento almacenado para actualizar la mascota
         with connection.cursor() as cursor:
-            cursor.callproc('VETLINK.MODIFICAR_MIMASCOTA', [
-                mascota_id,           # p_mascota_id
-                usuario,              # p_usuario_cliente
-                nombre,               # p_nombre
-                fecha_nacimiento,     # p_fecha_nacimiento
-                especie,              # p_especie
-                raza,                 # p_raza
-                sexo                  # p_sexo
-            ])
+            cursor.callproc(
+                "VETLINK.MODIFICAR_MIMASCOTA",
+                [
+                    mascota_id,  # p_mascota_id
+                    usuario,  # p_usuario_cliente
+                    nombre,  # p_nombre
+                    fecha_nacimiento,  # p_fecha_nacimiento
+                    especie,  # p_especie
+                    raza,  # p_raza
+                    sexo,  # p_sexo
+                ],
+            )
 
         # Retornar mensaje de éxito si el procedimiento fue exitoso
-        return Response({'message': 'Mascota modificada exitosamente'}, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "Mascota modificada exitosamente"}, status=status.HTTP_200_OK
+        )
 
     except Exception as e:
         # Captura el mensaje de error desde Oracle
         error_message = str(e)
-        if 'ORA-' in error_message:
-            return Response({'error': error_message}, status=status.HTTP_400_BAD_REQUEST)
+        if "ORA-" in error_message:
+            return Response(
+                {"error": error_message}, status=status.HTTP_400_BAD_REQUEST
+            )
         else:
-            print(f'Error en update_mypet: {str(e)}')
-            return Response({'error': 'Error al modificar la mascota.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+            print(f"Error en update_mypet: {str(e)}")
+            return Response(
+                {"error": "Error al modificar la mascota."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
 @api_view(["DELETE"])
 @transaction.atomic
 def delete_my_pet(request, mascota_id):
     try:
         # Obtener el usuario y rol de la sesión
-        usuario = request.session.get('user')
-        rol_id = request.session.get('role')
+        usuario = request.session.get("user")
+        rol_id = request.session.get("role")
 
         if not usuario or not rol_id:
-            return Response({'error': 'Usuario no autenticado.'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"error": "Usuario no autenticado."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         # Verificar que el rol sea de cliente (por ejemplo, rol_id == 4)
         if rol_id != 4:
-            return Response({'error': 'No tiene permisos para eliminar mascotas.'}, status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {"error": "No tiene permisos para eliminar mascotas."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         # Ejecutar el procedimiento almacenado para eliminar (desactivar) la mascota
         with connection.cursor() as cursor:
             cursor.callproc("VETLINK.ELIMINAR_MIMASCOTA", [mascota_id])
 
-        return Response({'message': 'Mascota eliminada exitosamente'}, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "Mascota eliminada exitosamente"}, status=status.HTTP_200_OK
+        )
 
     except Exception as e:
         # Manejar cualquier error y devolver un mensaje de error
-        print(f'Error en delete_my_pet: {str(e)}')
-        return Response({'error': 'Error al eliminar la mascota'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        print(f"Error en delete_my_pet: {str(e)}")
+        return Response(
+            {"error": "Error al eliminar la mascota"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )

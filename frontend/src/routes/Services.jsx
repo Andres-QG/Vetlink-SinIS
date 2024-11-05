@@ -3,6 +3,8 @@ import axios from "axios";
 import { CircularProgress } from "@mui/material";
 import Services_Gallery from "../components/Services_Gallery";
 
+let HOST = "http://localhost:8000/";
+
 function Services() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,7 +15,7 @@ function Services() {
         const response = await axios.get(
           "http://localhost:8000/api/consult-services/"
         );
-        // console.log(response.data.results);
+
         // Filtrar solo servicios activos
         const activeServices = response.data.results.filter(
           (service) => service.activo
@@ -59,24 +61,32 @@ function Services() {
               </div>
             ) : (
               <div className="flex flex-wrap -m-8">
-                {services.map((service) => (
-                  <Services_Gallery
-                    key={service.servicio_id}
-                    className=""
-                    title={service.nombre}
-                    text={service.descripcion}
-                    imageSrc={
-                      service.imagen || "./src/assets/img/default_service.jpg"
-                    }
-                    price={`Costo: ${service.costo ? `${service.costo} CRC` : "Variable"}`}
-                    duration={
-                      service.minutos_sesion
-                        ? formatDuration(service.minutos_sesion)
-                        : "Variable"
-                    }
-                    number_of_sessions={service.numero_sesiones || "Variable"}
-                  />
-                ))}
+                {services.map((service) => {
+                  let imageSrc =
+                    service.imagen && service.imagen.startsWith("static/")
+                      ? `${HOST}${service.imagen}`
+                      : service.imagen;
+                  if (!service.imagen) {
+                    imageSrc = "./assets/img/default_service.jpg";
+                  }
+
+                  return (
+                    <Services_Gallery
+                      key={service.servicio_id}
+                      className=""
+                      title={service.nombre}
+                      text={service.descripcion}
+                      imageSrc={imageSrc}
+                      price={`Costo: ${service.costo ? `${service.costo} CRC` : "Variable"}`}
+                      duration={
+                        service.minutos_sesion
+                          ? formatDuration(service.minutos_sesion)
+                          : "Variable"
+                      }
+                      number_of_sessions={service.numero_sesiones || "Variable"}
+                    />
+                  );
+                })}
               </div>
             )}
           </div>
