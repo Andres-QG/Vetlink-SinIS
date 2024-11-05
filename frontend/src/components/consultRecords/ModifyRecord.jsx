@@ -1,4 +1,4 @@
-import { useState, useEffect, forwardRef } from "react";
+import React, { useState, useEffect, forwardRef } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
 import Tag from "../Tag";
@@ -146,7 +146,7 @@ const ModifyRecord = forwardRef(
 
     const handleError = (error) => {
       if (error.response) {
-        console.error(error.response.data);
+        console.error("Error: ", error.response.data);
         if (error.response.status === 404) {
           onSuccess("Expediente no encontrado.", "error");
         } else if (error.response.status === 400) {
@@ -202,7 +202,7 @@ const ModifyRecord = forwardRef(
               alignItems="center"
               mb={2}
             >
-              <h2>Modificar Expediente</h2>
+              <h2>Modifica Expediente</h2>
               <IconButton onClick={handleClose}>
                 <CloseIcon />
               </IconButton>
