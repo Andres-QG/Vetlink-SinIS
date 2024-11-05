@@ -31,9 +31,41 @@ import ModifyMyPets from "../components/ConsultMyPets/ModifyMyPets";
 import DeleteMyPets from "../components/ConsultMyPets/DeleteMyPets";
 import { useNotification } from "../components/Notification";
 
-import dogImage from "../assets/img/pets/dogs/corgi.png";
-import catImage from "../assets/img/pets/cats/smile.png";
+// Imágenes específicas por raza
+// Perros
+import labradorImage from "../assets/img/pets/dogs/labrador.jpg";
+import bulldogImage from "../assets/img/pets/dogs/bulldog.jpg";
+import beagleImage from "../assets/img/pets/dogs/beagle.jpg";
+import poodleImage from "../assets/img/pets/dogs/poodle.jpg";
+import chihuahuaImage from "../assets/img/pets/dogs/chihuahua.jpg";
+import pastorAlemanImage from "../assets/img/pets/dogs/pastorAleman.jpg";
+// Gatos
+import persaImage from "../assets/img/pets/cats/persa.jpg";
+import siamesImage from "../assets/img/pets/cats/siames.jpg";
+import bengaliImage from "../assets/img/pets/cats/bengali.jpg";
+import sphynxImage from "../assets/img/pets/cats/sphynx.jpg";
+import maineCoonImage from "../assets/img/pets/cats/maineCoon.jpg";
+import angoraImage from "../assets/img/pets/cats/angora.jpg";
 import defaultPetImage from "../assets/img/pets/general/question.png";
+
+const breedImages = {
+  Perro: {
+    Labrador: labradorImage,
+    Bulldog: bulldogImage,
+    Beagle: beagleImage,
+    Poodle: poodleImage,
+    Chihuahua: chihuahuaImage,
+    "Pastor Alemán": pastorAlemanImage,
+  },
+  Gato: {
+    Persa: persaImage,
+    Siamés: siamesImage,
+    Bengalí: bengaliImage,
+    Sphynx: sphynxImage,
+    "Maine Coon": maineCoonImage,
+    Angora: angoraImage,
+  },
+};
 
 const ConsultMyPets = () => {
   const [pets, setPets] = useState([]);
@@ -108,12 +140,8 @@ const ConsultMyPets = () => {
 
   const columns = ["NOMBRE", "ESPECIE", "RAZA", "FECHA_NACIMIENTO", "SEXO"];
 
-  const getSpeciesImage = (species) =>
-    species.toLowerCase() === "perro"
-      ? dogImage
-      : species.toLowerCase() === "gato"
-        ? catImage
-        : defaultPetImage;
+  const getSpeciesImage = (species, breed) =>
+    breedImages[species]?.[breed] || defaultPetImage;
 
   const getCardBackgroundColor = (species) =>
     species.toLowerCase() === "perro"
@@ -220,7 +248,7 @@ const ConsultMyPets = () => {
                         display: "flex",
                         flexDirection: "column",
                         height: "100%",
-                        width: "100%",
+                        width: "300px", // Ancho fijo para todas las tarjetas
                         boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.15)",
                         "&:hover": {
                           transform: "scale(1.05)",
@@ -231,22 +259,23 @@ const ConsultMyPets = () => {
                       <Box
                         sx={{
                           position: "relative",
-                          height: { xs: 180, md: 200 },
+                          width: "100%",
+                          height: 200,
                           backgroundColor: getCardBackgroundColor(pet.ESPECIE),
                           display: "flex",
                           justifyContent: "center",
                           alignItems: "center",
+                          overflow: "hidden",
                         }}
                       >
                         <CardMedia
                           component="img"
                           sx={{
+                            width: "100%",
                             height: "100%",
-                            minWidth: { xs: "auto", md: "360px" },
-                            width: "auto",
-                            objectFit: "contain",
+                            objectFit: "cover",
                           }}
-                          image={getSpeciesImage(pet.ESPECIE)}
+                          image={getSpeciesImage(pet.ESPECIE, pet.RAZA)}
                           alt={pet.NOMBRE}
                         />
                       </Box>
