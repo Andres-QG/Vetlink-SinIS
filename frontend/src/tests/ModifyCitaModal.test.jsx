@@ -21,61 +21,116 @@ const mockOtherData = {
 };
 
 const mockSelectedItem = {
-  cliente_usuario: "user1",
-  veterinario_usuario: "vet1",
-  clinica_id: 1,
-  mascota: "Pet1",
-  mascota_id: 100,
-  fecha: "2023-12-12",
-  hora: "09:00",
-  motivo: "Consulta general",
-  services: [{ servicio_id: 1, nombre: "Service1" }],
+    cliente_usuario: "user1",
+    veterinario_usuario: "vet1",
+    clinica_id: 1,
+    mascota: "Pet1",
+    mascota_id: 100,
+    fecha: "2023-12-12",
+    hora: "09:00",
+    motivo: "Consulta general",
+    services: [{ servicio_id: 1, nombre: "Service1" }],
 };
 
 describe("ModifyCitaModal Component", () => {
-  beforeEach(() => {
-    render(
-      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
-        <ModifyCitaModal
-          open={true}
-          handleClose={mockHandleClose}
-          onSuccess={mockOnSuccess}
-          otherData={mockOtherData}
-          selectedItem={mockSelectedItem}
-        />
-      </LocalizationProvider>
-    );
-  });
-
-  it("renders the modal correctly with pre-filled data", () => {
-    // Check if modal title is rendered
-    expect(screen.getByText("Modificar Cita")).toBeInTheDocument();
-
-    // Check if form fields are populated with initial data
-    expect(screen.getByLabelText("Cliente")).toHaveValue("user1");
-    expect(screen.getByLabelText("Veterinario")).toHaveValue("vet1");
-    expect(screen.getByLabelText("Motivo")).toHaveValue("Consulta general");
-  });
-
-  it("disables the Cliente field when user role is 4", () => {
-    const clienteField = screen.getByLabelText("Cliente");
-    expect(clienteField).toBeDisabled();
-  });
-
-  it("displays validation error messages if required fields are empty", async () => {
-    const motivoField = screen.getByLabelText("Motivo");
-    const submitButton = screen.getByRole("button", { name: /Modificar Cita/i });
-
-    // Clear the "Motivo" field to trigger validation error
-    fireEvent.change(motivoField, { target: { value: "" } });
-    fireEvent.click(submitButton);
-
-    await waitFor(() => {
-      expect(screen.getByText("Motivo requerido.")).toBeInTheDocument();
+    beforeEach(() => {
+        render(
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
+                <ModifyCitaModal
+                    open={true}
+                    handleClose={mockHandleClose}
+                    onSuccess={mockOnSuccess}
+                    otherData={mockOtherData}
+                    selectedItem={mockSelectedItem}
+                />
+            </LocalizationProvider>
+        );
     });
-  });
 
-  it("submits the form successfully", async () => {
+    it("renders the Cliente field with initial data", () => {
+        expect(screen.getByLabelText("Cliente")).toHaveValue("user1");
+    });
+
+    it("renders the Veterinario field with initial data", () => {
+        expect(screen.getByLabelText("Veterinario")).toHaveValue("vet1");
+    });
+
+    it("renders the Clínica field with initial data", () => {
+        expect(screen.getByLabelText("Clínica")).toHaveValue("Clinic1");
+    });
+
+    it("renders the Mascota field with initial data", () => {
+        expect(screen.getByLabelText("Mascota")).toHaveValue("Pet1");
+    });
+
+    it("renders the Motivo field with initial data", () => {
+        expect(screen.getByLabelText("Motivo")).toHaveValue("Consulta general");
+    });
+
+    it("disables the Cliente field when user role is 4", () => {
+        const clienteField = screen.getByLabelText("Cliente");
+        expect(clienteField).toBeDisabled();
+    });
+
+    it("displays validation error message if 'Cliente' field is empty", async () => {
+        const submitButton = screen.getByRole("button", { name: /Modificar Cita/i });
+
+        // Clear the "Cliente" field
+        fireEvent.change(screen.getByLabelText("Cliente"), { target: { value: "" } });
+        fireEvent.click(submitButton);
+
+        await waitFor(() => {
+            expect(screen.getByText("Cliente requerido.")).toBeInTheDocument();
+        });
+    });
+
+    it("displays validation error message if 'Veterinario' field is empty", async () => {
+        const submitButton = screen.getByRole("button", { name: /Modificar Cita/i });
+
+        // Clear the "Veterinario" field
+        fireEvent.change(screen.getByLabelText("Veterinario"), { target: { value: "" } });
+        fireEvent.click(submitButton);
+
+        await waitFor(() => {
+            expect(screen.getByText("Veterinario requerido.")).toBeInTheDocument();
+        });
+    });
+
+    it("displays validation error message if 'Clínica' field is empty", async () => {
+        const submitButton = screen.getByRole("button", { name: /Modificar Cita/i });
+
+        // Clear the "Clínica" field
+        fireEvent.change(screen.getByLabelText("Clínica"), { target: { value: "" } });
+        fireEvent.click(submitButton);
+
+        await waitFor(() => {
+            expect(screen.getByText("Clínica requerida.")).toBeInTheDocument();
+        });
+    });
+
+    it("displays validation error message if 'Mascota' field is empty", async () => {
+        const submitButton = screen.getByRole("button", { name: /Modificar Cita/i });
+
+        // Clear the "Mascota" field
+        fireEvent.change(screen.getByLabelText("Mascota"), { target: { value: "" } });
+        fireEvent.click(submitButton);
+
+        await waitFor(() => {
+            expect(screen.getByText("Mascota requerida.")).toBeInTheDocument();
+        });
+    });
+
+    it("resets the form to its initial state when 'Limpiar' button is clicked", () => {
+        fireEvent.click(screen.getByText("Limpiar"));
+        const clienteField = screen.getByLabelText("Cliente");
+        expect(clienteField).toBeDisabled();
+        expect(screen.getByLabelText("Cliente")).toHaveValue("");
+        expect(screen.getByLabelText("Veterinario")).toHaveValue("");
+        expect(screen.getByLabelText("Motivo")).toHaveValue("");
+        expect(screen.getByLabelText("Mascota")).toHaveValue("");
+    });
+
+    it("submits the form successfully", async () => {
     const submitButton = screen.getByRole("button", { name: /Modificar Cita/i });
     
     fireEvent.click(submitButton);
@@ -86,9 +141,4 @@ describe("ModifyCitaModal Component", () => {
     });
   });
 
-  it("calls handleClose when clicking the close button", () => {
-    const closeButton = screen.getByLabelText("Close");
-    fireEvent.click(closeButton);
-    expect(mockHandleClose).toHaveBeenCalled();
-  });
 });

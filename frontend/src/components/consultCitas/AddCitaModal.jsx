@@ -31,7 +31,7 @@ import axios from "axios";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { enGB } from "date-fns/locale";
+import { es } from "date-fns/locale";
 
 const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
   const initialFormData = {
@@ -441,7 +441,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
                 )}
               />
 
-              <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={enGB}>
+              <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
                 <DatePicker
                   label="Fecha"
                   value={formData.fecha || null}
