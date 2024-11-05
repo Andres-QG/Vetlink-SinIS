@@ -241,7 +241,7 @@ const GeneralTable = ({
                           Eliminar
                         </Button>
                       ) : null}
-                      {restoreUrl && (
+                      {restoreUrl && item.activo === false && (
                         <Button
                           onClick={() => handleReactivate(item)}
                           startIcon={<Restore />}
