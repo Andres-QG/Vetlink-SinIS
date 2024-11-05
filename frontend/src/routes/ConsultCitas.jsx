@@ -17,7 +17,6 @@ function ConsultCitas() {
     { field: "fecha", headerName: "Fecha", type: "text" },
     { field: "hora", headerName: "Hora", type: "text" },
     { field: "motivo", headerName: "Motivo", type: "text" },
-    { field: "estado", headerName: "Estado", type: "text" },
   ];
 
   const [otherData, setOtherData] = useState({
