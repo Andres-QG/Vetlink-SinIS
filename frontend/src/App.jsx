@@ -244,11 +244,13 @@ function App() {
             <Route
               path="/profile"
               element={
-                <NotificationProvider>
-                  <ProtectedRoute requiredRoles={[1, 2]}>
-                    <Profile />
-                  </ProtectedRoute>
-                </NotificationProvider>
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <NotificationProvider>
+                    <ProtectedRoute requiredRoles={[4]}>
+                      <Profile />
+                    </ProtectedRoute>
+                  </NotificationProvider>
+                </DashBoardLayout>
               }
             />
 

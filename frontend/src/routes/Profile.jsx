@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -8,20 +8,49 @@ import {
   Paper,
   ClickAwayListener,
 } from "@mui/material";
+import axios from "axios";
+import { useNotification } from "../components/Notification";
 
 export default function Component() {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    usuario: "usuario",
-    nombre: "nombre",
-    apellido1: "apellido1",
-    apellido2: "apellido2",
-    cedula: "cédula",
-    email: "email",
-    numero: "número",
+    usuario: "",
+    nombre: "",
+    apellido1: "",
+    apellido2: "",
+    cedula: "",
+    email: "",
+    numero: "",
   });
 
   const [anchorEl, setAnchorEl] = useState(null);
+
+  const notify = useNotification();
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  const fetchUserData = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:8000/api/consult-client-user-personal-info/"
+      );
+      const userData = response.data.results[0];
+
+      setFormData({
+        usuario: userData.usuario,
+        nombre: userData.nombre,
+        apellidos: userData.apellidos,
+        cedula: userData.cedula,
+        correo: userData.correo,
+        telefono: userData.telefono,
+      });
+    } catch (error) {
+      notify("Error al obtener los datos del usuario", "error");
+      console.error("Error fetching user data:", error);
+    }
+  };
 
   const handleChange = (event) => {
     setFormData({ ...formData, [event.target.name]: event.target.value });
@@ -133,11 +162,10 @@ export default function Component() {
             {[
               { name: "usuario", label: "Usuario" },
               { name: "nombre", label: "Nombre" },
-              { name: "apellido1", label: "1er Apellido" },
-              { name: "apellido2", label: "2do Apellido" },
+              { name: "apellidos", label: "Apellidos" },
               { name: "cedula", label: "Cédula" },
-              { name: "email", label: "Correo electrónico" },
-              { name: "numero", label: "Número teléfono" },
+              { name: "correo", label: "Correo electrónico" },
+              { name: "telefono", label: "Número teléfono" },
             ].map((field) => (
               <TextField
                 key={field.name}
@@ -146,7 +174,7 @@ export default function Component() {
                 variant="outlined"
                 fullWidth
                 disabled={!isEditing}
-                value={formData[field.name]}
+                value={formData[field.name] || ""}
                 onChange={handleChange}
                 sx={{
                   "& .MuiOutlinedInput-root": {

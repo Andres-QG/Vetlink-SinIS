@@ -2641,13 +2641,20 @@ def delete_my_pet(request, mascota_id):
 
 @api_view(["GET"])
 def consult_client_user_personal_info(request):
-    logged_client_user = request.session.get("user")
-    if not logged_client_user:
+    logged_user = request.session.get("user")
+    logged_user_role = request.session.get("role")
+    if not logged_user or not logged_user_role:
         return Response(
             {"error": "Usuario no autenticado."},
             status=status.HTTP_401_UNAUTHORIZED,
         )
+    if logged_user_role != 4:
+        return Response(
+            {"error": "No tiene permisos para consultar esta información."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
     request.GET = request.GET.copy()
-    request.GET["search"] = logged_client_user
+    request.GET["search"] = logged_user
     request.GET["column"] = "usuario"
     return consult_client(request)
