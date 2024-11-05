@@ -91,6 +91,9 @@ function ConsultCitas() {
         pkCol="cita_id"
         visualIdentifierCol="cliente"
         otherData={otherData}
+        customDeleteTitle={"¿Desea eliminar esta cita?"}
+        disableAddButton= {true}
+        hideActions={true}
       />
     </>
   );

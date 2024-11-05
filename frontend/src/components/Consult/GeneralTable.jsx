@@ -51,6 +51,7 @@ const GeneralTable = ({
   disableModifyAction = false,
   disableDeleteAction = false,
   disableReactivateAction = false,
+  hideActions = false,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const notify = useNotification();
@@ -216,14 +217,27 @@ const GeneralTable = ({
                       Más detalles
                     </Button>
                   )}
-                  <Button
-                    onClick={() => handleOpenModModal(item)}
-                    startIcon={<Edit />}
-                    color="primary"
-                    disabled={disableModifyAction}
-                  >
-                    Modificar
-                  </Button>
+                  {!disableModifyAction && (
+                    <Button
+                      onClick={() => handleOpenModModal(item)}
+                      startIcon={<Edit />}
+                      color="primary"
+                      sx={{
+                        backgroundColor: "#00308F",
+                        "&:hover": {
+                          backgroundColor: "#00246d",
+                        },
+                        minWidth: "190px",
+                        marginBottom: { xs: "-4px", md: "0px" },
+                        marginRight: { xs: "0px", md: "10px" },
+                        width: { xs: "100%", md: "auto" },
+                        fontSize: "0.85rem",
+                      }}
+                    >
+                      Modificar
+                    </Button>
+                  )}
+
                   {item.activo === true || item.activo === "activo" ? (
                     <Button
                       onClick={() => handleOpenModal(item)}
@@ -282,6 +296,7 @@ const GeneralTable = ({
                   (col) =>
                     col.type !== "action" && (
                       <TableCell
+                        className="h-[68px]"
                         key={col.field}
                         style={{
                           fontWeight: "bold",
@@ -291,20 +306,22 @@ const GeneralTable = ({
                         {col.headerName}
                       </TableCell>
                     )
-                )}
-                <TableCell
-                  style={{
-                    fontWeight: "bold",
-                    backgroundColor: "#f0f0f0",
-                  }}
-                >
-                  Acciones
-                </TableCell>
-              </TableRow>
+                  )}
+                  {!hideActions && (
+                    <TableCell
+                      style={{
+                        fontWeight: "bold",
+                        backgroundColor: "#f0f0f0",
+                      }}
+                    >
+                      Acciones
+                    </TableCell>
+                  )}
+                </TableRow>
             </TableHead>
             <TableBody>
               {data.map((item, index) => (
-                <TableRow key={item[pkCol] || `row-${index}`}>
+                <TableRow className="h-[68px]" key={item[pkCol] || `row-${index}`}>
                   {columns.map(
                     (col) =>
                       col.type !== "action" && (
@@ -335,50 +352,53 @@ const GeneralTable = ({
                         </TableCell>
                       )
                   )}
-                  <TableCell key={`actions-${item[pkCol] || index}`}>
-                    {DetailsModal && (
-                      <IconButton
-                        onClick={() => handleOpenDetailsModal(item)}
-                        disabled={disableModifyAction}
-                      >
-                        <Info />
-                      </IconButton>
-                    )}
-                    <IconButton
-                      onClick={() => handleOpenModModal(item)}
-                      disabled={disableModifyAction}
-                      color="primary"
-                    >
-                      <Edit />
-                    </IconButton>
-                    {item.activo === true || item.activo === "activo" ? (
-                      <IconButton
-                        onClick={() => handleOpenModal(item)}
-                        color="error"
-                        disabled={disableDeleteAction}
-                      >
-                        <Delete />
-                      </IconButton>
-                    ) : deletionUrl && !restoreUrl ? (
-                      <IconButton
-                        onClick={() => handleOpenModal(item)}
-                        color="error"
-                        disabled={disableDeleteAction}
-                      >
-                        <Delete />
-                      </IconButton>
-                    ) : null}
-                    {restoreUrl &&
-                      (item.activo === false || item.activo === "inactivo") && (
+                  {!hideActions && (
+                    <TableCell key={`actions-${item[pkCol] || index}`}>
+                      {DetailsModal && (
                         <IconButton
-                          onClick={() => handleReactivate(item)}
-                          sx={{ color: green[500] }}
-                          disabled={disableReactivateAction}
+                          onClick={() => handleOpenDetailsModal(item)}
+                          disabled={disableModifyAction}
                         >
-                          <Restore />
+                          <Info />
                         </IconButton>
                       )}
-                  </TableCell>
+                      <IconButton
+                        onClick={() => handleOpenModModal(item)}
+                        disabled={disableModifyAction}
+                        color="primary"
+                      >
+                        <Edit />
+                      </IconButton>
+                      {item.activo === true || item.activo === "activo" ? (
+                        <IconButton
+                          onClick={() => handleOpenModal(item)}
+                          color="error"
+                          disabled={disableDeleteAction}
+                        >
+                          <Delete />
+                        </IconButton>
+                      ) : deletionUrl && !restoreUrl ? (
+                        <IconButton
+                          onClick={() => handleOpenModal(item)}
+                          color="error"
+                          disabled={disableDeleteAction}
+                        >
+                          <Delete />
+                        </IconButton>
+                      ) : null}
+                      {restoreUrl &&
+                        (item.activo === false || item.activo === "inactivo") && (
+                          <IconButton
+                            onClick={() => handleReactivate(item)}
+                            sx={{ color: green[500] }}
+                            disabled={disableReactivateAction}
+                          >
+                            <Restore />
+                          </IconButton>
+                        )}
+                    </TableCell>
+
+                  )}
                 </TableRow>
               ))}
               {data.length === 0 && (

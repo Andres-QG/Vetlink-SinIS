@@ -304,7 +304,12 @@ const ModifyCitaModal = forwardRef(
                   }}
                   renderTags={(value, getTagProps) =>
                     value.map((option, index) => (
-                      <Tag key={option.servicio_id || index} label={option.nombre} {...getTagProps({ index })} />
+                      <Tag
+                        key={option.servicio_id || `${option.nombre}_${index}`}
+                        label={option.nombre}
+                        onDelete={() => {}}
+                        {...getTagProps}
+                      />
                     ))
                   }
                   renderInput={(params) => (

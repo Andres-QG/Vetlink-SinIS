@@ -25,6 +25,7 @@ const ConsultView = ({
   disableModifyAction = false,
   disableDeleteAction = false,
   disableReactivateAction = false, // Nuevo prop
+  hideActions = false,
 }) => {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -102,25 +103,28 @@ const ConsultView = ({
         <div className="flex flex-col items-center justify-between mb-4 space-y-4 md:flex-row md:space-y-0">
           <h1 className="text-2xl font-semibold">{title}</h1>
           <div className="flex flex-col w-full space-y-4 md:w-auto md:flex-row md:items-center md:space-y-0">
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              onClick={handleOpen}
-              disabled={disableAddButton} // El botón está deshabilitado en lugar de oculto
-              sx={{
-                backgroundColor: disableAddButton ? "grey.500" : "#00308F",
-                "&:hover": {
-                  backgroundColor: disableAddButton ? "grey.500" : "#00246d",
-                },
-                minWidth: "190px",
-                marginBottom: { xs: "-4px", md: "0px" },
-                marginRight: { xs: "0px", md: "10px" },
-                width: { xs: "100%", md: "auto" },
-                fontSize: "0.85rem",
-              }}
-            >
-              Agregar
-            </Button>
+            {!disableAddButton && (
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                onClick={handleOpen}
+                disabled={disableAddButton} // The button is disabled instead of hidden
+                sx={{
+                  backgroundColor: disableAddButton ? "grey.500" : "#00308F",
+                  "&:hover": {
+                    backgroundColor: disableAddButton ? "grey.500" : "#00246d",
+                  },
+                  minWidth: "190px",
+                  marginBottom: { xs: "-4px", md: "0px" },
+                  marginRight: { xs: "0px", md: "10px" },
+                  width: { xs: "100%", md: "auto" },
+                  fontSize: "0.85rem",
+                }}
+              >
+                Agregar
+              </Button>
+            )}
+           
             <SearchBar
               onSearch={handleSearch}
               columns={columns.map((col) => col.field)}
@@ -154,6 +158,7 @@ const ConsultView = ({
             disableModifyAction={disableModifyAction}
             disableDeleteAction={disableDeleteAction}
             disableReactivateAction={disableReactivateAction} // Pasando el nuevo prop a GeneralTable
+            hideActions={hideActions}
           />
         )}
 
