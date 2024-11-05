@@ -13,10 +13,8 @@ import { AuthContext } from "../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
-import ComputerIcon from "@mui/icons-material/Computer";
 import MedicalServices from "@mui/icons-material/MedicalServices";
 import AssignmentIcon from "@mui/icons-material/Assignment";
-import SearchIcon from "@mui/icons-material/Search";
 import PersonIcon from "@mui/icons-material/Person";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
@@ -28,9 +26,9 @@ import ClinicIcon from "@mui/icons-material/LocalHospital";
 import AdminIcon from "@mui/icons-material/SupervisedUserCircle";
 import CalendarIcon from "@mui/icons-material/Event";
 import ClientsIcon from "@mui/icons-material/Group";
-import PetsIconAlt from "@mui/icons-material/Pets";
 import VetsIcon from "@mui/icons-material/MedicalServices";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import PetsIconAlt from "@mui/icons-material/Pets";
 
 const { Header, Content, Sider, Footer } = Layout;
 
@@ -56,7 +54,6 @@ const DashboardLayout = ({
     setIsActive(document.cookie.includes("true"));
     fetchUserRole();
 
-    // Escuchar cambios de tamaño de pantalla para actualizar el estado de `isSmallScreen`
     const handleResize = () => {
       setIsSmallScreen(window.innerWidth < 768);
     };
@@ -179,71 +176,66 @@ const DashboardLayout = ({
     ];
 
     if (role <= 3) {
-      items.push({
-        key: "sub1",
-        icon: <SearchIcon />,
-        label: "Consultas",
-        children: [
-          {
-            key: "consultSchedules",
-            icon: <CalendarIcon />,
-            label: "Horarios",
-            onClick: () => handleClick("consultSchedules"),
-          },
-          {
-            key: "consultpets",
-            icon: <PetsIconAlt />,
-            label: "Mascotas",
-            onClick: () => handleClick("consultpets"),
-          },
-          {
-            key: "consultrecords",
-            icon: <AssignmentIcon />,
-            label: "Expedientes",
-            onClick: () => handleClick("consultrecords"),
-          },
+      items.push(
+        {
+          key: "consultSchedules",
+          icon: <CalendarIcon />,
+          label: "Horarios",
+          onClick: () => handleClick("consultSchedules"),
+        },
+        {
+          key: "consultpets",
+          icon: <PetsIconAlt />,
+          label: "Mascotas",
+          onClick: () => handleClick("consultpets"),
+        },
+        {
+          key: "consultrecords",
+          icon: <AssignmentIcon />,
+          label: "Expedientes",
+          onClick: () => handleClick("consultrecords"),
+        }
+      );
+    }
 
-          ...(role === 1 || role === 2
-            ? [
-                {
-                  key: "consultclients",
-                  icon: <ClientsIcon />,
-                  label: "Clientes",
-                  onClick: () => handleClick("consultclients"),
-                },
-                {
-                  key: "consultvets",
-                  icon: <VetsIcon />,
-                  label: "Veterinarios",
-                  onClick: () => handleClick("consultvets"),
-                },
-                {
-                  key: "consultservices",
-                  icon: <MedicalServices />,
-                  label: "Servicios",
-                  onClick: () => handleClick("consultservices"),
-                },
-              ]
-            : []),
-          ...(role === 1
-            ? [
-                {
-                  key: "consultClinics",
-                  icon: <ClinicIcon />,
-                  label: "Clínicas",
-                  onClick: () => handleClick("clinics"),
-                },
-                {
-                  key: "consultAdmins",
-                  icon: <AdminIcon />,
-                  label: "Administradores",
-                  onClick: () => handleClick("consultAdmins"),
-                },
-              ]
-            : []),
+    if (role === 1 || role === 2) {
+      items.push(
+        {
+          key: "consultclients",
+          icon: <ClientsIcon />,
+          label: "Clientes",
+          onClick: () => handleClick("consultclients"),
+        },
+        {
+          key: "consultvets",
+          icon: <VetsIcon />,
+          label: "Veterinarios",
+          onClick: () => handleClick("consultvets"),
+        },
+        {
+          key: "consultservices",
+          icon: <MedicalServices />,
+          label: "Servicios",
+          onClick: () => handleClick("consultservices"),
+        }
+      );
+    }
 
-        ],
-      });
+    if (role === 1) {
+      items.push(
+        {
+          key: "consultClinics",
+          icon: <ClinicIcon />,
+          label: "Clínicas",
+          onClick: () => handleClick("clinics"),
+        },
+        {
+          key: "consultAdmins",
+          icon: <AdminIcon />,
+          label: "Administradores",
+          onClick: () => handleClick("consultAdmins"),
+        }
+      );
     }
 
     if (role === 4) {
@@ -254,6 +246,7 @@ const DashboardLayout = ({
         onClick: () => handleClick("consultMyPets"),
       });
     }
+
     if (role <= 4) {
       items.push({
         key: "consultCitas",
@@ -278,6 +271,10 @@ const DashboardLayout = ({
         return "consultvets";
       case "/consultservices":
         return "consultservices";
+      case "/consultrecords":
+        return "consultrecords";
+      case "/clinics":
+        return "consultClinics";
       case "/consultMyPets":
         return "consultMyPets";
       case "/Owner":
@@ -376,7 +373,7 @@ const DashboardLayout = ({
         </Dropdown>
       </Header>
 
-      <Layout style={{ marginTop: 64 /* Compensar el header fijo */ }}>
+      <Layout style={{ marginTop: 64 }}>
         {!hideSidebar && !isSmallScreen && (
           <Sider
             width={200}
@@ -403,7 +400,6 @@ const DashboardLayout = ({
           </Sider>
         )}
 
-        {/* Drawer en pantallas pequeñas */}
         {!hideSidebar && isSmallScreen && (
           <Drawer
             width={200}

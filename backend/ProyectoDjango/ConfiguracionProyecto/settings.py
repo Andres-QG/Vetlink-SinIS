@@ -99,7 +99,7 @@ DATABASES = {
         "NAME": "(DESCRIPTION=(ADDRESS=(PROTOCOL=TCPS)(HOST=adb.sa-saopaulo-1.oraclecloud.com)(PORT=1522))(CONNECT_DATA=(SERVICE_NAME=g5936dc7ef2f8c4_vetlink_high.adb.oraclecloud.com))(SECURITY=(SSL_SERVER_DN_MATCH=YES)))",
         "USER": "VETLINK",
         "PASSWORD": "Pruebas$2024",
-        "CONN_MAX_AGE": None,
+        "CONN_MAX_AGE": 1200,  # 20 minutos de tiempo de espera
     },
 }
 
