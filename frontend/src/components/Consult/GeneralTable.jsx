@@ -85,7 +85,6 @@ const GeneralTable = ({
   };
 
   const handleDelete = async () => {
-    handleCloseModal();
     if (!selectedItem) return;
 
     setLoadingDelete(true);
@@ -115,6 +114,7 @@ const GeneralTable = ({
       }
     } finally {
       setLoadingDelete(false);
+      handleCloseModal(); // Cierra el modal al final de la operación
     }
   };
 
@@ -450,7 +450,7 @@ const GeneralTable = ({
             {customDeleteTitle ||
               `¿Estás seguro de que deseas ${
                 restoreUrl ? "desactivar" : "eliminar"
-              } ${selectedItem?.[visualIdentifierCol]}?`}
+              } el registro ${selectedItem?.[visualIdentifierCol]}?`}
           </Typography>
           <Typography variant="body1" sx={{ mb: 4 }}>
             Esta acción{" "}
