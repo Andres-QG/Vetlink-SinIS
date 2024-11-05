@@ -320,7 +320,7 @@ const AddRecord = forwardRef(
                 <TextField
                   {...params}
                   variant="outlined"
-                  label="Síntomas*"
+                  label="Síntomas"
                   placeholder="Selecciona síntomas"
                   error={!!errors.sintomas}
                   helperText={errors.sintomas}
@@ -364,7 +364,7 @@ const AddRecord = forwardRef(
                 <TextField
                   {...params}
                   variant="outlined"
-                  label="Vacunas*"
+                  label="Vacunas"
                   placeholder="Selecciona vacunas"
                   error={!!errors.vacunas}
                   helperText={errors.vacunas}
@@ -410,7 +410,7 @@ const AddRecord = forwardRef(
                 <TextField
                   {...params}
                   variant="outlined"
-                  label="Tratamientos*"
+                  label="Tratamientos"
                   placeholder="Selecciona tratamientos"
                   error={!!errors.tratamientos}
                   helperText={errors.tratamientos}

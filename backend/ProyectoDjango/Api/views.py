@@ -2637,3 +2637,17 @@ def delete_my_pet(request, mascota_id):
             {"error": "Error al eliminar la mascota"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
+
+@api_view(["GET"])
+def consult_client_user_personal_info(request):
+    logged_client_user = request.session.get("user")
+    if not logged_client_user:
+        return Response(
+            {"error": "Usuario no autenticado."},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+    request.GET = request.GET.copy()
+    request.GET["search"] = logged_client_user
+    request.GET["column"] = "usuario"
+    return consult_client(request)
