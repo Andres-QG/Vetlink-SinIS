@@ -110,8 +110,8 @@ DetailedRecordInfo.propTypes = {
     nombre_mascota: PropTypes.string.isRequired,
     fecha: PropTypes.string.isRequired,
     peso: PropTypes.string.isRequired,
-    sintomas: PropTypes.string.isRequired,
-    vacunas: PropTypes.string.isRequired,
-    tratamientos: PropTypes.string.isRequired,
+    sintomas: PropTypes.string,
+    vacunas: PropTypes.string,
+    tratamientos: PropTypes.string,
   }).isRequired,
 };

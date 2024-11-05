@@ -2,6 +2,7 @@ import React from "react";
 
 import { Close as CloseIcon } from "@mui/icons-material";
 import PropTypes from "prop-types";
+import React from "react";
 
 function Tag(props) {
   const { label, onDelete, ...other } = props;

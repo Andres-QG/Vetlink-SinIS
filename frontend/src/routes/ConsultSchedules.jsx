@@ -1,3 +1,5 @@
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 import ConsultView from "../components/Consult/ConsultView";
 import AddSchedule from "../components/ConsultSchedules/AddSchedule";
 import ModifySchedule from "../components/ConsultSchedules/ModifySchedule";
@@ -26,6 +28,10 @@ const ConsultSchedules = () => {
     },
   ];
 
+  const { role } = useContext(AuthContext); // Accede al rol desde AuthContext
+
+  const isVeterinarian = role === 3;
+
   return (
     <ConsultView
       title="Horarios"
@@ -39,10 +45,10 @@ const ConsultSchedules = () => {
       pkCol="horario_id"
       visualIdentifierCol="usuario_veterinario"
       customDeleteTitle={"¿Estás seguro de que deseas eliminar este horario?"}
-      disableAddButton={true}
-      disableModifyAction={true}
-      disableDeleteAction={true}
-      disableReactivateAction={true}
+      disableAddButton={isVeterinarian}
+      disableModifyAction={isVeterinarian}
+      disableDeleteAction={isVeterinarian}
+      disableReactivateAction={isVeterinarian}
     />
   );
 };
