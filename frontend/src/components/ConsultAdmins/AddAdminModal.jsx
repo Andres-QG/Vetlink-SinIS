@@ -23,7 +23,7 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 
-const AddAdminModal = ({ open, onClose, fetchAdmins, showSnackbar }) => {
+const AddAdminModal = ({ open, handleClose, fetchAdmins, showSnackbar }) => {
   const initialFormData = {
     usuario: "",
     cedula: "",
@@ -54,11 +54,11 @@ const AddAdminModal = ({ open, onClose, fetchAdmins, showSnackbar }) => {
         }
       } catch (error) {
         console.error("Error fetching clinics:", error);
-        showSnackbar("Error al cargar las clínicas.", "error"); // Muestra un mensaje al usuario
+        showSnackbar("Error al cargar las clínicas.", "error");
       }
     };
     fetchClinics();
-  }, []);
+  }, [showSnackbar]);
 
   const validate = () => {
     const newErrors = {};
@@ -101,7 +101,7 @@ const AddAdminModal = ({ open, onClose, fetchAdmins, showSnackbar }) => {
       showSnackbar("Administrador agregado exitosamente.", "success");
       setFormData(initialFormData);
       fetchAdmins();
-      onClose();
+      handleClose();
     } catch (error) {
       console.log(error);
       const backendError = error.response?.data?.error;
@@ -119,10 +119,9 @@ const AddAdminModal = ({ open, onClose, fetchAdmins, showSnackbar }) => {
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       aria-labelledby="modal-title"
-      aria-describedby="modal-description"
-    >
+      aria-describedby="modal-description">
       <Box
         sx={{
           position: "absolute",
@@ -134,12 +133,10 @@ const AddAdminModal = ({ open, onClose, fetchAdmins, showSnackbar }) => {
           boxShadow: 24,
           p: 4,
           borderRadius: "10px",
-        }}
-      >
+        }}>
         <IconButton
-          onClick={onClose}
-          sx={{ position: "absolute", top: 8, right: 8 }}
-        >
+          onClick={handleClose}
+          sx={{ position: "absolute", top: 8, right: 8 }}>
           <Close />
         </IconButton>
         <Typography
@@ -153,8 +150,7 @@ const AddAdminModal = ({ open, onClose, fetchAdmins, showSnackbar }) => {
             color: "#333",
             borderBottom: "1px solid #ddd",
             paddingBottom: "10px",
-          }}
-        >
+          }}>
           Agregar Administrador
         </Typography>
 
@@ -325,9 +321,7 @@ const AddAdminModal = ({ open, onClose, fetchAdmins, showSnackbar }) => {
                     <Business />
                   </InputAdornment>
                 ),
-              }}
-            >
-              {console.log(clinics)}
+              }}>
               {clinics.length > 0 ? (
                 clinics.map((clinic) => (
                   <MenuItem key={clinic.clinica_id} value={clinic.clinica_id}>
@@ -351,8 +345,7 @@ const AddAdminModal = ({ open, onClose, fetchAdmins, showSnackbar }) => {
               borderColor: "#00308F",
               color: "#00308F",
               "&:hover": { color: "#00246d", borderColor: "#00246d" },
-            }}
-          >
+            }}>
             Limpiar
           </Button>
           <Button
@@ -364,8 +357,7 @@ const AddAdminModal = ({ open, onClose, fetchAdmins, showSnackbar }) => {
             sx={{
               backgroundColor: "#00308F",
               "&:hover": { backgroundColor: "#00246d" },
-            }}
-          >
+            }}>
             {loading ? "Agregando..." : "Agregar Administrador"}
           </Button>
         </Box>

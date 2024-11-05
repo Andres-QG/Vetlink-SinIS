@@ -1,143 +1,31 @@
-import { useState, useEffect } from "react";
-import { CircularProgress, Button, Snackbar, Alert } from "@mui/material";
-import { Add } from "@mui/icons-material";
-import GeneralTable2 from "../components/Consult/GeneralTable2";
-import SearchBar from "../components/Consult/GeneralizedSearchBar";
-import ModifyAdminModal from "../components/ConsultAdmins/ModifyAdminModal";
-import DeleteAdminModal from "../components/ConsultAdmins/DeleteAdminModal";
-import axios from "axios";
+import React from "react";
+import ConsultView from "../components/Consult/ConsultView";
 import AddAdminModal from "../components/ConsultAdmins/AddAdminModal";
+import ModifyAdminModal from "../components/ConsultAdmins/ModifyAdminModal";
 
 const ConsultAdmins = () => {
-  const [admins, setAdmins] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchColumn, setSearchColumn] = useState("usuario");
-  const [order, setOrder] = useState("asc");
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [openModal, setOpenModal] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
-  useEffect(() => {
-    fetchAdmins();
-  }, [searchTerm, searchColumn, order, page]);
-
-  const fetchAdmins = async () => {
-    setLoading(true);
-    const params = {
-      search: searchTerm,
-      column: searchColumn,
-      order: order,
-      page: page,
-    };
-
-    try {
-      const response = await axios.get(
-        "http://localhost:8000/api/consult-admin/",
-        { params }
-      );
-      const data = response.data;
-      setAdmins(data.results);
-      setTotalPages(Math.ceil(data.count / 10));
-    } catch (error) {
-      console.error("Failed to fetch admins:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const showSnackbar = (message, severity) => {
-    setSnackbarMessage(message);
-    setSnackbarSeverity(severity);
-    setSnackbarOpen(true);
-  };
-
-  const handleSearch = (term, column, sortOrder) => {
-    setSearchTerm(term);
-    setSearchColumn(column);
-    setOrder(sortOrder);
-    setPage(1);
-  };
-
   const columns = [
-    { field: "usuario", headerName: "Usuario" },
-    { field: "nombre", headerName: "Nombre" },
-    { field: "apellidos", headerName: "Apellido" },
-    { field: "cedula", headerName: "Cédula" },
-    { field: "telefono", headerName: "Teléfono" },
-    { field: "correo", headerName: "Correo" },
-    { field: "clinica", headerName: "Clínica" },
+    { field: "usuario", headerName: "Usuario", type: "text" },
+    { field: "nombre", headerName: "Nombre", type: "text" },
+    { field: "apellidos", headerName: "Apellido", type: "text" },
+    { field: "cedula", headerName: "Cédula", type: "text" },
+    { field: "telefono", headerName: "Teléfono", type: "text" },
+    { field: "correo", headerName: "Correo", type: "text" },
+    { field: "clinica", headerName: "Clínica", type: "text" },
   ];
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <div className="flex-grow">
-        <div className="flex flex-col items-center justify-between mb-4 space-y-4 md:flex-row md:space-y-0">
-          <h1 className="text-2xl font-semibold">Administradores</h1>
-          <div className="flex flex-col w-full space-y-4 md:w-auto md:flex-row md:items-center md:space-y-0">
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              onClick={() => setOpenModal(true)}
-              sx={{
-                backgroundColor: "#00308F",
-                "&:hover": { backgroundColor: "#00246d" },
-                minWidth: "190px",
-                marginBottom: { xs: "-4px", md: "0px" },
-                marginRight: { xs: "0px", md: "10px" },
-                width: { xs: "100%", md: "auto" },
-              }}>
-              Agregar
-            </Button>
-            <SearchBar
-              onSearch={handleSearch}
-              columns={columns.map((col) => col.field)}
-            />
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="flex items-center justify-center">
-            <CircularProgress />
-          </div>
-        ) : (
-          <GeneralTable2
-            data={admins}
-            columns={columns}
-            page={page}
-            setPage={setPage}
-            totalPages={totalPages}
-            fetchData={fetchAdmins}
-            showSnackbar={showSnackbar}
-            EditModal={ModifyAdminModal}
-            DeleteModal={DeleteAdminModal}
-            keyField="usuario"
-          />
-        )}
-      </div>
-
-      <AddAdminModal
-        open={openModal}
-        onClose={() => setOpenModal(false)}
-        fetchAdmins={fetchAdmins} // Cambiado a fetchData
-        showSnackbar={showSnackbar}
-      />
-
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={4000}
-        onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>
-        <Alert
-          onClose={() => setSnackbarOpen(false)}
-          severity={snackbarSeverity}>
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-    </div>
+    <ConsultView
+      title="Administradores"
+      fetchUrl="http://localhost:8000/api/consult-admin/"
+      deletionUrl="http://localhost:8000/api/delete-admin/"
+      addComponent={AddAdminModal}
+      modifyComponent={ModifyAdminModal}
+      columns={columns}
+      pkCol="usuario"
+      visualIdentifierCol="usuario"
+      rowsPerPage={10}
+    />
   );
 };
 

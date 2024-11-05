@@ -86,6 +86,9 @@ const VetsTable = ({
     return (
       <Box
         sx={{
+          textAlign: "center",
+          height: "30px",
+          width: 80,
           backgroundColor: color,
           borderRadius: "16px",
           padding: "4px 12px",
