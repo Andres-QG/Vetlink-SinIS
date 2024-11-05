@@ -78,18 +78,20 @@ const ModifyRecord = forwardRef(
 
     const validateForm = () => {
       const newErrors = {};
-
-      if (!formData.mascota_id) {
-        newErrors.mascota_id = "Nombre de mascota es obligatorio";
-      }
-      if (!formData.fecha) {
-        newErrors.fecha = "Fecha es obligatoria";
-      }
       if (!formData.peso || isNaN(formData.peso) || formData.peso <= 0) {
         newErrors.peso = "Por favor, introduzca un peso válido";
+      } else {
+        const integerPart = formData.peso.toString().split(".")[0];
+        if (integerPart.length > 4) {
+          newErrors.peso = "El peso no puede tener más de 4 dígitos";
+        }
       }
+
       if (!formData.diagnostico) {
         newErrors.diagnostico = "Diagnóstico es obligatorio";
+      } else if (formData.diagnostico.length > 255) {
+        newErrors.diagnostico =
+          "El diagnóstico no puede exceder 255 caracteres";
       }
 
       setErrors(newErrors);
