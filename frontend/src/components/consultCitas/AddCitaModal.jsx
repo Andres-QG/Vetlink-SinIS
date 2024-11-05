@@ -446,6 +446,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
                   label="Fecha"
                   value={formData.fecha || null}
                   onChange={(newDate) => setFormData({ ...formData, fecha: isValid(newDate) ? newDate : null })}
+                  minDate={new Date()} // Prevents selection of past dates
                   slots={{ openPickerIcon: ArrowDropDownIcon }}
                   slotProps={{
                     textField: {

@@ -417,10 +417,8 @@ const ModifyCitaModal = forwardRef(
                   <DatePicker
                     label="Fecha"
                     value={formData.fecha || null}
-                    onChange={(newDate) => {
-                      setFormData({ ...formData, fecha: newDate, hora: "" });
-                      setHorarios((prevHorarios) => prevHorarios.filter((hora) => hora !== selectedItem.hora));
-                    }}
+                    onChange={(newDate) => setFormData({ ...formData, fecha: isValid(newDate) ? newDate : null })}
+                    minDate={new Date()} // Prevents selection of past dates
                     slots={{ openPickerIcon: ArrowDropDownIcon }}
                     slotProps={{
                       textField: {
