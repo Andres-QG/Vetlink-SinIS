@@ -219,6 +219,7 @@ const GeneralTable = ({
                   <Button
                     onClick={() => handleOpenModModal(item)}
                     startIcon={<Edit />}
+                    color="primary"
                     disabled={disableModifyAction}
                   >
                     Modificar
@@ -246,8 +247,8 @@ const GeneralTable = ({
                     (item.activo === false || item.activo === "inactivo") && (
                       <Button
                         onClick={() => handleReactivate(item)}
-                        startIcon={<Restore style={{ color: green[500] }} />}
-                        style={{ color: green[500] }}
+                        startIcon={<Restore />}
+                        sx={{ color: green[500] }}
                         disabled={disableReactivateAction}
                       >
                         Reactivar
@@ -346,6 +347,7 @@ const GeneralTable = ({
                     <IconButton
                       onClick={() => handleOpenModModal(item)}
                       disabled={disableModifyAction}
+                      color="primary"
                     >
                       <Edit />
                     </IconButton>
@@ -370,7 +372,7 @@ const GeneralTable = ({
                       (item.activo === false || item.activo === "inactivo") && (
                         <IconButton
                           onClick={() => handleReactivate(item)}
-                          style={{ color: green[500] }}
+                          sx={{ color: green[500] }}
                           disabled={disableReactivateAction}
                         >
                           <Restore />

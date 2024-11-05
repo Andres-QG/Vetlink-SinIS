@@ -39,10 +39,10 @@ const ConsultSchedules = () => {
       pkCol="horario_id"
       visualIdentifierCol="usuario_veterinario"
       customDeleteTitle={"¿Estás seguro de que deseas eliminar este horario?"}
-      disableAddButton={false}
-      disableModifyAction={false}
-      disableDeleteAction={false}
-      disableReactivateAction={false}
+      disableAddButton={true}
+      disableModifyAction={true}
+      disableDeleteAction={true}
+      disableReactivateAction={true}
     />
   );
 };
