@@ -238,9 +238,7 @@ const ModifyServicesModal = ({
             component="label"
             fullWidth
             sx={{ mb: 2 }}>
-            {formData.imagen
-              ? "Imagen seleccionada"
-              : "Seleccionar Imagen (.jpg)"}
+            {formData.imagen ? "Imagen seleccionada" : "Seleccionar Imagen"}
             <input
               type="file"
               accept=".jpg"

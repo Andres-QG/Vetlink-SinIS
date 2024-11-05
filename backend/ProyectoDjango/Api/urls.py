@@ -1,6 +1,9 @@
 from django.urls import path
 from .views import *
 
+from django.conf import settings
+from django.conf.urls.static import static
+
 urlpatterns = [
     # Independent actions
     path("check-user/", check_user_exists, name="check_user_exists"),
@@ -10,7 +13,6 @@ urlpatterns = [
     path("verify-code/", verify_code, name="verify_code"),
     path("check-new-pass/", check_new_pass, name="check_new_pass"),
     path("get-user/", get_user, name="get_user"),
-
     # Get all registers
     path("get-owners/", get_owners, name="get_owners"),
     path("get-services/", get_services, name="get_services"),
@@ -18,13 +20,11 @@ urlpatterns = [
     path("get-clients/", get_clients, name="get_clients"),
     path("get-vets/", get_vets, name="get_vets"),
     path("get-pets/", get_pets, name="get_pets"),
-
     # Client APIs
     path("consult-client/", consult_client, name="consult_client"),
     path("add-client/", add_client, name="add_client"),
     path("update-client/<str:usuario>/", update_client, name="update_client"),
     path("delete-client/<str:usuario>/", delete_client, name="delete_client"),
-
     # Clinic APIs
     path("consult-clinics/", consult_clinics, name="consult_clinics"),
     path("add-clinic/", add_clinic, name="add_clinic"),
@@ -56,7 +56,7 @@ urlpatterns = [
     path(
         "delete-pet-record/<int:consulta_id>/",
         delete_pet_record,
-        name="delete_pet_record"
+        name="delete_pet_record",
     ),
     # Vacunas
     path("consult-vaccines/", consult_vaccines, name="consult_vaccines"),
@@ -70,20 +70,30 @@ urlpatterns = [
     path("update-cita/<int:cita_id>/", update_cita, name="update_cita"),
     path("delete-cita/<int:cita_id>/", delete_cita, name="delete_cita"),
     path("get-disp-times/", get_disp_times, name="get_disp_times"),
-    
     # Horarios Veterinarios APIs
     path("consult-schedules/", consult_schedules, name="consult_schedules"),
     path("add-schedule/", add_vet_schedule, name="add_vet_schedule"),
     path("autocomplete-vet/", autocomplete_vet, name="autocomplete_vet"),
     path("get-admin-clinic/", get_admin_clinic, name="get_admin_clinic"),
-    path("modify-vet-schedule/<int:horario_id>/", modify_vet_schedule, name="modify_vet_schedule"),
-    path('delete-vet-schedule/<int:horario_id>/', delete_vet_schedule, name='delete_vet_schedule'),
+    path(
+        "modify-vet-schedule/<int:horario_id>/",
+        modify_vet_schedule,
+        name="modify_vet_schedule",
+    ),
+    path(
+        "delete-vet-schedule/<int:horario_id>/",
+        delete_vet_schedule,
+        name="delete_vet_schedule",)
     path('reactivate-vet-schedule/<int:horario_id>/', reactivate_vet_schedule, name='reactivate_vet_schedule'),
     
     # Reactivate APIs
     path("reactivate-user/<str:usuario>/", reactivate_user, name="reactivate_user"),
     path("reactivate-pet/<int:mascota_id>/", reactivate_pet, name="reactivate_pet"),
-    path("reactivate-clinic/<int:clinica_id>/", reactivate_clinic, name="reactivate_clinic"),
+    path(
+        "reactivate-clinic/<int:clinica_id>/",
+        reactivate_clinic,
+        name="reactivate_clinic",
+    ),
     # Services APIs
     path("add-service/", add_servicio, name="add_servicio"),
     path("consult-services/", consult_services, name="consult_services"),
@@ -94,10 +104,15 @@ urlpatterns = [
         reactivate_service,
         name="reactivate_service",
     ),
-    
     # Mascotas Cliente APIs
     path("consult-my-pets/", consult_my_pets, name="consult_my_pets"),
-    path('add-mypet/', add_mypet, name='add_mypet'),
-    path('update-my-pet/<int:mascota_id>/', update_mypet, name='update_mypet'),
-    path('delete-my-pet/<int:mascota_id>/', delete_my_pet, name='delete_my_pet'),
+    path("add-mypet/", add_mypet, name="add_mypet"),
+    path("update-my-pet/<int:mascota_id>/", update_mypet, name="update_mypet"),
+    path("delete-my-pet/<int:mascota_id>/", delete_my_pet, name="delete_my_pet"),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(
+        settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0]
+    )

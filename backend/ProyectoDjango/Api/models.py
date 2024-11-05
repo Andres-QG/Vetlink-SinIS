@@ -609,7 +609,7 @@ class Roles(models.Model):
 
 
 class Servicios(models.Model):
-    servicio_id = models.FloatField(
+    servicio_id = models.AutoField(
         primary_key=True,
         db_comment="Este campo es la llave primaria de la tabla. Almacena un identificador ·nico para cada servicio. Este valor debe ser ·nico y permite distinguir cada servicio de manera clara.",
     )
