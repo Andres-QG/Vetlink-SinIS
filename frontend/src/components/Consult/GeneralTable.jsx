@@ -182,14 +182,14 @@ const GeneralTable = ({
                           <Chip
                             label={
                               item[col.field] === true ||
-                              item[col.field] === "activo"
+                                item[col.field] === "activo"
                                 ? "Activo"
                                 : "Inactivo"
                             }
                             style={{
                               backgroundColor:
                                 item[col.field] === true ||
-                                item[col.field] === "activo"
+                                  item[col.field] === "activo"
                                   ? col.chipColors?.["activo"]
                                   : col.chipColors?.["inactivo"] || "gray",
                             }}
@@ -209,52 +209,56 @@ const GeneralTable = ({
                     alignItems: "flex-start",
                   }}
                 >
-                  {DetailsModal && (
-                    <Button
-                      onClick={() => handleOpenDetailsModal(item)}
-                      startIcon={<Info />}
-                    >
-                      Más detalles
-                    </Button>
-                  )}
-                  <Button
-                    onClick={() => handleOpenModModal(item)}
-                    startIcon={<Edit />}
-                    color="primary"
-                    disabled={disableModifyAction}
-                  >
-                    Modificar
-                  </Button>
-                  {item.activo === true || item.activo === "activo" ? (
-                    <Button
-                      onClick={() => handleOpenModal(item)}
-                      startIcon={<Delete />}
-                      color="error"
-                      disabled={disableDeleteAction}
-                    >
-                      Desactivar
-                    </Button>
-                  ) : deletionUrl && !restoreUrl ? (
-                    <Button
-                      onClick={() => handleOpenModal(item)}
-                      startIcon={<Delete />}
-                      color="error"
-                      disabled={disableDeleteAction}
-                    >
-                      Eliminar
-                    </Button>
-                  ) : null}
-                  {restoreUrl &&
-                    (item.activo === false || item.activo === "inactivo") && (
+                  {!hideActions && (
+                    <>
+                      {DetailsModal && (
+                        <Button
+                          onClick={() => handleOpenDetailsModal(item)}
+                          startIcon={<Info />}
+                        >
+                          Más detalles
+                        </Button>
+                      )}
                       <Button
-                        onClick={() => handleReactivate(item)}
-                        startIcon={<Restore />}
-                        sx={{ color: green[500] }}
-                        disabled={disableReactivateAction}
+                        onClick={() => handleOpenModModal(item)}
+                        startIcon={<Edit />}
+                        color="primary"
+                        disabled={disableModifyAction}
                       >
-                        Reactivar
+                        Modificar
                       </Button>
-                    )}
+                      {item.activo === true || item.activo === "activo" ? (
+                        <Button
+                          onClick={() => handleOpenModal(item)}
+                          startIcon={<Delete />}
+                          color="error"
+                          disabled={disableDeleteAction}
+                        >
+                          Desactivar
+                        </Button>
+                      ) : deletionUrl && !restoreUrl ? (
+                        <Button
+                          onClick={() => handleOpenModal(item)}
+                          startIcon={<Delete />}
+                          color="error"
+                          disabled={disableDeleteAction}
+                        >
+                          Eliminar
+                        </Button>
+                      ) : null}
+                      {restoreUrl && (
+                        <Button
+                          onClick={() => handleReactivate(item)}
+                          startIcon={<Restore />}
+                          color="success"
+                          disabled={disableReactivateAction}
+                        >
+                          Reactivar
+                        </Button>
+                      )}
+                    </>
+                  )}
+
                 </Box>
               </CardContent>
             </Card>
