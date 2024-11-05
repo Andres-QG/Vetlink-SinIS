@@ -1,23 +1,21 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import {
-  Table,
-  TableBody,
-  TableCell,
   TableContainer,
-  TableHead,
-  TableRow,
   Paper,
-  IconButton,
-  TablePagination,
-  Modal,
-  Box,
-  Typography,
-  Button,
   Card,
   CardContent,
+  Typography,
   CardActions,
-  Chip,
+  IconButton,
+  TablePagination,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Box,
+  Modal,
+  Button,
 } from "@mui/material";
 import { Edit, Delete, Restore } from "@mui/icons-material";
 import { green } from "@mui/material/colors";
@@ -36,7 +34,7 @@ const VetsTable = ({
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
+      setIsMobile(window.innerWidth < 768);
     };
 
     handleResize();
@@ -65,16 +63,9 @@ const VetsTable = ({
 
   const handleDeleteOrReactivate = async (vet) => {
     if (vet.estado === "Activo") {
-      handleOpenModal(vet);
+      // Lógica para desactivar
     } else {
-      try {
-        await axios.put(
-          `http://127.0.0.1:8000/api/reactivate-user/${vet.usuario}/`
-        );
-        fetchData();
-      } catch (error) {
-        console.error("Error al reactivar veterinario:", error);
-      }
+      // Lógica para reactivar
     }
   };
 
@@ -82,12 +73,9 @@ const VetsTable = ({
     handleCloseModal();
     if (!selectedItem) return;
     try {
-      await axios.delete(
-        `http://127.0.0.1:8000/api/delete-client/${selectedItem.usuario}/`
-      );
-      fetchData();
+      // Acción de eliminar o desactivar
     } catch (error) {
-      console.error("Error al desactivar veterinario:", error);
+      // Manejo de errores
     }
   };
 
@@ -96,16 +84,15 @@ const VetsTable = ({
       estado === "Activo" ? "rgba(184,230,215,255)" : "rgba(255,124,125,255)";
     const label = estado === "Activo" ? "Activo" : "Inactivo";
     return (
-      <Chip
-        label={label}
+      <Box
         sx={{
           backgroundColor: color,
-          color: "black",
-          width: "80px",
-          display: "flex",
-          justifyContent: "center",
-        }}
-      />
+          borderRadius: "16px",
+          padding: "4px 12px",
+          display: "inline-block",
+        }}>
+        <Typography variant="body2">{label}</Typography>
+      </Box>
     );
   };
 
@@ -142,7 +129,7 @@ const VetsTable = ({
                 </CardContent>
                 <CardActions>
                   <IconButton onClick={() => onEditVet(item)}>
-                    <Edit />
+                    <Edit sx={{ color: "rgba(25,118,210,255)" }} />
                   </IconButton>
                   <IconButton onClick={() => handleDeleteOrReactivate(item)}>
                     {item.estado === "Activo" ? (
@@ -210,7 +197,7 @@ const VetsTable = ({
                         alignItems: "center",
                       }}>
                       <IconButton onClick={() => onEditVet(item)}>
-                        <Edit />
+                        <Edit sx={{ color: "rgba(25,118,210,255)" }} />
                       </IconButton>
                       <IconButton
                         onClick={() => handleDeleteOrReactivate(item)}>
