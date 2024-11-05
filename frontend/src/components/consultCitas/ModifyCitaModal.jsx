@@ -64,6 +64,10 @@ const ModifyCitaModal = forwardRef(
     const [pets, setPets] = useState([]);
 
     useEffect(() => {
+      setUser(otherData.user)
+    }, [otherData])
+
+    useEffect(() => {
       if (formData.fecha && formData.fecha.toISOString().split("T")[0] === selectedItem.fecha?.split("T")[0]) {
         const initialHorarios = otherData.horarios || [];
         if (selectedItem.hora && !initialHorarios.includes(selectedItem.hora)) {
@@ -187,6 +191,19 @@ const ModifyCitaModal = forwardRef(
       return Object.keys(newErrors).length === 0;
     }; 
 
+    // Function used to set the client as the default value
+    useEffect(() => {
+      if (user.role === 4) {
+        const matchingClient = otherData.clientes.find((client) => client.usuario === user.user);
+        if (matchingClient) {
+          setFormData((prevData) => ({
+            ...prevData,
+            cliente: matchingClient
+          }));
+        }
+      }
+    }, [user, otherData.clientes]);
+
     return (
       <Modal open={open} onClose={handleClose} aria-labelledby="modal-title" aria-describedby="modal-description">
         <Box
@@ -223,6 +240,7 @@ const ModifyCitaModal = forwardRef(
                   getOptionLabel={(option) => option.usuario || ""}
                   value={formData.cliente || null}
                   onChange={(event, newValue) => setFormData({ ...formData, cliente: newValue })}
+                  disabled={user.role === 4}
                   renderInput={(params) => (
                     <TextField
                       {...params}

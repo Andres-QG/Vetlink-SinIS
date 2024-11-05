@@ -327,7 +327,10 @@ def consult_citas(request):
     search = request.GET.get("search", "")
     column = request.GET.get("column", "fecha")
     order = request.GET.get("order", "asc")
-    clinica_id = request.GET.get("clinica_id")  # Optional clinic filter
+    clinica_id = request.session.get("clinica_id")  # Optional clinic filter
+    cliente = ""
+    if request.session.get('role') == 4:
+        cliente = request.session.get("user")
 
     # Map the column names to match the stored procedure's response if necessary
     column_mapping = {
@@ -343,7 +346,7 @@ def consult_citas(request):
             returned_cursor = cursor.connection.cursor()
             returned_services = cursor.connection.cursor()
             # Call the stored procedure
-            cursor.callproc("VETLINK.GET_ALL_CITAS", [clinica_id, returned_cursor])
+            cursor.callproc("VETLINK.GET_ALL_CITAS", [clinica_id, cliente, returned_cursor])
 
             # Fetch the results from returned_cursor instead of cursor
             citas = [

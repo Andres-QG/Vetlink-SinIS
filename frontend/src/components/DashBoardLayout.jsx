@@ -218,12 +218,6 @@ const DashboardLayout = ({
                   onClick: () => handleClick("consultvets"),
                 },
                 {
-                  key: "consultCitas",
-                  icon: <CalendarMonthIcon />,
-                  label: "Citas",
-                  onClick: () => handleClick("appointments"),
-                },
-                {
                   key: "consultservices",
                   icon: <MedicalServices />,
                   label: "Servicios",
@@ -247,6 +241,7 @@ const DashboardLayout = ({
                 },
               ]
             : []),
+
         ],
       });
     }
@@ -257,6 +252,14 @@ const DashboardLayout = ({
         icon: <PetsIcon />,
         label: "Mis Mascotas",
         onClick: () => handleClick("consultMyPets"),
+      });
+    }
+    if (role <= 4) {
+      items.push({
+        key: "consultCitas",
+        icon: <CalendarMonthIcon />,
+        label: "Citas",
+        onClick: () => handleClick("appointments"),
       });
     }
 
@@ -281,6 +284,8 @@ const DashboardLayout = ({
         return "consultClinics";
       case "/consultAdmins":
         return "consultAdmins";
+      case "/appointments":
+        return "consultCitas";
       case "/dashboard":
         return "dashboard";
       default:

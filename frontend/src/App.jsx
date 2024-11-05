@@ -230,7 +230,7 @@ function App() {
               path="/appointments"
               element={
                 <DashBoardLayout>
-                  <ProtectedRoute requiredRoles={[1,2,3]}>
+                  <ProtectedRoute requiredRoles={[1,2,3,4]}>
                     <NotificationProvider>
                       <ConsultCitas />
                     </NotificationProvider>

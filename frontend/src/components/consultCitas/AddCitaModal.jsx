@@ -23,6 +23,7 @@ import {
   BorderColor as BorderColorIcon,
   CorporateFare as CorporateFareIcon,
   ArrowDropDown as ArrowDropDownIcon,
+  ConstructionOutlined,
 } from "@mui/icons-material";
 import Tag from "../Tag";
 import { parseISO, isValid } from "date-fns";
@@ -87,6 +88,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
     }
   }, [user, clinicas]);
 
+
   useEffect(() => {
     const fetchPets = async () => {
       if (formData.cliente) {
@@ -131,6 +133,22 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
       setLoadingTimes(false)
     }
   };
+
+  // Function used to set the client as the default value
+  useEffect(() => {
+    if (user.role === 4) {
+      const matchingClient = clientes.find((client) => client.usuario === user.user);
+      if (matchingClient) {
+        setFormData((prevData) => ({
+          ...prevData,
+          cliente: matchingClient
+        }));
+      }
+    }
+  }, [user, clientes]);
+
+
+  console.log(formData)
 
   useEffect(() => {
     if (formData.clinica  && formData.veterinario  && formData.fecha) {
@@ -210,6 +228,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
                 value={formData.cliente || ""}
                 onChange={(event, newValue) => setFormData({ ...formData, cliente: newValue })}
                 loading={loadingClients}
+                disabled={user.role === 4}
                 renderInput={(params) => (
                   <TextField
                     {...params}
