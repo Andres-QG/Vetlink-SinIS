@@ -432,15 +432,23 @@ export function PassSuccess() {
       <div className="flex flex-col min-h-screen">
         <main className="flex-grow">
           <div className="h-screen flex items-center justify-center bg-[url('./src/assets/shapes/wave.svg')] bg-bottom bg-no-repeat w-full">
-            <div className="flex flex-col h-[650px] w-[400px] rounded-xl bg-bgsecondary shadow-2xl items-center pt-8 text-secondary">
-              <CheckCircle />
-              <p>Listo</p>
-              <p>Tu contraseña ha sido cambiada</p>
-              <p>Ya puedes iniciar sesión con tu contraseña nueva</p>
+            <div className="flex flex-col h-[350px] w-[400px] rounded-xl bg-bgsecondary shadow-2xl items-center pt-8 text-secondary">
+              <CheckCircle className="text-primary text-6xl mb-4" />
+              <h1 className="text-2xl font-bold text-center">Listo</h1>
+              <p className="m-8 font-bold text-center">Tu contraseña ha sido cambiada</p>
+              <p className="mb-8 text-center">Ya puedes iniciar sesión con tu contraseña nueva</p>
 
               <Button
-                className="mt-5 text-xl w-72 h-12 border-none text-bgsecondary bg-primary hover:scale-[1.03]"
-                type="submit"
+                variant="contained"
+                className="mt-8 text-xl w-72 h-12 border-none text-bgsecondary"
+                sx={{
+                  backgroundColor: "#00308F",
+                  color: "#fff",
+                  "&:hover": {
+                    backgroundColor: "#00246d",
+                    transform: "scale(1.03)",
+                  },
+                }}
                 onClick={() => navigate("/login")}
               >
                 Iniciar Sesión

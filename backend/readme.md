@@ -25,6 +25,8 @@ A partir de aquí estarás adentro del entorno virtual y lo que instales solo es
 
 - Instalar Oracle db con python -m pip install oracledb==2.4.1
 
+- Instalar backend de correo con pip install sendgrid
+
 #### Verificacion
 
 pip list
@@ -46,6 +48,7 @@ pycparser 2.22
 setuptools 75.1.0
 sqlparse 0.5.1
 tzdata 2024.2
+sendgrid 6.11.0
 
 ### 2 Crear el proyecto
 

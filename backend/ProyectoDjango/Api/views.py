@@ -15,6 +15,8 @@ from .serializers import *
 from datetime import datetime
 import random
 import json
+import sendgrid
+from sendgrid.helpers.mail import Mail
 from datetime import datetime
 from django.http import JsonResponse
 from django.db import connection
@@ -98,14 +100,18 @@ def reset_password(request):
         verification_code = random.randint(
             100000, 999999
         )  # Genera un número aleatorio de 6 dígitos
-
-        send_mail(
-            "Código de reinicio de contraseña",  # Asunto
-            f"Tu código para reiniciar la contraseña es {verification_code}.",  # Cuerpo
-            "vetlinkmail@gmail.com",  # Desde este correo
-            [email],  # Hacia este correo
-            fail_silently=False,  # Mostrar errores
+        sg = sendgrid.SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
+        email_sent = Mail(
+            from_email='vetlinkmail@gmail.com',
+            to_emails=email,
+            subject='Código de restablecimiento de contraseña',
+            html_content=f'<p>Tu código para reiniciar la contraseña es {verification_code}.</p>'
         )
+        response = sg.send(email_sent)
+        print(response.status_code)
+        print(response.body)
+        print(response.headers)
+
         request.session["reset_code"] = (
             verification_code  # Guarda el código en la sesión
         )
