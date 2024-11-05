@@ -20,6 +20,11 @@ const ConsultView = ({
   visualIdentifierCol,
   rowsPerPage,
   otherData,
+  customDeleteTitle,
+  disableAddButton = false,
+  disableModifyAction = false,
+  disableDeleteAction = false,
+  disableReactivateAction = false, // Nuevo prop
 }) => {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -48,7 +53,7 @@ const ConsultView = ({
     setLoading(true);
     try {
       const response = await axios.get(fetchUrl, {
-        params: { page_size: 1000 }, // Ajuste para cargar todos los datos
+        params: { page_size: 1000 },
         withCredentials: true,
       });
       const data = response.data.results || [];
@@ -101,9 +106,12 @@ const ConsultView = ({
               variant="contained"
               startIcon={<Add />}
               onClick={handleOpen}
+              disabled={disableAddButton} // El botón está deshabilitado en lugar de oculto
               sx={{
-                backgroundColor: "#00308F",
-                "&:hover": { backgroundColor: "#00246d" },
+                backgroundColor: disableAddButton ? "grey.500" : "#00308F",
+                "&:hover": {
+                  backgroundColor: disableAddButton ? "grey.500" : "#00246d",
+                },
                 minWidth: "190px",
                 marginBottom: { xs: "-4px", md: "0px" },
                 marginRight: { xs: "0px", md: "10px" },
@@ -142,6 +150,10 @@ const ConsultView = ({
             fetchData={fetchAllData}
             ModModal={ModifyComponent}
             DetailsModal={DetailedInfoComponent}
+            customDeleteTitle={customDeleteTitle}
+            disableModifyAction={disableModifyAction}
+            disableDeleteAction={disableDeleteAction}
+            disableReactivateAction={disableReactivateAction} // Pasando el nuevo prop a GeneralTable
           />
         )}
 
@@ -185,6 +197,11 @@ ConsultView.propTypes = {
   visualIdentifierCol: PropTypes.string.isRequired,
   rowsPerPage: PropTypes.number,
   otherData: PropTypes.object,
+  customDeleteTitle: PropTypes.string,
+  disableAddButton: PropTypes.bool,
+  disableModifyAction: PropTypes.bool,
+  disableDeleteAction: PropTypes.bool,
+  disableReactivateAction: PropTypes.bool, // Añadido nuevo prop
 };
 
 export default ConsultView;
