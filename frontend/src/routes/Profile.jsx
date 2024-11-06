@@ -9,9 +9,11 @@ import {
   ClickAwayListener,
   Skeleton,
   CircularProgress,
+  Grid,
 } from "@mui/material";
 import axios from "axios";
 import { useNotification } from "../components/Notification";
+import { useNavigate } from "react-router-dom";
 
 export default function Component() {
   const [isEditing, setIsEditing] = useState(false);
@@ -29,6 +31,7 @@ export default function Component() {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
 
   const notify = useNotification();
 
@@ -179,9 +182,9 @@ export default function Component() {
         Mi Perfil
       </Typography>
 
-      <Box sx={{ display: "flex", gap: 8 }}>
+      <Grid container spacing={4}>
         {/* Left Section - Personal Data */}
-        <Box sx={{ flex: 1 }}>
+        <Grid item xs={12} md={6}>
           <Box sx={{ display: "flex", alignItems: "center", mb: 3, gap: 2 }}>
             <Typography
               variant="h6"
@@ -285,10 +288,10 @@ export default function Component() {
                   />
                 ))}
           </Box>
-        </Box>
+        </Grid>
 
         {/* Right Section - Password and Account Deactivation */}
-        <Box sx={{ flex: 1 }}>
+        <Grid item xs={12} md={6}>
           <Box sx={{ mb: 6 }}>
             <Typography
               variant="h6"
@@ -309,6 +312,7 @@ export default function Component() {
                   backgroundColor: "#234785",
                 },
               }}
+              onClick={() => navigate("/reset")}
             >
               Cambiar contraseña
             </Button>
@@ -358,8 +362,8 @@ export default function Component() {
               </ClickAwayListener>
             </Popper>
           </Box>
-        </Box>
-      </Box>
+        </Grid>
+      </Grid>
     </Box>
   );
 }
