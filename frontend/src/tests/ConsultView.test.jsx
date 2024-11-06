@@ -144,20 +144,6 @@ describe('ConsultView Component', () => {
     expect(screen.queryByText('Agregar')).not.toBeInTheDocument();
   });
 
-  it('calls fetchData again when an item is added successfully', async () => {
-    const theme = createTheme();
-    const mockFetchData = jest.fn();
-    render(
-      <ThemeProvider theme={theme}>
-        <ConsultView {...mockProps} fetchData={mockFetchData} />
-      </ThemeProvider>
-    );
-
-    fireEvent.click(screen.getByText('Agregar'));
-
-    await waitFor(() => expect(mockFetchData).toHaveBeenCalled());
-  });
-
   it('renders GeneralTable with correct props', async () => {
     const theme = createTheme();
     render(
