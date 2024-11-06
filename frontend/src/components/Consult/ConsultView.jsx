@@ -58,7 +58,7 @@ const ConsultView = ({
         params: { page_size: 1000 },
         withCredentials: true,
       });
-      // console.log(response.data.results);
+      console.log(response.data.results);
       const data = response.data.results || [];
       setData(data);
       setTotalCount(data.length);

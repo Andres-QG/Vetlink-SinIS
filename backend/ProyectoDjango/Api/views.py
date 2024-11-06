@@ -804,7 +804,7 @@ def consult_client(request):
                 "apellidos": f"{usuario.apellido1} {usuario.apellido2}",
                 "telefono": usuario.telefono,
                 "correo": usuario.correo,
-                "estado": usuario.activo,
+                "activo": usuario.activo,
             }
             for usuario in result_page
         ]
