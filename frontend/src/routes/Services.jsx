@@ -3,7 +3,7 @@ import axios from "axios";
 import { CircularProgress } from "@mui/material";
 import Services_Gallery from "../components/Services_Gallery";
 
-let HOST = "http://localhost:8000/";
+let HOST = "http://127.0.0.1:8000/";
 
 function Services() {
   const [services, setServices] = useState([]);
@@ -15,7 +15,7 @@ function Services() {
         const response = await axios.get(
           "http://localhost:8000/api/consult-services/"
         );
-
+        console.log(response.data.results);
         // Filtrar solo servicios activos
         const activeServices = response.data.results.filter(
           (service) => service.activo
