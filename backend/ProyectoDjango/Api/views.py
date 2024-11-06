@@ -2649,3 +2649,39 @@ def delete_my_pet(request, mascota_id):
             {"error": "Error al eliminar la mascota"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
+
+@api_view(["GET"])
+def consult_client_user_personal_info(request):
+    logged_user = request.session.get("user")
+    logged_user_role = request.session.get("role")
+    if not logged_user or not logged_user_role:
+        return Response(
+            {"error": "Usuario no autenticado."},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+    if logged_user_role != 4:
+        return Response(
+            {"error": "No tiene permisos para consultar esta información."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    http_request = request._request
+    http_request.GET = http_request.GET.copy()
+    http_request.GET["search"] = logged_user
+    http_request.GET["column"] = "usuario"
+    return consult_client(http_request)
+
+
+@api_view(["POST"])
+def deactivate_user_client(request):
+    try:
+        usuario = request.session.get("user")
+        with connection.cursor() as cursor:
+            cursor.callproc('DESACTIVAR_USUARIO_CLIENTE', [usuario])
+
+        return JsonResponse(
+            {'status': 'success', 'message': f'Usuario {usuario} desactivado correctamente'})
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)})

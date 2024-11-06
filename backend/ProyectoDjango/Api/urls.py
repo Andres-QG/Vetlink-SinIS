@@ -113,6 +113,9 @@ urlpatterns = [
     path("add-mypet/", add_mypet, name="add_mypet"),
     path("update-my-pet/<int:mascota_id>/", update_mypet, name="update_mypet"),
     path("delete-my-pet/<int:mascota_id>/", delete_my_pet, name="delete_my_pet"),
+    # Personal Info APIs
+    path("consult-client-user-personal-info/", consult_client_user_personal_info, name="consult_client_user_personal_info"),
+    path("deactivate-user-client/", deactivate_user_client, name="deactivate_user_client"),
 ]
 
 if settings.DEBUG:

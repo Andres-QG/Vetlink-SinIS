@@ -1,8 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-
-
-
 import AuthProvider from "./context/AuthContext";
 import Login from "./routes/Login";
 import LandingPage from "./routes/LandingPage";
@@ -12,6 +9,7 @@ import ConsultVets from "./routes/ConsultVets";
 import ConsultPets from "./routes/ConsultPets";
 import ConsultRecords from "./routes/ConsultRecords";
 import ConsultServices from "./routes/ConsultServices";
+import Profile from "./routes/Profile";
 import {
   PassReset,
   CheckCode,
@@ -242,6 +240,20 @@ function App() {
                       <ConsultCitas />
                     </NotificationProvider>
                   </ProtectedRoute>
+                </DashBoardLayout>
+              }
+            />
+
+            {/*Profile page*/}
+            <Route
+              path="/profile"
+              element={
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <NotificationProvider>
+                    <ProtectedRoute requiredRoles={[4]}>
+                      <Profile />
+                    </ProtectedRoute>
+                  </NotificationProvider>
                 </DashBoardLayout>
               }
             />
