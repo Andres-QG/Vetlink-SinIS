@@ -20,7 +20,7 @@ const ConsultAdmins = () => {
     },
   ];
 
-  const rowsPerPage = 10;
+  const rowsPerPage = 7;
 
   return (
     <ConsultView
