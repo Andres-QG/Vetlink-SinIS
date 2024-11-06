@@ -338,7 +338,7 @@ class Especialidades(models.Model):
         db_comment='Este campo almacena el nombre de la especialidad (por ejemplo, "DermatologÝa", "CirugÝa", "OdontologÝa"). Es un campo importante para identificar la especialidad de manera comprensible.',
     )
     descripcion = models.CharField(
-        max_length=50,
+        max_length=255,
         blank=True,
         null=True,
         db_comment="Este campo proporciona una descripci¾n detallada de la especialidad. Puede incluir informaci¾n sobre los servicios ofrecidos, condiciones tratadas o cualquier detalle relevante que ayude a entender mejor la especialidad.",

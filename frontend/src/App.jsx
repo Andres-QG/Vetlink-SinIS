@@ -199,9 +199,11 @@ function App() {
               path="/consultvets"
               element={
                 <DashBoardLayout>
-                  <ProtectedRoute requiredRoles={[1, 2]}>
-                    <ConsultVets />
-                  </ProtectedRoute>
+                  <NotificationProvider>
+                    <ProtectedRoute requiredRoles={[1, 2]}>
+                      <ConsultVets />
+                    </ProtectedRoute>
+                  </NotificationProvider>
                 </DashBoardLayout>
               }
             />

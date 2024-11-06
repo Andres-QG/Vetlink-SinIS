@@ -41,6 +41,9 @@ urlpatterns = [
     path("update-admin/<str:usuario>/", update_admin, name="update_admin"),
     path("delete-admin/<str:usuario>/", delete_admin, name="delete_admin"),
     # Veterinarian APIs
+    path(
+        "consult-vets-formatted/", consult_vets_formatted, name="consult_vets_formatted"
+    ),
     path("consult-vet/", consult_vet, name="consult_vet"),
     path("add-vet/", add_vet, name="add_vet"),
     path("update-vet/<str:usuario>/", update_vet, name="update_vet"),
@@ -114,8 +117,14 @@ urlpatterns = [
     path("update-my-pet/<int:mascota_id>/", update_mypet, name="update_mypet"),
     path("delete-my-pet/<int:mascota_id>/", delete_my_pet, name="delete_my_pet"),
     # Personal Info APIs
-    path("consult-client-user-personal-info/", consult_client_user_personal_info, name="consult_client_user_personal_info"),
-    path("deactivate-user-client/", deactivate_user_client, name="deactivate_user_client"),
+    path(
+        "consult-client-user-personal-info/",
+        consult_client_user_personal_info,
+        name="consult_client_user_personal_info",
+    ),
+    path(
+        "deactivate-user-client/", deactivate_user_client, name="deactivate_user_client"
+    ),
 ]
 
 if settings.DEBUG:

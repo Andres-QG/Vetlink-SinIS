@@ -2685,3 +2685,82 @@ def deactivate_user_client(request):
 
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)})
+
+
+@api_view(["GET"])
+def consult_vets_formatted(request):
+    search = request.GET.get("search", "")
+    column = request.GET.get("column", "usuario")
+    order = request.GET.get("order", "asc")
+    page_number = request.GET.get("page", 1)
+    page_size = request.GET.get("page_size", 10)
+
+    # Map columns to model fields
+    column_mapping = {
+        "usuario": "usuario",
+        "cedula": "cedula",
+        "nombre": "nombre",
+        "apellido1": "apellido1",
+        "apellido2": "apellido2",
+        "telefono": "telefono",
+        "correo": "correo",
+        "activo": "activo",
+        "especialidad": "especialidad__nombre",
+        "clinica": "clinica__nombre",
+    }
+
+    try:
+        # Base queryset
+        vets = Usuarios.objects.filter(rol_id=3).select_related(
+            "especialidad", "clinica"
+        )
+
+        # Search filter
+        if search:
+            vets = vets.filter(
+                Q(usuario__icontains=search)
+                | Q(cedula__icontains=search)
+                | Q(nombre__icontains=search)
+                | Q(apellido1__icontains=search)
+                | Q(apellido2__icontains=search)
+                | Q(telefono__icontains=search)
+                | Q(correo__icontains=search)
+                | Q(especialidad__nombre__icontains=search)
+                | Q(clinica__nombre__icontains=search)
+            )
+
+        # Order by specified column
+        sort_order = "" if order == "asc" else "-"
+        order_field = column_mapping.get(column, "usuario")
+        vets = vets.order_by(f"{sort_order}{order_field}")
+
+        # Pagination
+        paginator = PageNumberPagination()
+        paginator.page_size = page_size
+        result_page = paginator.paginate_queryset(vets, request)
+
+        # Format data
+        results = [
+            {
+                "usuario": vet.usuario,
+                "cedula": vet.cedula,
+                "nombre": vet.nombre,
+                "apellido1": vet.apellido1,
+                "apellido2": vet.apellido2,
+                "telefono": vet.telefono,
+                "correo": vet.correo,
+                "activo": vet.activo,
+                "especialidad": vet.especialidad.nombre if vet.especialidad else "",
+                "clinica": vet.clinica.nombre if vet.clinica else "",
+                "especialidad_id": (
+                    vet.especialidad.especialidad_id if vet.especialidad else None
+                ),
+                "clinica_id": vet.clinica.clinica_id if vet.clinica else None,
+            }
+            for vet in result_page
+        ]
+
+        return paginator.get_paginated_response(results)
+
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)})

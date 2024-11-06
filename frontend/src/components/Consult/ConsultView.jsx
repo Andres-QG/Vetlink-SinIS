@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import React from 'react'
 import PropTypes from "prop-types";
-import { CircularProgress, Button } from "@mui/material";
+import { CircularProgress, Button, Box } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import GeneralTable from "./GeneralTable";
 import SearchBar from "./GeneralizedSearchBar";
@@ -25,7 +24,7 @@ const ConsultView = ({
   disableAddButton = false,
   disableModifyAction = false,
   disableDeleteAction = false,
-  disableReactivateAction = false, // Nuevo prop
+  disableReactivateAction = false,
   hideAddButton = false,
   hideActions = false,
 }) => {
@@ -38,11 +37,15 @@ const ConsultView = ({
   const [searchColumn, setSearchColumn] = useState(columns[0].field);
   const [order, setOrder] = useState("asc");
   const [open, setOpen] = useState(false);
+  const [showInactive, setShowInactive] = useState(false);
 
   const notify = useNotification();
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
+  // Verificar si existe el atributo activo
+  const hasActivoAttribute = data.length > 0 && "activo" in data[0];
 
   useEffect(() => {
     fetchAllData();
@@ -50,7 +53,7 @@ const ConsultView = ({
 
   useEffect(() => {
     applyFilters();
-  }, [searchTerm, searchColumn, order, data]);
+  }, [searchTerm, searchColumn, order, data, showInactive]);
 
   const fetchAllData = async () => {
     setLoading(true);
@@ -63,7 +66,6 @@ const ConsultView = ({
       const data = response.data.results || [];
       setData(data);
       setTotalCount(data.length);
-      setFilteredData(data);
     } catch (error) {
       console.error("Failed to fetch data:", error);
     } finally {
@@ -74,6 +76,12 @@ const ConsultView = ({
   const applyFilters = () => {
     let results = [...data];
 
+    // Filtrar inactivos si es necesario
+    if (!showInactive) {
+      results = results.filter((item) => item.activo === true);
+    }
+
+    // Aplicar filtro de búsqueda
     if (searchTerm) {
       results = results.filter((item) =>
         item[searchColumn]
@@ -83,6 +91,7 @@ const ConsultView = ({
       );
     }
 
+    // Aplicar ordenamiento
     results.sort((a, b) => {
       if (a[searchColumn] < b[searchColumn]) return order === "asc" ? -1 : 1;
       if (a[searchColumn] > b[searchColumn]) return order === "asc" ? 1 : -1;
@@ -100,18 +109,46 @@ const ConsultView = ({
     setPage(1);
   };
 
+  const toggleShowInactive = () => {
+    setShowInactive((prev) => !prev);
+    setPage(1);
+  };
+
   return (
     <div className="flex flex-col">
       <div className="flex-grow">
         <div className="flex flex-col items-center justify-between mb-4 space-y-4 md:flex-row md:space-y-0">
           <h1 className="text-2xl font-semibold">{title}</h1>
           <div className="flex flex-col w-full space-y-4 md:w-auto md:flex-row md:items-center md:space-y-0">
+            {hasActivoAttribute && (
+              <Button
+                variant="contained"
+                onClick={toggleShowInactive}
+                sx={{
+                  backgroundColor: showInactive
+                    ? "rgba(184,230,215,1)"
+                    : "rgba(255,124,125,1)",
+                  "&:hover": {
+                    backgroundColor: showInactive
+                      ? "rgba(184,230,215,0.8)"
+                      : "rgba(255,124,125,0.8)",
+                  },
+                  color: "#000",
+                  minWidth: "205px",
+                  marginRight: { xs: "0px", md: "10px" },
+                  width: { xs: "100%", md: "auto" },
+                  fontSize: "0.85rem",
+                }}>
+                {showInactive ? "Mostrar solo activos" : "Mostrar Inactivos"}
+              </Button>
+            )}
+
             {!hideAddButton && (
               <Button
                 variant="contained"
                 startIcon={<Add />}
                 onClick={handleOpen}
-                disabled={disableAddButton} // The button is disabled instead of hidden
+                disabled={disableAddButton}
                 sx={{
                   backgroundColor: disableAddButton ? "grey.500" : "#00308F",
                   "&:hover": {
@@ -122,18 +159,18 @@ const ConsultView = ({
                   marginRight: { xs: "0px", md: "10px" },
                   width: { xs: "100%", md: "auto" },
                   fontSize: "0.85rem",
-                }}
-              >
+                }}>
                 Agregar
               </Button>
             )}
-           
+
             <SearchBar
               onSearch={handleSearch}
               columns={columns.map((col) => col.field)}
             />
           </div>
         </div>
+
         {loading ? (
           <div className="flex items-center justify-center">
             <CircularProgress />
@@ -160,7 +197,7 @@ const ConsultView = ({
             customDeleteTitle={customDeleteTitle}
             disableModifyAction={disableModifyAction}
             disableDeleteAction={disableDeleteAction}
-            disableReactivateAction={disableReactivateAction} // Pasando el nuevo prop a GeneralTable
+            disableReactivateAction={disableReactivateAction}
             hideActions={hideActions}
           />
         )}
@@ -209,7 +246,9 @@ ConsultView.propTypes = {
   disableAddButton: PropTypes.bool,
   disableModifyAction: PropTypes.bool,
   disableDeleteAction: PropTypes.bool,
-  disableReactivateAction: PropTypes.bool, // Añadido nuevo prop
+  disableReactivateAction: PropTypes.bool,
+  hideAddButton: PropTypes.bool,
+  hideActions: PropTypes.bool,
 };
 
 export default ConsultView;

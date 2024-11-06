@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import React from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
 import {
@@ -242,15 +241,17 @@ const GeneralTable = ({
                           Eliminar
                         </Button>
                       ) : null}
-                      {restoreUrl && item.activo === false && (
-                        <Button
-                          onClick={() => handleReactivate(item)}
-                          startIcon={<Restore />}
-                          color="success"
-                          disabled={disableReactivateAction}>
-                          Reactivar
-                        </Button>
-                      )}
+                      {restoreUrl &&
+                        (item.activo === false ||
+                          item.activo === "inactivo") && (
+                          <Button
+                            onClick={() => handleReactivate(item)}
+                            startIcon={<Restore />}
+                            color="success"
+                            disabled={disableReactivateAction}>
+                            Reactivar
+                          </Button>
+                        )}
                     </>
                   )}
                 </Box>
@@ -321,6 +322,9 @@ const GeneralTable = ({
                                   : "Inactivo"
                               }
                               style={{
+                                // modificar tamaño
+                                textAlign: "center",
+                                height: "30px",
                                 width: 80,
                                 position: "relative",
                                 left: "-8px",

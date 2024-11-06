@@ -17,50 +17,70 @@ import {
   Person,
   Email,
   Phone,
-  VpnKey,
   Badge,
-  AccountCircle,
   Business,
 } from "@mui/icons-material";
 import axios from "axios";
 
-const AddVetModal = ({ open, handleClose, onSuccess }) => {
+const ModifyVetModal = ({ open, handleClose, onSuccess, selectedItem }) => {
   const initialFormData = {
-    usuario: "",
-    cedula: "",
-    correo: "",
-    nombre: "",
-    apellido1: "",
-    apellido2: "",
-    telefono: "",
-    clave: "",
-    clinica: "",
-    especialidad: "",
+    cedula: selectedItem?.cedula || "",
+    correo: selectedItem?.correo || "",
+    nombre: selectedItem?.nombre || "",
+    apellido1: selectedItem?.apellido1 || "",
+    apellido2: selectedItem?.apellido2 || "",
+    telefono: selectedItem?.telefono || "",
+    clinica: selectedItem?.clinica_id || "",
+    especialidad: selectedItem?.especialidad_id || "",
   };
 
   const [formData, setFormData] = useState(initialFormData);
+  const [originalData, setOriginalData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
+  const [miniLoad, setMiniLoad] = useState(true);
   const [errors, setErrors] = useState({});
   const [clinics, setClinics] = useState([]);
   const [specialties, setSpecialties] = useState([]);
 
   useEffect(() => {
-    const fetchClinics = async () => {
+    const fetchAllClinics = async () => {
+      setMiniLoad(true);
+      let allClinics = [];
+      let nextPage = "http://localhost:8000/api/consult-clinics/";
       try {
-        const response = await axios.get(
-          "http://localhost:8000/api/consult-clinics/"
-        );
-        if (response.data.results) {
-          setClinics(response.data.results);
-        } else {
-          console.error("No clinics found in the response");
+        while (nextPage) {
+          const response = await axios.get(nextPage);
+          const data = response.data;
+          allClinics = allClinics.concat(data.results);
+          nextPage = data.next;
         }
+        setClinics(allClinics);
       } catch (error) {
-        console.error("Error fetching clinics:", error);
+        console.error("Failed to fetch clinics:", error);
+      } finally {
+        setMiniLoad(false);
       }
     };
-    fetchClinics();
+
+    fetchAllClinics();
   }, []);
+
+  useEffect(() => {
+    if (selectedItem) {
+      const updatedFormData = {
+        cedula: selectedItem.cedula || "",
+        correo: selectedItem.correo || "",
+        nombre: selectedItem.nombre || "",
+        apellido1: selectedItem.apellido1 || "",
+        apellido2: selectedItem.apellido2 || "",
+        telefono: selectedItem.telefono || "",
+        clinica: selectedItem.clinica_id || "",
+        especialidad: selectedItem.especialidad_id || "",
+      };
+      setFormData(updatedFormData);
+      setOriginalData(updatedFormData);
+    }
+  }, [selectedItem]);
 
   useEffect(() => {
     const fetchSpecialties = async () => {
@@ -68,15 +88,9 @@ const AddVetModal = ({ open, handleClose, onSuccess }) => {
         const response = await axios.get(
           "http://localhost:8000/api/consult-specialties/"
         );
-        console.log(response.data.results);
-
-        if (response.data.results) {
-          setSpecialties(response.data.results);
-        } else {
-          console.error("No specialties found in the response");
-        }
+        setSpecialties(response.data.results);
       } catch (error) {
-        console.error("Error fetching specialties:", error);
+        console.error("Failed to fetch specialties:", error);
       }
     };
     fetchSpecialties();
@@ -84,7 +98,6 @@ const AddVetModal = ({ open, handleClose, onSuccess }) => {
 
   const validate = () => {
     const newErrors = {};
-    if (!formData.usuario) newErrors.usuario = "El usuario es requerido.";
     if (!formData.cedula || !/^[0-9]{9}$/.test(formData.cedula)) {
       newErrors.cedula = "La cédula debe tener 9 dígitos.";
     }
@@ -94,59 +107,57 @@ const AddVetModal = ({ open, handleClose, onSuccess }) => {
     ) {
       newErrors.correo = "El correo electrónico no es válido.";
     }
-    if (
-      !formData.clave ||
-      !/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/.test(
-        formData.clave
-      )
-    ) {
-      newErrors.clave =
-        "La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial.";
-    }
     if (!formData.telefono || !/^[0-9]{8}$/.test(formData.telefono)) {
       newErrors.telefono = "El teléfono debe tener 8 dígitos.";
     }
-    if (!formData.clinica) newErrors.clinica = "La clínica es requerida.";
-    setErrors(newErrors);
-
-    if (!formData.especialidad)
+    if (!formData.nombre) {
+      newErrors.nombre = "El nombre es requerido.";
+    }
+    if (!formData.apellido1) {
+      newErrors.apellido1 = "El primer apellido es requerido.";
+    }
+    if (!formData.clinica) {
+      newErrors.clinica = "La clínica es requerida.";
+    }
+    if (!formData.especialidad) {
       newErrors.especialidad = "La especialidad es requerida.";
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
   const handleSubmit = async () => {
     if (!validate()) return;
     setLoading(true);
     try {
-      await axios.post("http://localhost:8000/api/add-vet/", formData);
-      onSuccess("Veterinario agregado exitosamente.", "success");
-      setFormData(initialFormData);
-      handleClose();
+      await axios.put(
+        `http://localhost:8000/api/update-vet/${selectedItem.usuario}/`,
+        formData
+      );
+      onSuccess("Veterinario modificado exitosamente.", "success");
+      handleClose(); // Cierra el modal al modificar correctamente
     } catch (error) {
-      console.log(error);
-      const backendError = error.response?.data?.error;
-      onSuccess(message, backendError);
+      console.error("Failed to update vet:", error);
+      onSuccess("Error al modificar el veterinario.", "error");
     } finally {
       setLoading(false);
     }
   };
 
   const handleClear = () => {
-    setFormData(initialFormData);
+    setFormData(originalData);
     setErrors({});
   };
 
   return (
-    <Modal
-      open={open}
-      onClose={handleClose}
-      aria-labelledby="modal-title"
-      aria-describedby="modal-description">
+    <Modal open={open} onClose={handleClose}>
       <Box
         sx={{
           position: "absolute",
@@ -155,9 +166,9 @@ const AddVetModal = ({ open, handleClose, onSuccess }) => {
           transform: "translate(-50%, -50%)",
           width: { xs: "90%", sm: "80%", md: 600 },
           bgcolor: "background.paper",
-          boxShadow: 24,
           p: 4,
           borderRadius: "10px",
+          boxShadow: 24,
         }}>
         <IconButton
           onClick={handleClose}
@@ -165,7 +176,6 @@ const AddVetModal = ({ open, handleClose, onSuccess }) => {
           <Close />
         </IconButton>
         <Typography
-          id="modal-title"
           variant="h6"
           component="h2"
           sx={{
@@ -176,29 +186,10 @@ const AddVetModal = ({ open, handleClose, onSuccess }) => {
             borderBottom: "1px solid #ddd",
             paddingBottom: "10px",
           }}>
-          Agregar Veterinario
+          Modificar Veterinario
         </Typography>
 
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Usuario"
-              name="usuario"
-              value={formData.usuario}
-              onChange={handleChange}
-              required
-              error={!!errors.usuario}
-              helperText={errors.usuario}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <AccountCircle />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
@@ -240,33 +231,13 @@ const AddVetModal = ({ open, handleClose, onSuccess }) => {
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label="Teléfono"
-              name="telefono"
-              value={formData.telefono}
-              onChange={handleChange}
-              required
-              error={!!errors.telefono}
-              helperText={errors.telefono}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Phone />
-                    <Box component="span" sx={{ ml: 1 }}>
-                      +506
-                    </Box>
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
               label="Nombre"
               name="nombre"
               value={formData.nombre}
               onChange={handleChange}
               required
+              error={!!errors.nombre}
+              helperText={errors.nombre}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -284,6 +255,8 @@ const AddVetModal = ({ open, handleClose, onSuccess }) => {
               value={formData.apellido1}
               onChange={handleChange}
               required
+              error={!!errors.apellido1}
+              helperText={errors.apellido1}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -312,18 +285,20 @@ const AddVetModal = ({ open, handleClose, onSuccess }) => {
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label="Contraseña"
-              type="password"
-              name="clave"
-              value={formData.clave}
+              label="Teléfono"
+              name="telefono"
+              value={formData.telefono}
               onChange={handleChange}
               required
-              error={!!errors.clave}
-              helperText={errors.clave}
+              error={!!errors.telefono}
+              helperText={errors.telefono}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <VpnKey />
+                    <Phone />
+                    <Box component="span" sx={{ ml: 1 }}>
+                      +506
+                    </Box>
                   </InputAdornment>
                 ),
               }}
@@ -346,19 +321,19 @@ const AddVetModal = ({ open, handleClose, onSuccess }) => {
                     <Business />
                   </InputAdornment>
                 ),
+                endAdornment: miniLoad && (
+                  <InputAdornment position="end">
+                    <CircularProgress size={20} />{" "}
+                  </InputAdornment>
+                ),
               }}>
-              {clinics.length > 0 ? (
-                clinics.map((clinic) => (
-                  <MenuItem key={clinic.clinica_id} value={clinic.clinica_id}>
-                    {clinic.clinica}
-                  </MenuItem>
-                ))
-              ) : (
-                <MenuItem disabled>No hay clínicas disponibles</MenuItem>
-              )}
+              {clinics.map((clinic) => (
+                <MenuItem key={clinic.clinica_id} value={clinic.clinica_id}>
+                  {clinic.clinica}
+                </MenuItem>
+              ))}
             </TextField>
           </Grid>
-
           <Grid item xs={12}>
             <TextField
               fullWidth
@@ -374,6 +349,11 @@ const AddVetModal = ({ open, handleClose, onSuccess }) => {
                 startAdornment: (
                   <InputAdornment position="start">
                     <Badge />
+                  </InputAdornment>
+                ),
+                endAdornment: miniLoad && (
+                  <InputAdornment position="end">
+                    <CircularProgress size={20} />{" "}
                   </InputAdornment>
                 ),
               }}>
@@ -415,7 +395,7 @@ const AddVetModal = ({ open, handleClose, onSuccess }) => {
               backgroundColor: "#00308F",
               "&:hover": { backgroundColor: "#00246d" },
             }}>
-            {loading ? "Agregando..." : "Agregar Veterinario"}
+            {loading ? "Guardando..." : "Guardar Cambios"}
           </Button>
         </Box>
       </Box>
@@ -423,10 +403,11 @@ const AddVetModal = ({ open, handleClose, onSuccess }) => {
   );
 };
 
-AddVetModal.propTypes = {
+ModifyVetModal.propTypes = {
   open: PropTypes.bool.isRequired,
   handleClose: PropTypes.func.isRequired,
   onSuccess: PropTypes.func.isRequired,
+  selectedItem: PropTypes.object.isRequired,
 };
 
-export default AddVetModal;
+export default ModifyVetModal;
