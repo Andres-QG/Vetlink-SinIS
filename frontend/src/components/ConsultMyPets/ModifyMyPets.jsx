@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   TextField,
   MenuItem,
@@ -52,7 +52,6 @@ const ModifyMyPets = ({ open, handleClose, petData, onSuccess }) => {
     Gato: ["Persa", "Siamés", "Bengalí", "Sphynx", "Maine Coon", "Angora"],
   };
 
-  // Precargar datos de la mascota seleccionada al abrir el modal
   useEffect(() => {
     if (petData) {
       setFormData({
@@ -71,32 +70,50 @@ const ModifyMyPets = ({ open, handleClose, petData, onSuccess }) => {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-      ...(name === "especie" && { raza: "" }), // Resetear raza al cambiar especie
+      ...(name === "especie" && { raza: "" }),
     }));
   };
 
   const handleDateChange = (date) => {
+    const selectedDate = dayjs(date).format("YYYY-MM-DD");
     setFormData((prev) => ({
       ...prev,
-      fecha_nacimiento: dayjs(date).format("YYYY-MM-DD"), // Formato ISO
+      fecha_nacimiento: selectedDate,
     }));
+
+    if (dayjs(selectedDate).isAfter(dayjs())) {
+      setErrors((prev) => ({
+        ...prev,
+        fecha_nacimiento: "La fecha de nacimiento no puede ser futura",
+      }));
+    } else {
+      setErrors((prev) => ({
+        ...prev,
+        fecha_nacimiento: "",
+      }));
+    }
   };
 
   const validateForm = () => {
     const newErrors = {};
+
     if (!formData.nombre) newErrors.nombre = "Nombre es obligatorio";
-    if (!formData.fecha_nacimiento)
+    if (!formData.fecha_nacimiento) {
       newErrors.fecha_nacimiento = "Fecha de nacimiento es obligatoria";
+    } else if (dayjs(formData.fecha_nacimiento).isAfter(dayjs())) {
+      newErrors.fecha_nacimiento = "La fecha de nacimiento no puede ser futura";
+    }
     if (!formData.especie) newErrors.especie = "Especie es obligatoria";
     if (!formData.raza) newErrors.raza = "Raza es obligatoria";
     if (!formData.sexo) newErrors.sexo = "Sexo es obligatorio";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validateForm()) return; // Evita el envío si hay errores de validación
 
     setLoading(true);
     try {
@@ -187,6 +204,7 @@ const ModifyMyPets = ({ open, handleClose, petData, onSuccess }) => {
               label="Fecha de Nacimiento"
               value={dayjs(formData.fecha_nacimiento).toDate()}
               onChange={handleDateChange}
+              maxDate={dayjs().toDate()}
               slotProps={{
                 openPickerButton: { color: "standard" },
                 inputAdornment: { position: "start", size: "small" },

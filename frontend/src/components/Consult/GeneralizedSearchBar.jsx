@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 
 const SearchBar = ({ onSearch, columns = [] }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -122,6 +122,7 @@ const SearchBar = ({ onSearch, columns = [] }) => {
           placeholder={`Buscar por ${filterColumn}`}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          aria-label="Search Pets"
         />
       </div>
       <button
