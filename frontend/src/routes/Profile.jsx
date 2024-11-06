@@ -15,7 +15,7 @@ import axios from "axios";
 import { useNotification } from "../components/Notification";
 import { useNavigate } from "react-router-dom";
 
-export default function Component() {
+const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     usuario: "",
@@ -31,7 +31,7 @@ export default function Component() {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [errors, setErrors] = useState({});
-  const [confirmUser, setConfirmUser] = useState(""); // New state for confirmation input
+  const [confirmUser, setConfirmUser] = useState("");
   const navigate = useNavigate();
 
   const notify = useNotification();
@@ -109,7 +109,7 @@ export default function Component() {
   const handleCancel = () => {
     setIsEditing(false);
     setHasChanges(false);
-    fetchUserData(); // Reload data to discard changes
+    fetchUserData();
   };
 
   const handleSave = async () => {
@@ -136,7 +136,7 @@ export default function Component() {
   };
 
   const handleDeactivateClick = (event) => {
-    setAnchorEl(anchorEl ? null : event.currentTarget);
+    setAnchorEl(event.currentTarget);
   };
 
   const logOut = async () => {
@@ -371,10 +371,10 @@ export default function Component() {
             >
               Desactivar cuenta
             </Button>
-            <Popper id={id} open={open} anchorEl={anchorEl}>
+            <Popper id={id} open={open} anchorEl={anchorEl} disablePortal>
               <ClickAwayListener onClickAway={handleClickAway}>
                 <Paper sx={{ p: 2 }}>
-                  <Typography sx={{ mb: 1 }}>
+                  <Typography sx={{ mb: 1 }} data-testid="popper-title">
                     Introduzca su usuario para confirmar
                   </Typography>
                   <TextField
@@ -404,4 +404,6 @@ export default function Component() {
       </Grid>
     </Box>
   );
-}
+};
+
+export default Profile;
