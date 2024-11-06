@@ -4,7 +4,7 @@ import ModifyServicesModal from "../components/consultServices/ModifyServicesMod
 import InformationServiceModal from "../components/consultServices/InformationServiceModal";
 
 const ConsultServices = () => {
-  const rowsPerPage = 10;
+  const rowsPerPage = 7;
   const columns = [
     { field: "nombre", headerName: "Nombre", type: "text" },
     // { field: "descripcion", headerName: "Descripción", type: "text" },
