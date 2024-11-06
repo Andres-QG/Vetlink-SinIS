@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import {
   Modal,
   Box,
@@ -21,13 +22,7 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 
-const ModifyAdminModal = ({
-  open,
-  handleClose,
-  selectedItem,
-  fetchData,
-  showSnackbar,
-}) => {
+const ModifyAdminModal = ({ open, handleClose, onSuccess, selectedItem }) => {
   const initialFormData = {
     cedula: selectedItem?.cedula || "",
     correo: selectedItem?.correo || "",
@@ -60,14 +55,13 @@ const ModifyAdminModal = ({
         }
         setClinics(allClinics);
       } catch (error) {
-        showSnackbar("Error al cargar las clínicas.", "error");
       } finally {
         setMiniLoad(false);
       }
     };
 
     fetchAllClinics();
-  }, [showSnackbar]);
+  }, []);
 
   useEffect(() => {
     if (selectedItem) {
@@ -127,15 +121,11 @@ const ModifyAdminModal = ({
         `http://localhost:8000/api/update-admin/${selectedItem.usuario}/`,
         formData
       );
-      showSnackbar("Administrador modificado con éxito.", "success");
-      fetchData();
-      handleClose();
+      onSuccess("Administrador modificado exitosamente.", "success");
+      handleClose(); // Cierra el modal al modificar correctamente
     } catch (error) {
       const backendError = error.response?.data?.error;
-      showSnackbar(
-        backendError || "Error al actualizar el administrador.",
-        "error"
-      );
+      onSuccess(message, backendError);
     } finally {
       setLoading(false);
     }
@@ -357,5 +347,11 @@ const ModifyAdminModal = ({
   );
 };
 
+ModifyAdminModal.propTypes = {
+  open: PropTypes.bool.isRequired,
+  handleClose: PropTypes.func.isRequired,
+  onSuccess: PropTypes.func.isRequired,
+  selectedItem: PropTypes.object.isRequired,
+};
+
 export default ModifyAdminModal;
- 

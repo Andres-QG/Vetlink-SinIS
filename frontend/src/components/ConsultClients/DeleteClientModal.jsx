@@ -45,8 +45,7 @@ const DeleteClientModal = ({
       open={open}
       onClose={onClose}
       aria-labelledby="modal-title"
-      aria-describedby="modal-description"
-    >
+      aria-describedby="modal-description">
       <Box
         sx={{
           position: "absolute",
@@ -58,12 +57,10 @@ const DeleteClientModal = ({
           boxShadow: 24,
           p: 4,
           borderRadius: "10px",
-        }}
-      >
+        }}>
         <IconButton
           onClick={onClose}
-          sx={{ position: "absolute", top: 8, right: 8 }}
-        >
+          sx={{ position: "absolute", top: 8, right: 8 }}>
           <Close />
         </IconButton>
 
@@ -78,14 +75,12 @@ const DeleteClientModal = ({
             color: "#333",
             borderBottom: "1px solid #ddd",
             paddingBottom: "10px",
-          }}
-        >
+          }}>
           Confirmar Eliminación
         </Typography>
 
         <Typography sx={{ mb: 3 }} textAlign="center">
-          ¿Estás seguro de que deseas eliminar el registro{" "}
-          <strong>{data.nombre}</strong>?
+          ¿Estás seguro de que desactivar a <strong>{data.nombre}</strong>?
         </Typography>
 
         <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
@@ -93,8 +88,7 @@ const DeleteClientModal = ({
             variant="outlined"
             onClick={onClose}
             disabled={loading}
-            sx={{ color: "#00308F", borderColor: "#00308F" }}
-          >
+            sx={{ color: "#00308F", borderColor: "#00308F" }}>
             Cancelar
           </Button>
           <Button
@@ -105,8 +99,7 @@ const DeleteClientModal = ({
             sx={{
               backgroundColor: "#FF0000",
               "&:hover": { backgroundColor: "#CC0000" },
-            }}
-          >
+            }}>
             {loading ? "Eliminando..." : "Eliminar"}
           </Button>
         </Box>

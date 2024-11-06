@@ -12,19 +12,28 @@ const ConsultAdmins = () => {
     { field: "telefono", headerName: "Teléfono", type: "text" },
     { field: "correo", headerName: "Correo", type: "text" },
     { field: "clinica", headerName: "Clínica", type: "text" },
+    {
+      field: "activo",
+      headerName: "Estado",
+      type: "chip",
+      chipColors: { activo: "#b8e6d7", inactivo: "#ff7c7d" },
+    },
   ];
+
+  const rowsPerPage = 10;
 
   return (
     <ConsultView
       title="Administradores"
       fetchUrl="http://localhost:8000/api/consult-admin/"
       deletionUrl="http://localhost:8000/api/delete-admin/"
+      restoreUrl="http://localhost:8000/api/reactivate-user/"
       addComponent={AddAdminModal}
       modifyComponent={ModifyAdminModal}
       columns={columns}
       pkCol="usuario"
       visualIdentifierCol="usuario"
-      rowsPerPage={10}
+      rowsPerPage={rowsPerPage}
     />
   );
 };

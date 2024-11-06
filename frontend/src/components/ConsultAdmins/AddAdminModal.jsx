@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import {
   Modal,
   Box,
@@ -23,7 +24,7 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 
-const AddAdminModal = ({ open, handleClose, fetchAdmins, showSnackbar }) => {
+const AddAdminModal = ({ open, handleClose, fetchAdmins, onSuccess }) => {
   const initialFormData = {
     usuario: "",
     cedula: "",
@@ -54,11 +55,10 @@ const AddAdminModal = ({ open, handleClose, fetchAdmins, showSnackbar }) => {
         }
       } catch (error) {
         console.error("Error fetching clinics:", error);
-        showSnackbar("Error al cargar las clínicas.", "error");
       }
     };
     fetchClinics();
-  }, [showSnackbar]);
+  }, []);
 
   const validate = () => {
     const newErrors = {};
@@ -98,14 +98,13 @@ const AddAdminModal = ({ open, handleClose, fetchAdmins, showSnackbar }) => {
     setLoading(true);
     try {
       await axios.post("http://localhost:8000/api/add-admin/", formData);
-      showSnackbar("Administrador agregado exitosamente.", "success");
+      onSuccess("Administrador agregado exitosamente.", "success");
       setFormData(initialFormData);
-      fetchAdmins();
       handleClose();
     } catch (error) {
       console.log(error);
       const backendError = error.response?.data?.error;
-      showSnackbar(backendError || "Error al agregar administrador.", "error");
+      onSuccess(message, backendError);
     } finally {
       setLoading(false);
     }
@@ -364,6 +363,12 @@ const AddAdminModal = ({ open, handleClose, fetchAdmins, showSnackbar }) => {
       </Box>
     </Modal>
   );
+};
+
+AddAdminModal.propTypes = {
+  open: PropTypes.bool.isRequired,
+  handleClose: PropTypes.func.isRequired,
+  onSuccess: PropTypes.func.isRequired,
 };
 
 export default AddAdminModal;

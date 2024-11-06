@@ -1105,7 +1105,7 @@ def consult_admin(request):
                 "correo": usuario.correo,
                 "clinica": usuario.clinica.nombre if usuario.clinica else None,
                 "clinica_id": usuario.clinica.clinica_id if usuario.clinica else None,
-                "estado": usuario.activo,
+                "activo": usuario.activo,
             }
             for usuario in result_page
         ]
