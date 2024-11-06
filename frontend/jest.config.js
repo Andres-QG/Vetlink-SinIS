@@ -7,4 +7,11 @@ export default {
   transform: {
     "^.+\\.(js|jsx|ts|tsx)$": "babel-jest",
   },
+  collectCoverage: true,
+  collectCoverageFrom: [
+    "**/*.{js,jsx,ts,tsx}", // Adjust for the file types in your project
+    "!**/node_modules/**",
+    "!**/dist/**",
+    "!**/coverage/**"
+  ]
 };
