@@ -419,4 +419,248 @@ describe("AddRecord Component", () => {
       );
     });
   });
+  test("clears form when 'Limpiar' button is clicked", async () => {
+    render(
+      <AddRecord
+        open={true}
+        handleClose={mockHandleClose}
+        onSuccess={mockOnSuccess}
+        otherData={mockOtherData}
+      />
+    );
+
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText("Fecha y hora de consulta*"), {
+        target: { value: "2024-10-10T00:00" },
+      });
+
+      fireEvent.change(screen.getByLabelText("Peso (Kg)*"), {
+        target: { value: "2" },
+      });
+
+      fireEvent.change(screen.getByLabelText("Diagnóstico*"), {
+        target: { value: "Sano" },
+      });
+    });
+
+    const clearButton = screen.getByText("Limpiar");
+    await act(async () => {
+      fireEvent.click(clearButton);
+    });
+
+    expect(screen.getByLabelText("Fecha y hora de consulta*")).toHaveValue("");
+    expect(screen.getByLabelText("Peso (Kg)*")).toHaveValue("");
+    expect(screen.getByLabelText("Diagnóstico*")).toHaveValue("");
+  });
+
+  test("displays server error message when status is 500", async () => {
+    render(
+      <AddRecord
+        open={true}
+        handleClose={mockHandleClose}
+        onSuccess={mockOnSuccess}
+        otherData={mockOtherData}
+      />
+    );
+
+    const autocompleteInput = screen.getByRole("combobox", {
+      name: /ID de la mascota\*/i,
+    });
+
+    await act(async () => {
+      autocompleteInput.focus();
+      fireEvent.mouseDown(autocompleteInput);
+    });
+
+    const listbox = await screen.findByRole("listbox");
+
+    const optionToSelect = within(listbox).getByText(
+      "311 - Paco Raban (dueño: test_client1)"
+    );
+
+    await act(async () => {
+      fireEvent.click(optionToSelect);
+    });
+
+    expect(autocompleteInput).toHaveValue(
+      "311 - Paco Raban (dueño: test_client1)"
+    );
+
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText("Fecha y hora de consulta*"), {
+        target: { value: "2024-10-10T00:00" },
+      });
+
+      fireEvent.change(screen.getByLabelText("Peso (Kg)*"), {
+        target: { value: "2" },
+      });
+
+      fireEvent.change(screen.getByLabelText("Diagnóstico*"), {
+        target: { value: "Sano" },
+      });
+    });
+
+    axios.post.mockRejectedValue({
+      response: { status: 500, data: "Internal Server Error" },
+    });
+
+    const submitButton = screen.getByText("Agregar Expediente");
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
+
+    await waitFor(() => {
+      expect(mockOnSuccess).toHaveBeenCalledWith(
+        "Error interno del servidor. Inténtelo más tarde.",
+        "error"
+      );
+    });
+  });
+
+  test("handles empty sintomas, vacunas, and tratamientos", async () => {
+    render(
+      <AddRecord
+        open={true}
+        handleClose={mockHandleClose}
+        onSuccess={mockOnSuccess}
+        otherData={mockOtherData}
+      />
+    );
+
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText("Fecha y hora de consulta*"), {
+        target: { value: "2024-10-10T00:00" },
+      });
+
+      fireEvent.change(screen.getByLabelText("Peso (Kg)*"), {
+        target: { value: "2" },
+      });
+
+      fireEvent.change(screen.getByLabelText("Diagnóstico*"), {
+        target: { value: "Sano" },
+      });
+    });
+
+    axios.post.mockResolvedValue({ status: 201 });
+
+    const submitButton = screen.getByText("Agregar Expediente");
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
+
+    await waitFor(() => {
+      expect(mockOnSuccess).toHaveBeenCalledWith(
+        "Expediente agregado exitosamente.",
+        "success"
+      );
+    });
+  });
+
+  test("handles empty sintomas, vacunas, and tratamientos", async () => {
+    render(
+      <AddRecord
+        open={true}
+        handleClose={mockHandleClose}
+        onSuccess={mockOnSuccess}
+        otherData={{
+          ...mockOtherData,
+          sintomas: [],
+          vacunas: [],
+          tratamientos: [],
+        }}
+      />
+    );
+
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText("Fecha y hora de consulta*"), {
+        target: { value: "2024-10-10T00:00" },
+      });
+
+      fireEvent.change(screen.getByLabelText("Peso (Kg)*"), {
+        target: { value: "2" },
+      });
+
+      fireEvent.change(screen.getByLabelText("Diagnóstico*"), {
+        target: { value: "Sano" },
+      });
+    });
+
+    axios.post.mockResolvedValue({ status: 201 });
+
+    const submitButton = screen.getByText("Agregar Expediente");
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
+
+    await waitFor(() => {
+      expect(mockOnSuccess).toHaveBeenCalledWith(
+        "Expediente agregado exitosamente.",
+        "success"
+      );
+    });
+  });
+
+  test("handles error when sending form data fails", async () => {
+    render(
+      <AddRecord
+        open={true}
+        handleClose={mockHandleClose}
+        onSuccess={mockOnSuccess}
+        otherData={mockOtherData}
+      />
+    );
+
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText("Fecha y hora de consulta*"), {
+        target: { value: "2024-10-10T00:00" },
+      });
+
+      fireEvent.change(screen.getByLabelText("Peso (Kg)*"), {
+        target: { value: "2" },
+      });
+
+      fireEvent.change(screen.getByLabelText("Diagnóstico*"), {
+        target: { value: "Sano" },
+      });
+    });
+
+    axios.post.mockRejectedValue(new Error("Network Error"));
+
+    const submitButton = screen.getByText("Agregar Expediente");
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
+
+    await waitFor(() => {
+      expect(mockOnSuccess).toHaveBeenCalledWith(
+        "Error desconocido. Inténtelo más tarde.",
+        "error"
+      );
+    });
+  });
+
+  test("displays validation errors for empty fields", async () => {
+    render(
+      <AddRecord
+        open={true}
+        handleClose={mockHandleClose}
+        onSuccess={mockOnSuccess}
+        otherData={mockOtherData}
+      />
+    );
+
+    const submitButton = screen.getByText("Agregar Expediente");
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
+
+    expect(
+      screen.getByText("Por favor, introduzca un ID de mascota válido")
+    ).toBeInTheDocument();
+    expect(screen.getByText("Fecha es obligatoria")).toBeInTheDocument();
+    expect(
+      screen.getByText("Por favor, introduzca un peso válido")
+    ).toBeInTheDocument();
+    expect(screen.getByText("Diagnóstico es obligatorio")).toBeInTheDocument();
+  });
 });
