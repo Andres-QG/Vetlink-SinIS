@@ -827,6 +827,7 @@ def add_client(request):
         apellido2 = data.get("apellido2")
         telefono = data.get("telefono")
         clave = data.get("clave")
+        activo = True
 
         # Verificar si ya existe un usuario con el mismo 'usuario' o 'correo'
         if Usuarios.objects.filter(Q(usuario=usuario) | Q(correo=correo)).exists():
@@ -847,6 +848,7 @@ def add_client(request):
             correo=correo,
             clave=hashed_password,
             rol_id=4,  # Rol para cliente
+            activo=activo,
         )
         nuevo_cliente.save()
         return Response(
@@ -872,6 +874,7 @@ def add_vet(request):
         clave = data.get("clave")
         especialidad_id = data.get("especialidad")
         clinica_id = data.get("clinica")
+        activo = True
 
         # Verificar si ya existe un usuario con el mismo 'usuario' o 'correo'
         if Usuarios.objects.filter(Q(usuario=usuario) | Q(correo=correo)).exists():
@@ -910,6 +913,7 @@ def add_vet(request):
             rol_id=3,  # Rol para veterinario
             especialidad=especialidad,
             clinica=clinica,
+            activo=activo,
         )
         nuevo_veterinario.save()
         return Response(
@@ -1129,6 +1133,7 @@ def add_admin(request):
         telefono = data.get("telefono")
         clave = data.get("clave")
         clinica_id = data.get("clinica")
+        activo = True
 
         if Usuarios.objects.filter(Q(usuario=usuario) | Q(correo=correo)).exists():
             return Response(
@@ -1156,6 +1161,7 @@ def add_admin(request):
             clave=hashed_password,
             rol_id=2,  # Rol para administrador
             clinica=clinica,
+            activo=activo,
         )
         nuevo_admin.save()
         return Response(
