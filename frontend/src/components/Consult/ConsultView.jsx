@@ -46,6 +46,7 @@ const ConsultView = ({
 
   // Verificar si existe el atributo activo
   const hasActivoAttribute = data.length > 0 && "activo" in data[0];
+  console.log("hasActivoAttribute", hasActivoAttribute);
 
   useEffect(() => {
     fetchAllData();
@@ -62,7 +63,7 @@ const ConsultView = ({
         params: { page_size: 1000 },
         withCredentials: true,
       });
-      // console.log(response.data.results);
+      console.log(response.data.results);
       const data = response.data.results || [];
       setData(data);
       setTotalCount(data.length);
@@ -76,8 +77,8 @@ const ConsultView = ({
   const applyFilters = () => {
     let results = [...data];
 
-    // Filtrar inactivos si es necesario
-    if (!showInactive) {
+    // // Filtrar inactivos si es necesario
+    if (!showInactive && hasActivoAttribute) {
       results = results.filter((item) => item.activo === true);
     }
 
