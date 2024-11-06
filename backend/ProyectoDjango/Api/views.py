@@ -2659,3 +2659,17 @@ def consult_client_user_personal_info(request):
     http_request.GET["search"] = logged_user
     http_request.GET["column"] = "usuario"
     return consult_client(http_request)
+
+
+@api_view(["POST"])
+def deactivate_user_client(request):
+    try:
+        usuario = request.session.get("user")
+        with connection.cursor() as cursor:
+            cursor.callproc('DESACTIVAR_USUARIO_CLIENTE', [usuario])
+
+        return JsonResponse(
+            {'status': 'success', 'message': f'Usuario {usuario} desactivado correctamente'})
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)})

@@ -31,6 +31,7 @@ export default function Component() {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [errors, setErrors] = useState({});
+  const [confirmUser, setConfirmUser] = useState(""); // New state for confirmation input
   const navigate = useNavigate();
 
   const notify = useNotification();
@@ -138,9 +139,36 @@ export default function Component() {
     setAnchorEl(anchorEl ? null : event.currentTarget);
   };
 
-  const handleDeactivateConfirm = () => {
+  const logOut = async () => {
+    try {
+      await axios.post(
+        "http://localhost:8000/api/log-out/",
+        {},
+        { withCredentials: true }
+      );
+      document.cookie = "active=false;path=/;";
+      navigate("/login");
+    } catch (error) {
+      console.error("Error cerrando sesión:", error);
+    }
+  };
+
+  const handleDeactivateConfirm = async () => {
     setAnchorEl(null);
-    // Aquí manejarías la lógica para desactivar la cuenta
+    try {
+      await axios.post(
+        "http://localhost:8000/api/deactivate-user-client/",
+        {},
+        {
+          withCredentials: true,
+        }
+      );
+      notify("Usuario desactivado correctamente", "success");
+      await logOut();
+    } catch (error) {
+      notify("Error al desactivar el usuario", "error");
+      console.error("Error deactivating user:", error);
+    }
   };
 
   const handleClickAway = () => {
@@ -346,11 +374,21 @@ export default function Component() {
             <Popper id={id} open={open} anchorEl={anchorEl}>
               <ClickAwayListener onClickAway={handleClickAway}>
                 <Paper sx={{ p: 2 }}>
-                  <Typography sx={{ mb: 1 }}>¿Está seguro?</Typography>
+                  <Typography sx={{ mb: 1 }}>
+                    Introduzca su usuario para confirmar
+                  </Typography>
+                  <TextField
+                    variant="outlined"
+                    fullWidth
+                    value={confirmUser}
+                    onChange={(e) => setConfirmUser(e.target.value)}
+                    sx={{ mb: 2 }}
+                  />
                   <Button
                     variant="contained"
                     color="error"
                     onClick={handleDeactivateConfirm}
+                    disabled={confirmUser !== formData.usuario}
                     sx={{ mr: 1 }}
                   >
                     Sí
