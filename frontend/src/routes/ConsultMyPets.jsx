@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import {
   Grid2,
@@ -225,7 +225,11 @@ const ConsultMyPets = () => {
               >
                 Agregar Mascota
               </Button>
-              <SearchBar onSearch={handleSearch} columns={columns} />
+              <SearchBar
+                onSearch={handleSearch}
+                columns={columns}
+                aria-label="Search Pets"
+              />
             </Box>
           </Box>
           <Divider sx={{ mb: 4 }} />
