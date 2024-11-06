@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { Modal, Box, Typography, Button, IconButton } from "@mui/material";
 import { Close } from "@mui/icons-material";
 
-const HOST = "http://localhost:8000/";
+const HOST = "http://127.0.0.1:8000/";
 
 const InformationServiceModal = ({ open, handleClose, selectedItem }) => {
   const imageSrc =
