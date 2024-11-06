@@ -5,7 +5,6 @@ import {
   fireEvent,
   waitFor,
   act,
-  within,
 } from "@testing-library/react";
 import ModifyRecord from "../components/consultRecords/ModifyRecord";
 import axios from "axios";
@@ -266,5 +265,182 @@ describe("ModifyRecord Component", () => {
         "error"
       );
     });
+  });
+
+  test("clears form when 'Limpiar' button is clicked", async () => {
+    render(
+      <ModifyRecord
+        open={true}
+        handleClose={mockHandleClose}
+        onSuccess={mockOnSuccess}
+        selectedItem={mockSelectedItem}
+        otherData={mockOtherData}
+      />
+    );
+
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText("Peso (Kg)*"), {
+        target: { value: "3" },
+      });
+
+      fireEvent.change(screen.getByLabelText("Diagnóstico*"), {
+        target: { value: "Enfermo" },
+      });
+    });
+
+    const clearButton = screen.getByText("Limpiar");
+    await act(async () => {
+      fireEvent.click(clearButton);
+    });
+
+    expect(screen.getByLabelText("Peso (Kg)*")).toHaveValue("");
+    expect(screen.getByLabelText("Diagnóstico*")).toHaveValue("");
+  });
+
+  test("displays server error message when status is 500", async () => {
+    render(
+      <ModifyRecord
+        open={true}
+        handleClose={mockHandleClose}
+        onSuccess={mockOnSuccess}
+        selectedItem={mockSelectedItem}
+        otherData={mockOtherData}
+      />
+    );
+
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText("Peso (Kg)*"), {
+        target: { value: "3" },
+      });
+
+      fireEvent.change(screen.getByLabelText("Diagnóstico*"), {
+        target: { value: "Enfermo" },
+      });
+    });
+
+    axios.put.mockRejectedValue({
+      response: { status: 500, data: "Internal Server Error" },
+    });
+
+    const submitButton = screen.getByText("Modificar Expediente");
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
+
+    await waitFor(() => {
+      expect(mockOnSuccess).toHaveBeenCalledWith(
+        "Error interno del servidor. Inténtelo más tarde.",
+        "error"
+      );
+    });
+  });
+
+  test("handles empty sintomas, vacunas, and tratamientos", async () => {
+    render(
+      <ModifyRecord
+        open={true}
+        handleClose={mockHandleClose}
+        onSuccess={mockOnSuccess}
+        selectedItem={{
+          ...mockSelectedItem,
+          sintomas: [],
+          vacunas: [],
+          tratamientos: [],
+        }}
+        otherData={mockOtherData}
+      />
+    );
+
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText("Peso (Kg)*"), {
+        target: { value: "3" },
+      });
+
+      fireEvent.change(screen.getByLabelText("Diagnóstico*"), {
+        target: { value: "Enfermo" },
+      });
+    });
+
+    axios.put.mockResolvedValue({ status: 200 });
+
+    const submitButton = screen.getByText("Modificar Expediente");
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
+
+    await waitFor(() => {
+      expect(mockOnSuccess).toHaveBeenCalledWith(
+        "Expediente modificado exitosamente.",
+        "success"
+      );
+    });
+  });
+
+  test("handles error when sending form data fails", async () => {
+    render(
+      <ModifyRecord
+        open={true}
+        handleClose={mockHandleClose}
+        onSuccess={mockOnSuccess}
+        selectedItem={mockSelectedItem}
+        otherData={mockOtherData}
+      />
+    );
+
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText("Peso (Kg)*"), {
+        target: { value: "3" },
+      });
+
+      fireEvent.change(screen.getByLabelText("Diagnóstico*"), {
+        target: { value: "Enfermo" },
+      });
+    });
+
+    axios.put.mockRejectedValue(new Error("Network Error"));
+
+    const submitButton = screen.getByText("Modificar Expediente");
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
+
+    await waitFor(() => {
+      expect(mockOnSuccess).toHaveBeenCalledWith(
+        "Error desconocido. Inténtelo más tarde.",
+        "error"
+      );
+    });
+  });
+
+  test("displays validation errors for empty fields", async () => {
+    render(
+      <ModifyRecord
+        open={true}
+        handleClose={mockHandleClose}
+        onSuccess={mockOnSuccess}
+        selectedItem={mockSelectedItem}
+        otherData={mockOtherData}
+      />
+    );
+
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText("Peso (Kg)*"), {
+        target: { value: "" },
+      });
+
+      fireEvent.change(screen.getByLabelText("Diagnóstico*"), {
+        target: { value: "" },
+      });
+    });
+
+    const submitButton = screen.getByText("Modificar Expediente");
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
+
+    expect(
+      screen.getByText("Por favor, introduzca un peso válido")
+    ).toBeInTheDocument();
+    expect(screen.getByText("Diagnóstico es obligatorio")).toBeInTheDocument();
   });
 });
