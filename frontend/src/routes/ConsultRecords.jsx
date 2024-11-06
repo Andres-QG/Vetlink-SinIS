@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ConsultView from "../components/Consult/ConsultView";
 import DetailedRecordInfo from "../components/consultRecords/DetailedRecordInfo";

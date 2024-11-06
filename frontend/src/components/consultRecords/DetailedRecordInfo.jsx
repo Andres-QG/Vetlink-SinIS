@@ -1,3 +1,4 @@
+import React from "react";
 import PropTypes from "prop-types";
 import { Modal, Box, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
@@ -45,6 +46,7 @@ const DetailedRecordInfo = ({ open, handleClose, selectedItem }) => {
         <IconButton
           sx={{ position: "absolute", top: 8, right: 8 }}
           onClick={handleClose}
+          aria-label="close"
         >
           <CloseIcon />
         </IconButton>

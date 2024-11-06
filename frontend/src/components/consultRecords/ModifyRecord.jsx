@@ -40,30 +40,21 @@ const ModifyRecord = forwardRef(
 
     useEffect(() => {
       if (selectedItem) {
+        const parseStringToArray = (str) =>
+          Array.isArray(str)
+            ? str
+            : str
+              ? str.split(",").map((item) => item.trim())
+              : [];
+
         setFormData({
           mascota_id: selectedItem.mascota_id,
           fecha: selectedItem.fecha,
           peso: selectedItem.peso,
           diagnostico: selectedItem.diagnostico,
-          sintomas: Array.isArray(selectedItem.sintomas)
-            ? selectedItem.sintomas
-            : selectedItem.sintomas
-              ? selectedItem.sintomas
-                  .split(",")
-                  .map((sintoma) => sintoma.trim())
-              : [],
-          vacunas: Array.isArray(selectedItem.vacunas)
-            ? selectedItem.vacunas
-            : selectedItem.vacunas
-              ? selectedItem.vacunas.split(",").map((vacuna) => vacuna.trim())
-              : [],
-          tratamientos: Array.isArray(selectedItem.tratamientos)
-            ? selectedItem.tratamientos
-            : selectedItem.tratamientos
-              ? selectedItem.tratamientos
-                  .split(",")
-                  .map((tratamiento) => tratamiento.trim())
-              : [],
+          sintomas: parseStringToArray(selectedItem.sintomas),
+          vacunas: parseStringToArray(selectedItem.vacunas),
+          tratamientos: parseStringToArray(selectedItem.tratamientos),
         });
       }
     }, [selectedItem]);
