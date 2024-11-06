@@ -7,6 +7,8 @@ import {
   Popper,
   Paper,
   ClickAwayListener,
+  Skeleton,
+  CircularProgress,
 } from "@mui/material";
 import axios from "axios";
 import { useNotification } from "../components/Notification";
@@ -19,11 +21,14 @@ export default function Component() {
     apellido1: "",
     apellido2: "",
     cedula: "",
-    email: "",
-    numero: "",
+    correo: "",
+    telefono: "",
   });
-
+  const [loading, setLoading] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const notify = useNotification();
 
@@ -34,26 +39,63 @@ export default function Component() {
   const fetchUserData = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/consult-client-user-personal-info/"
+        "http://localhost:8000/api/consult-client-user-personal-info/",
+        {
+          withCredentials: true,
+        }
       );
       const userData = response.data.results[0];
 
       setFormData({
         usuario: userData.usuario,
         nombre: userData.nombre,
-        apellidos: userData.apellidos,
+        apellido1: userData.apellido1,
+        apellido2: userData.apellido2,
         cedula: userData.cedula,
         correo: userData.correo,
         telefono: userData.telefono,
       });
+      setLoading(false);
     } catch (error) {
       notify("Error al obtener los datos del usuario", "error");
       console.error("Error fetching user data:", error);
+      setLoading(false);
     }
   };
 
   const handleChange = (event) => {
     setFormData({ ...formData, [event.target.name]: event.target.value });
+    setHasChanges(true);
+  };
+
+  const validate = () => {
+    const newErrors = {};
+
+    const cedulaRegex = /^[0-9]{9}$/;
+    if (!formData.cedula || !cedulaRegex.test(formData.cedula)) {
+      newErrors.cedula = "La cédula debe tener 9 dígitos.";
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.correo || !emailRegex.test(formData.correo)) {
+      newErrors.correo = "El correo electrónico no es válido.";
+    }
+
+    const telefonoRegex = /^[0-9]{8}$/;
+    if (!formData.telefono || !telefonoRegex.test(formData.telefono)) {
+      newErrors.telefono = "El teléfono debe tener 8 dígitos.";
+    }
+
+    if (!formData.nombre) {
+      newErrors.nombre = "El nombre es requerido.";
+    }
+
+    if (!formData.apellido1) {
+      newErrors.apellido1 = "El primer apellido es requerido.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleEdit = () => {
@@ -62,11 +104,31 @@ export default function Component() {
 
   const handleCancel = () => {
     setIsEditing(false);
+    setHasChanges(false);
+    fetchUserData(); // Reload data to discard changes
   };
 
-  const handleSave = () => {
-    setIsEditing(false);
-    // Here you would typically save the data to your backend
+  const handleSave = async () => {
+    if (!validate()) return;
+
+    setIsSaving(true);
+    try {
+      await axios.put(
+        `http://localhost:8000/api/update-client/${formData.usuario}/`,
+        formData,
+        {
+          withCredentials: true,
+        }
+      );
+      notify("Datos actualizados correctamente", "success");
+      setIsEditing(false);
+      setHasChanges(false);
+    } catch (error) {
+      notify("Error al actualizar los datos", "error");
+      console.error("Error updating user data:", error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleDeactivateClick = (event) => {
@@ -75,7 +137,7 @@ export default function Component() {
 
   const handleDeactivateConfirm = () => {
     setAnchorEl(null);
-    // Here you would typically handle the deactivation logic
+    // Aquí manejarías la lógica para desactivar la cuenta
   };
 
   const handleClickAway = () => {
@@ -84,6 +146,29 @@ export default function Component() {
 
   const open = Boolean(anchorEl);
   const id = open ? "simple-popper" : undefined;
+
+  const displayFields = isEditing
+    ? [
+        { name: "usuario", label: "Usuario" },
+        { name: "nombre", label: "Nombre" },
+        { name: "apellido1", label: "Apellido 1" },
+        { name: "apellido2", label: "Apellido 2" },
+        { name: "cedula", label: "Cédula" },
+        { name: "correo", label: "Correo electrónico" },
+        { name: "telefono", label: "Número teléfono" },
+      ]
+    : [
+        { name: "usuario", label: "Usuario" },
+        { name: "nombre", label: "Nombre" },
+        {
+          name: "apellidos",
+          label: "Apellidos",
+          value: `${formData.apellido1} ${formData.apellido2}`,
+        },
+        { name: "cedula", label: "Cédula" },
+        { name: "correo", label: "Correo electrónico" },
+        { name: "telefono", label: "Número teléfono" },
+      ];
 
   return (
     <Box sx={{ p: 4, maxWidth: "1200px", margin: "0 auto" }}>
@@ -129,9 +214,9 @@ export default function Component() {
                   onClick={handleCancel}
                   sx={{
                     textTransform: "none",
-                    backgroundColor: "#002B6B",
+                    backgroundColor: "#2E5AAC",
                     "&:hover": {
-                      backgroundColor: "#001B3D",
+                      backgroundColor: "#234785",
                     },
                   }}
                 >
@@ -141,6 +226,7 @@ export default function Component() {
                   variant="outlined"
                   size="small"
                   onClick={handleSave}
+                  disabled={!hasChanges || isSaving}
                   sx={{
                     textTransform: "none",
                     borderColor: "#2E5AAC",
@@ -152,44 +238,52 @@ export default function Component() {
                     },
                   }}
                 >
-                  hecho
+                  {isSaving ? <CircularProgress size={24} /> : "hecho"}
                 </Button>
               </Box>
             )}
           </Box>
 
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {[
-              { name: "usuario", label: "Usuario" },
-              { name: "nombre", label: "Nombre" },
-              { name: "apellidos", label: "Apellidos" },
-              { name: "cedula", label: "Cédula" },
-              { name: "correo", label: "Correo electrónico" },
-              { name: "telefono", label: "Número teléfono" },
-            ].map((field) => (
-              <TextField
-                key={field.name}
-                name={field.name}
-                label={field.label}
-                variant="outlined"
-                fullWidth
-                disabled={!isEditing}
-                value={formData[field.name] || ""}
-                onChange={handleChange}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    backgroundColor: "white",
-                  },
-                  "& .MuiInputLabel-root": {
-                    color: "#666666",
-                  },
-                  "& .Mui-disabled": {
-                    backgroundColor: "white",
-                    "-webkit-text-fill-color": "#000000",
-                  },
-                }}
-              />
-            ))}
+            {loading
+              ? [1, 2, 3, 4, 5, 6].map((_, index) => (
+                  <Skeleton
+                    key={index}
+                    variant="rectangular"
+                    height={56}
+                    animation="pulse"
+                  />
+                ))
+              : displayFields.map((field) => (
+                  <TextField
+                    key={field.name}
+                    name={field.name}
+                    label={field.label}
+                    variant="outlined"
+                    fullWidth
+                    disabled={!isEditing}
+                    value={
+                      field.value !== undefined
+                        ? field.value
+                        : formData[field.name] || ""
+                    }
+                    onChange={handleChange}
+                    error={!!errors[field.name]}
+                    helperText={errors[field.name]}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        backgroundColor: "white",
+                      },
+                      "& .MuiInputLabel-root": {
+                        color: "#666666",
+                      },
+                      "& .Mui-disabled": {
+                        backgroundColor: "white",
+                        "-webkit-text-fill-color": "#000000",
+                      },
+                    }}
+                  />
+                ))}
           </Box>
         </Box>
 

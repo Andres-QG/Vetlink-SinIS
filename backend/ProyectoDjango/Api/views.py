@@ -2654,7 +2654,8 @@ def consult_client_user_personal_info(request):
             status=status.HTTP_403_FORBIDDEN,
         )
 
-    request.GET = request.GET.copy()
-    request.GET["search"] = logged_user
-    request.GET["column"] = "usuario"
-    return consult_client(request)
+    http_request = request._request
+    http_request.GET = http_request.GET.copy()
+    http_request.GET["search"] = logged_user
+    http_request.GET["column"] = "usuario"
+    return consult_client(http_request)
