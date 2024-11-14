@@ -128,7 +128,7 @@ urlpatterns = [
         name="update_user_personal_info",
     ),
     path(
-        "deactivate-user-client/", deactivate_user_client, name="deactivate_user_client"
+        "deactivate-user/", deactivate_user, name="deactivate_user"
     ),
 ]
 

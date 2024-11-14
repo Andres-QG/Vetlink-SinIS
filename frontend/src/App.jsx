@@ -252,7 +252,7 @@ function App() {
               element={
                 <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
                   <NotificationProvider>
-                    <ProtectedRoute requiredRoles={[4]}>
+                    <ProtectedRoute requiredRoles={[1, 2, 3, 4]}>
                       <Profile />
                     </ProtectedRoute>
                   </NotificationProvider>

@@ -2727,11 +2727,11 @@ def update_user_personal_info(request):
 
 
 @api_view(["POST"])
-def deactivate_user_client(request):
+def deactivate_user(request):
     try:
         usuario = request.session.get("user")
         with connection.cursor() as cursor:
-            cursor.callproc('DESACTIVAR_USUARIO_CLIENTE', [usuario])
+            cursor.callproc('VETLINK.DESACTIVAR_USUARIO', [usuario])
 
         return JsonResponse(
             {'status': 'success', 'message': f'Usuario {usuario} desactivado correctamente'})

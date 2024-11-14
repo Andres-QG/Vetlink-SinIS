@@ -157,7 +157,7 @@ const Profile = () => {
     setAnchorEl(null);
     try {
       await axios.post(
-        "http://localhost:8000/api/deactivate-user-client/",
+        "http://localhost:8000/api/deactivate-user/",
         {},
         {
           withCredentials: true,
