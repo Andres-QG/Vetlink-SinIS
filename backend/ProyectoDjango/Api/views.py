@@ -2652,7 +2652,7 @@ def delete_my_pet(request, mascota_id):
 
 
 @api_view(["GET"])
-def consult_client_user_personal_info(request):
+def get_user_personal_info(request):
     logged_user = request.session.get("user")
     logged_user_role = request.session.get("role")
     if not logged_user or not logged_user_role:
@@ -2660,17 +2660,33 @@ def consult_client_user_personal_info(request):
             {"error": "Usuario no autenticado."},
             status=status.HTTP_401_UNAUTHORIZED,
         )
-    if logged_user_role != 4:
+    try:
+        with connection.cursor() as cursor:
+            out_cursor = cursor.connection.cursor()
+            cursor.callproc("VETLINK.CONSULTAR_USUARIO", [logged_user, out_cursor])
+            result = out_cursor.fetchone()
+            if result:
+                user_info = {
+                    "usuario": logged_user,
+                    "nombre": result[0],
+                    "apellido1": result[1],
+                    "apellido2": result[2],
+                    "cedula": result[3],
+                    "correo": result[4],
+                    "telefono": result[5]
+                }
+                print(user_info)
+                return Response(user_info, status=status.HTTP_200_OK)
+            return Response(
+                {"error": "Usuario no encontrado."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+    except Exception as e:
+        print(f"Error consultando información del usuario: {str(e)}")
         return Response(
-            {"error": "No tiene permisos para consultar esta información."},
-            status=status.HTTP_403_FORBIDDEN,
+            {"error": "Error al consultar la información."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
-
-    http_request = request._request
-    http_request.GET = http_request.GET.copy()
-    http_request.GET["search"] = logged_user
-    http_request.GET["column"] = "usuario"
-    return consult_client(http_request)
 
 
 @api_view(["POST"])

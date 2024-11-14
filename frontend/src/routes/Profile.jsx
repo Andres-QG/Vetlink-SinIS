@@ -43,12 +43,12 @@ const Profile = () => {
   const fetchUserData = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/consult-client-user-personal-info/",
+        "http://localhost:8000/api/get-user-personal-info/",
         {
           withCredentials: true,
         }
       );
-      const userData = response.data.results[0];
+      const userData = response.data;
 
       setFormData({
         usuario: userData.usuario,
@@ -292,7 +292,7 @@ const Profile = () => {
                     label={field.label}
                     variant="outlined"
                     fullWidth
-                    disabled={!isEditing}
+                    disabled={!isEditing || field.name === "usuario"}
                     value={
                       field.value !== undefined
                         ? field.value
