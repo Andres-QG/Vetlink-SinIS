@@ -118,7 +118,7 @@ const Profile = () => {
     setIsSaving(true);
     try {
       await axios.put(
-        `http://localhost:8000/api/update-client/${formData.usuario}/`,
+        `http://localhost:8000/api/update-user-personal-info/`,
         formData,
         {
           withCredentials: true,

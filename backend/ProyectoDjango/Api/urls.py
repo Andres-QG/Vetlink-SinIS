@@ -123,6 +123,11 @@ urlpatterns = [
         name="get_user_personal_info",
     ),
     path(
+        "update-user-personal-info/",
+        update_user_personal_info,
+        name="update_user_personal_info",
+    ),
+    path(
         "deactivate-user-client/", deactivate_user_client, name="deactivate_user_client"
     ),
 ]

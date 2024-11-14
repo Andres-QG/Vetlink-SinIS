@@ -2689,6 +2689,43 @@ def get_user_personal_info(request):
         )
 
 
+@api_view(["PUT"])
+def update_user_personal_info(request):
+    usuario = request.session.get("user")
+    try:
+        correo = request.data.get("correo")
+        nombre = request.data.get("nombre")
+        apellido1 = request.data.get("apellido1")
+        apellido2 = request.data.get("apellido2")
+        telefono = request.data.get("telefono")
+        cedula = request.data.get("cedula")
+
+        with connection.cursor() as cursor:
+            cursor.callproc("VETLINK.MODIFICAR_USUARIO", [
+                usuario,
+                nombre,
+                apellido1,
+                apellido2,
+                cedula,
+                correo,
+                telefono
+            ])
+
+        return Response(
+            {"message": "Usuario actualizado con éxito."},
+            status=status.HTTP_200_OK,
+        )
+
+    except Usuarios.DoesNotExist:
+        return Response(
+            {"error": "Usuario no encontrado."}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        print(f"Error actualizando usuario: {str(e)}")
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
 @api_view(["POST"])
 def deactivate_user_client(request):
     try:
