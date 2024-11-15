@@ -1,11 +1,16 @@
 import React from "react";
 import {
+  Box,
+  Container,
+  Typography,
+  Grid,
+  Button,
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Typography,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { useNavigate } from "react-router-dom";
 
 import vetlinkTextIconLogo from "../assets/icons/vetlink-full-logo.png";
 import vetlinkFaceLogo from "../assets/icons/vetlink-logo-face.png";
@@ -14,7 +19,6 @@ import feature1 from "../assets/img/feature1.jpg";
 import feature2 from "../assets/img/feature2.jpg";
 import feature3 from "../assets/img/feature3.jpg";
 import whoAreWe from "../assets/img/who_are_we.jpg";
-import { useNavigate } from "react-router-dom";
 
 function LandingPage() {
   const navigate = useNavigate();
@@ -23,7 +27,7 @@ function LandingPage() {
     {
       title: "¿Qué información se almacena sobre mi mascota en este sistema?",
       content:
-        "Se almacena información básica de tu mascota, como su nombre,especie, raza, edad, sexo, peso, padecimientos y vacunaciones. Esto ayuda a los veterinarios a ofrecer un mejor servicio y atención médica.",
+        "Se almacena información básica de tu mascota, como su nombre, especie, raza, edad, sexo, peso, padecimientos y vacunaciones. Esto ayuda a los veterinarios a ofrecer un mejor servicio y atención médica.",
     },
     {
       title: "¿Puedo acceder al historial médico de mi mascota?",
@@ -53,160 +57,348 @@ function LandingPage() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <main className="flex-grow">
-        {/* Hero section */}
-        <section
-          className="relative flex items-center w-full text-white bg-no-repeat bg-cover font-montserrat"
-          style={{
+    <Box display="flex" flexDirection="column" minHeight="100vh">
+      <Box component="main" flexGrow={1}>
+        {/* Sección Hero */}
+        <Box
+          position="relative"
+          display="flex"
+          alignItems="center"
+          width="100%"
+          minHeight="60vh"
+          sx={{
             backgroundImage: `url(${heroImage})`,
+            backgroundRepeat: "no-repeat",
+            backgroundSize: "cover",
             backgroundPosition: "center calc(30%)",
+            color: "white",
+            fontFamily: "Montserrat",
             marginTop: 0,
             paddingTop: 0,
           }}
         >
-          <div className="container relative z-10 flex flex-col items-center py-16 mx-auto lg:flex-row lg:items-start">
-            {/* Hero contents */}
-            <div className="px-1 text-center lg:w-1/2 lg:text-left">
-              {/* Logo and text*/}
-              <div className="z-0 mb-8 lg:mb-16">
-                <img
-                  src={vetlinkTextIconLogo}
-                  alt="Vetlink Logo"
-                  className="mx-auto lg:mx-0 lg:w-[700px] lg:h-[180px] xl:w-[800px] xl:h-[200px] md:w-[400px] md:h-[120px] sm:w-[300px] sm:h-[100px]"
-                />
-              </div>
-              <h1 className="mb-4 text-4xl font-semibold lg:text-6xl xl:text-7xl text-bgsecondary">
-                Cuida a tu mascota sin complicaciones
-              </h1>
-              <p className="mb-8 text-lg lg:text-xl xl:text-2xl text-bgsecondary">
-                Regístrate y mantén todo bajo control desde nuestra plataforma.
-              </p>
-              {/* Action button */}
-              <a
-                href="#"
-                className="px-4 py-2 text-lg font-semibold rounded-lg bg-brand text-bgsecondary lg:py-3 xl:py-4 lg:px-8 xl:px-10 lg:text-xl xl:text-2xl hover:bg-teal-600"
-                onClick={() => navigate("/signup")}
-              >
-                Regístrate ahora
-              </a>
-            </div>
-          </div>
-        </section>
-        {/*Main features section*/}
-        <section className="font-montserrat">
-          <h2 className="mt-10 mb-1 text-6xl font-bold text-center text-secondary">
+          <Container
+            maxWidth="lg"
+            sx={{ position: "relative", zIndex: 10, py: 4 }}
+          >
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs={12} lg={6}>
+                <Box textAlign={{ xs: "center", lg: "left" }}>
+                  <Box mb={8}>
+                    <img
+                      src={vetlinkTextIconLogo}
+                      alt="Vetlink Logo"
+                      style={{
+                        width: "100%",
+                        maxWidth: 700,
+                        height: "auto",
+                        marginLeft: "auto",
+                        marginRight: "auto",
+                      }}
+                    />
+                  </Box>
+                  <Typography
+                    variant="h1"
+                    component="h1"
+                    sx={{
+                      mb: 2,
+                      fontWeight: "bold",
+                      color: "bgsecondary",
+                      fontSize: { xs: "2rem", lg: "4rem", xl: "5rem" },
+                    }}
+                  >
+                    Cuida a tu mascota sin complicaciones
+                  </Typography>
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      mb: 4,
+                      color: "bgsecondary",
+                      fontSize: { xs: "1rem", lg: "1.5rem", xl: "2rem" },
+                    }}
+                  >
+                    Regístrate y mantén todo bajo control desde nuestra
+                    plataforma.
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    size="large"
+                    onClick={() => navigate("/signup")}
+                    sx={{
+                      bgcolor: "#0ba6a9",
+                      color: "bgsecondary",
+                      "&:hover": { bgcolor: "teal.100" },
+                      px: { xs: 4, lg: 8 },
+                      py: { xs: 1, lg: 2 },
+                      fontSize: { xs: "1rem", lg: "1.5rem" },
+                    }}
+                  >
+                    Regístrate ahora
+                  </Button>
+                </Box>
+              </Grid>
+            </Grid>
+          </Container>
+        </Box>
+        {/* Sección de características principales */}
+        <Box sx={{ fontFamily: "Montserrat", py: 4 }}>
+          <Typography
+            variant="h2"
+            component="h2"
+            align="center"
+            sx={{ mt: 4, mb: 1, fontWeight: "bold", color: "secondary" }}
+          >
             Facilitamos el cuidado de tu mascota
-          </h2>
-          <div className="container grid grid-cols-1 gap-8 py-16 mx-auto md:grid-cols-3">
-            <div className="p-12 rounded-lg bg-bgprimary">
-              <div className="flex items-center justify-center mb-4">
-                <img
-                  src={feature1}
-                  alt="Dog with a cone"
-                  className="w-64 h-64 rounded-full"
-                />
-              </div>
-              <h2 className="p-2 text-2xl font-semibold text-center text-brand">
-                Gestiona medicamentos y citas de tu mascota
-              </h2>
-              <p className="text-lg text-center">
-                Mantén un control preciso sobre los medicamentos de tu mascota y
-                las próximas citas veterinarias. Visualiza fácilmente sus
-                tratamientos actuales y asegúrate de que no falte a ninguna
-                consulta importante.
-              </p>
-            </div>
-            <div className="p-12 rounded-lg bg-bgprimary">
-              <div className="flex items-center justify-center mb-4">
-                <img
-                  src={feature2}
-                  alt="x-ray of a dog"
-                  className="w-64 h-64 rounded-full"
-                />
-              </div>
-              <h2 className="p-2 text-2xl font-semibold text-center text-brand">
-                Accede al historial médico de tu mascota en línea
-              </h2>
-              <p className="text-lg text-center">
-                Consulta el historial de salud de tu mascota de forma rápida y
-                segura. Revisa diagnósticos, vacunas y tratamientos desde
-                cualquier dispositivo, todo en un solo lugar.
-              </p>
-            </div>
-            <div className="p-12 rounded-lg bg-bgprimary">
-              <div className="flex items-center justify-center mb-4">
-                <img
-                  src={feature3}
-                  alt="cat at the veterinarian"
-                  className="w-64 h-64 rounded-full"
-                />
-              </div>
-              <h2 className="p-2 text-2xl font-semibold text-center text-brand">
-                Agenda citas veterinarias en línea
-              </h2>
-              <p className="text-lg text-center">
-                Programa las visitas de tu mascota con nuestro sistema de citas
-                en línea. Elige la fecha y hora que mejor se ajusten a tu
-                agenda, sin complicaciones ni llamadas telefónicas.
-              </p>
-            </div>
-          </div>
-        </section>
-        {/*WhoAreWe section*/}
-        <section className="mt-8 font-montserrat">
-          <div className="container grid grid-cols-1 gap-4 mx-auto md:grid-cols-2">
-            <div className="flex flex-col items-start p-12 rounded-lg bg-brand">
-              <div className="flex items-center justify-between w-full">
-                <h2 className="flex items-center p-2 text-5xl font-semibold text-bgsecondary">
-                  ¿Quienes somos?
-                  <img
-                    src={vetlinkFaceLogo}
-                    alt="Vetlink face logo"
-                    className="w-24 h-12 ml-6"
-                  />
-                </h2>
-              </div>
-              <p className="text-2xl text-left text-bgsecondary">
-                Somos una plataforma diseñada para optimizar la gestión de
-                nuestras clínicas veterinarias, conectando a veterinarios y
-                dueños de mascotas de manera eficiente. Nuestro objetivo es
-                mejorar la operación diaria y facilitar la comunicación,
-                brindando un servicio más ágil y centrado en el bienestar
-                animal. Vetlink se adapta al crecimiento de nuestra red de
-                clínicas, asegurando una atención de calidad en cada una de
-                ellas.
-              </p>
-            </div>
-            <div
-              className="bg-center bg-no-repeat bg-cover rounded-lg"
-              style={{ backgroundImage: `url(${whoAreWe})` }}
-            ></div>
-          </div>
-        </section>
+          </Typography>
+          <Container maxWidth="lg" sx={{ py: 4 }}>
+            <Grid container spacing={4}>
+              {/* Característica 1 */}
+              <Grid item xs={12} md={4}>
+                <Box
+                  p={4}
+                  sx={{
+                    backgroundColor: "#F8F8F8",
+                    borderRadius: 2,
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Box display="flex" justifyContent="center" mb={4}>
+                    <img
+                      src={feature1}
+                      alt="Perro con collar isabelino"
+                      style={{
+                        width: 256,
+                        height: 256,
+                        borderRadius: "50%",
+                      }}
+                    />
+                  </Box>
+                  <Typography
+                    variant="h5"
+                    component="h3"
+                    align="center"
+                    sx={{ color: "#0ba6a9", fontWeight: "bold", mb: 2 }}
+                  >
+                    Gestiona medicamentos y citas de tu mascota
+                  </Typography>
+                  <Typography variant="body1" align="center">
+                    Mantén un control preciso sobre los medicamentos de tu
+                    mascota y las próximas citas veterinarias. Visualiza
+                    fácilmente sus tratamientos actuales y asegúrate de que no
+                    falte a ninguna consulta importante.
+                  </Typography>
+                </Box>
+              </Grid>
+              {/* Característica 2 */}
+              <Grid item xs={12} md={4}>
+                <Box
+                  p={4}
+                  sx={{
+                    backgroundColor: "#F8F8F8",
+                    borderRadius: 2,
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Box display="flex" justifyContent="center" mb={4}>
+                    <img
+                      src={feature2}
+                      alt="Radiografía de un perro"
+                      style={{
+                        width: 256,
+                        height: 256,
+                        borderRadius: "50%",
+                      }}
+                    />
+                  </Box>
+                  <Typography
+                    variant="h5"
+                    component="h3"
+                    align="center"
+                    sx={{ color: "#0ba6a9", fontWeight: "bold", mb: 2 }}
+                  >
+                    Accede al historial médico de tu mascota en línea
+                  </Typography>
+                  <Typography variant="body1" align="center">
+                    Consulta el historial de salud de tu mascota de forma rápida
+                    y segura. Revisa diagnósticos, vacunas y tratamientos desde
+                    cualquier dispositivo, todo en un solo lugar.
+                  </Typography>
+                </Box>
+              </Grid>
+              {/* Característica 3 */}
+              <Grid item xs={12} md={4}>
+                <Box
+                  p={4}
+                  sx={{
+                    backgroundColor: "#F8F8F8",
+                    borderRadius: 2,
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Box display="flex" justifyContent="center" mb={4}>
+                    <img
+                      src={feature3}
+                      alt="Gato en el veterinario"
+                      style={{
+                        width: 256,
+                        height: 256,
+                        borderRadius: "50%",
+                      }}
+                    />
+                  </Box>
+                  <Typography
+                    variant="h5"
+                    component="h3"
+                    align="center"
+                    sx={{ color: "#0ba6a9", fontWeight: "bold", mb: 2 }}
+                  >
+                    Agenda citas veterinarias en línea
+                  </Typography>
+                  <Typography variant="body1" align="center">
+                    Programa las visitas de tu mascota con nuestro sistema de
+                    citas en línea. Elige la fecha y hora que mejor se ajusten a
+                    tu agenda, sin complicaciones ni llamadas telefónicas.
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+          </Container>
+        </Box>
+        {/* Sección "Quiénes somos" */}
+        <Box sx={{ mt: 8 }}>
+          <Container maxWidth="lg">
+            <Grid container spacing={4}>
+              <Grid item xs={12} md={6}>
+                <Box
+                  p={4}
+                  sx={{
+                    backgroundColor: "#0ba6a9",
+                    borderRadius: 2,
+                    color: "white",
+                  }}
+                >
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    mb={4}
+                    sx={{
+                      maxWidth: "100%", // Limita el ancho total del contenedor
+                      overflow: "hidden", // Evita desbordamiento
+                    }}
+                  >
+                    <Typography
+                      variant="h2"
+                      component="h2"
+                      sx={{
+                        color: "bgsecondary",
+                        fontWeight: "bold",
+                        flexGrow: 1,
+                        fontSize: {
+                          xs: "1.5rem", // Tamaño adecuado en pantallas pequeñas
+                          sm: "2rem",
+                          md: "2.5rem",
+                          lg: "3rem", // Grande en pantallas grandes
+                        },
+                        textAlign: { xs: "center", md: "left" },
+                      }}
+                    >
+                      ¿Quiénes somos?
+                    </Typography>
+                    <img
+                      src={vetlinkFaceLogo}
+                      alt="Logo Vetlink"
+                      style={{
+                        width: "auto", // Para que mantenga la proporción
+                        maxWidth: 80, // Limita el ancho máximo del logo
+                        height: 48, // Fija la altura deseada
+                        flexShrink: 0, // Evita que el logo crezca más allá del contenedor
+                        marginLeft: 8, // Espacio entre el texto y el logo
+                      }}
+                    />
+                  </Box>
 
-        {/*Questions section*/}
-        <section className="px-6 mx-auto mt-10 mb-4 font-montserrat max-w-7xl lg:px-8">
-          <h2 className="mb-4 text-6xl font-semibold text-center text-secondary">
+                  <Typography
+                    variant="h6"
+                    component="p"
+                    sx={{
+                      color: "bgsecondary",
+                      fontSize: "1.25rem",
+                      fontWeight: "regular",
+                    }}
+                  >
+                    Somos una plataforma diseñada para optimizar la gestión de
+                    nuestras clínicas veterinarias, conectando a veterinarios y
+                    dueños de mascotas de manera eficiente. Nuestro objetivo es
+                    mejorar la operación diaria y facilitar la comunicación,
+                    brindando un servicio más ágil y centrado en el bienestar
+                    animal. Vetlink se adapta al crecimiento de nuestra red de
+                    clínicas, asegurando una atención de calidad en cada una de
+                    ellas.
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Box
+                  sx={{
+                    height: "100%",
+                    backgroundImage: `url(${whoAreWe})`,
+                    backgroundRepeat: "no-repeat",
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    borderRadius: 2,
+                  }}
+                ></Box>
+              </Grid>
+            </Grid>
+          </Container>
+        </Box>
+        {/* Sección de preguntas frecuentes */}
+        <Box
+          sx={{
+            fontFamily: "Montserrat",
+            px: { xs: 2, lg: 6 },
+            mt: 10,
+            mb: 4,
+          }}
+        >
+          <Typography
+            variant="h2"
+            component="h2"
+            align="center"
+            sx={{ mb: 4, fontWeight: "bold", color: "secondary" }}
+          >
             Preguntas Frecuentes
-          </h2>
-          {faqs.map((faq) => (
-            <Accordion key={faq.title}>
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls={`panel-${faq.title}-content`}
-                id={`panel-${faq.title}-header`}
-              >
-                <Typography className="font-semibold">{faq.title}</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Typography>{faq.content}</Typography>
-              </AccordionDetails>
-            </Accordion>
-          ))}
-        </section>
-      </main>
-    </div>
+          </Typography>
+          <Container maxWidth="lg">
+            {faqs.map((faq) => (
+              <Accordion key={faq.title}>
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls={`panel-${faq.title}-content`}
+                  id={`panel-${faq.title}-header`}
+                >
+                  <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                    {faq.title}
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Typography>{faq.content}</Typography>
+                </AccordionDetails>
+              </Accordion>
+            ))}
+          </Container>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 
