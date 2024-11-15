@@ -383,6 +383,7 @@ const Profile = () => {
                     value={confirmUser}
                     onChange={(e) => setConfirmUser(e.target.value)}
                     sx={{ mb: 2 }}
+                    inputProps={{ "data-testid": "confirm-user-input" }}
                   />
                   <Button
                     variant="contained"

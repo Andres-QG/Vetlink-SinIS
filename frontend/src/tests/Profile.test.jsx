@@ -11,19 +11,17 @@ describe("Profile Component", () => {
   beforeEach(() => {
     axios.get.mockResolvedValue({
       data: {
-        results: [
-          {
-            usuario: "testuser",
-            nombre: "Test",
-            apellido1: "User",
-            apellido2: "Example",
-            cedula: "123456789",
-            correo: "test@example.com",
-            telefono: "12345678",
-          },
-        ],
+        usuario: "testuser",
+        nombre: "Test",
+        apellido1: "User",
+        apellido2: "Example",
+        cedula: "123456789",
+        correo: "test@example.com",
+        telefono: "12345678",
       },
     });
+    axios.put.mockResolvedValue({});
+    axios.post.mockResolvedValue({});
   });
 
   test("renders Profile component and fetches user data", async () => {
@@ -70,7 +68,7 @@ describe("Profile Component", () => {
 
     await waitFor(() => {
       expect(axios.put).toHaveBeenCalledWith(
-        "http://localhost:8000/api/update-client/testuser/",
+        "http://localhost:8000/api/update-user-personal-info/",
         expect.objectContaining({ nombre: "NewName" }),
         { withCredentials: true }
       );
@@ -105,7 +103,6 @@ describe("Profile Component", () => {
   });
 
   test("account deactivation flow works correctly", async () => {
-    // Mock successful deactivation API call
     axios.post.mockResolvedValueOnce({});
 
     render(
@@ -127,7 +124,7 @@ describe("Profile Component", () => {
       screen.getByText("Introduzca su usuario para confirmar")
     ).toBeInTheDocument();
 
-    const confirmInput = screen.getByRole("textbox", { name: "" });
+    const confirmInput = screen.getByTestId("confirm-user-input");
     fireEvent.change(confirmInput, { target: { value: "wronguser" } });
     expect(screen.getByText("Sí")).toBeDisabled();
 
@@ -135,9 +132,10 @@ describe("Profile Component", () => {
     expect(screen.getByText("Sí")).not.toBeDisabled();
 
     fireEvent.click(screen.getByText("Sí"));
+
     await waitFor(() => {
       expect(axios.post).toHaveBeenCalledWith(
-        "http://localhost:8000/api/deactivate-user-client/",
+        "http://localhost:8000/api/deactivate-user/",
         {},
         { withCredentials: true }
       );

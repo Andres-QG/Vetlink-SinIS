@@ -1,5 +1,4 @@
-import React from "react";
-import { useState, forwardRef } from "react";
+import React, { useState, forwardRef } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
 import Tag from "../Tag";

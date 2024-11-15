@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { CircularProgress, Button, Box } from "@mui/material";
 import { Add } from "@mui/icons-material";
@@ -139,7 +139,8 @@ const ConsultView = ({
                   marginRight: { xs: "0px", md: "10px" },
                   width: { xs: "100%", md: "auto" },
                   fontSize: "0.85rem",
-                }}>
+                }}
+              >
                 {showInactive ? "Mostrar solo activos" : "Mostrar Inactivos"}
               </Button>
             )}
@@ -160,7 +161,8 @@ const ConsultView = ({
                   marginRight: { xs: "0px", md: "10px" },
                   width: { xs: "100%", md: "auto" },
                   fontSize: "0.85rem",
-                }}>
+                }}
+              >
                 Agregar
               </Button>
             )}
