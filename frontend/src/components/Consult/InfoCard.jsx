@@ -1,13 +1,23 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
-import { Card, Typography, Button, Box, Chip } from "@mui/material";
+import {
+  Card,
+  Typography,
+  Button,
+  Box,
+  Chip,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
 const DESCRIPTION_CHAR_LIMIT = 100;
 
-const InfoCard = ({ item, onDeactivate, onModify }) => {
+export default function InfoCard({ item, onDeactivate, onModify }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const truncateText = (text, limit) => {
     if (text.length <= limit) return text;
@@ -33,12 +43,16 @@ const InfoCard = ({ item, onDeactivate, onModify }) => {
         <Box
           sx={{
             display: "flex",
+            flexDirection: isMobile ? "column" : "row",
             justifyContent: "space-between",
-            alignItems: "center",
+            alignItems: isMobile ? "flex-start" : "center",
             mb: 1,
           }}
         >
-          <Typography variant="h6" sx={{ fontSize: "1rem", fontWeight: 600 }}>
+          <Typography
+            variant="h6"
+            sx={{ fontSize: "1rem", fontWeight: 600, mb: isMobile ? 1 : 0 }}
+          >
             {item.name}
           </Typography>
           <Chip
@@ -87,10 +101,17 @@ const InfoCard = ({ item, onDeactivate, onModify }) => {
           </Button>
         )}
 
-        <Box sx={{ display: "flex", gap: 1 }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: isMobile ? "column" : "row",
+            gap: 1,
+          }}
+        >
           <Button
             startIcon={<EditOutlinedIcon sx={{ fontSize: 18 }} />}
             onClick={() => onModify(item)}
+            fullWidth={isMobile}
             sx={{
               textTransform: "none",
               color: "#666",
@@ -110,6 +131,7 @@ const InfoCard = ({ item, onDeactivate, onModify }) => {
           <Button
             startIcon={<DeleteOutlineIcon sx={{ fontSize: 18 }} />}
             onClick={() => onDeactivate(item)}
+            fullWidth={isMobile}
             sx={{
               textTransform: "none",
               color: "white",
@@ -129,7 +151,7 @@ const InfoCard = ({ item, onDeactivate, onModify }) => {
       </Box>
     </Card>
   );
-};
+}
 
 InfoCard.propTypes = {
   item: PropTypes.shape({
@@ -141,5 +163,3 @@ InfoCard.propTypes = {
   onDeactivate: PropTypes.func.isRequired,
   onModify: PropTypes.func.isRequired,
 };
-
-export default InfoCard;
