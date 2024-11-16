@@ -27,6 +27,7 @@ import DashBoardLayout from "./components/DashBoardLayout";
 import Dashboard from "./routes/Dashboard";
 import { NotificationProvider } from "./components/Notification";
 import ConsultCitas from "./routes/ConsultCitas";
+import ConsultVaccines from "./components/consultVaccines/ConsultVaccines";
 
 function App() {
   return (
@@ -191,6 +192,16 @@ function App() {
                     <NotificationProvider>
                       <ConsultRecords />
                     </NotificationProvider>
+                  </ProtectedRoute>
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/consultvaccines"
+              element={
+                <DashBoardLayout>
+                  <ProtectedRoute requiredRoles={[1, 2, 3]}>
+                    <ConsultVaccines />
                   </ProtectedRoute>
                 </DashBoardLayout>
               }
