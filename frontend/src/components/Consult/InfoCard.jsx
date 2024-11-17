@@ -53,18 +53,20 @@ export default function InfoCard({ item, onDeactivate, onModify }) {
             variant="h6"
             sx={{ fontSize: "1rem", fontWeight: 600, mb: isMobile ? 1 : 0 }}
           >
-            {item.name}
+            {item.nombre}
           </Typography>
-          <Chip
-            label={item.state === "active" ? "Disponible" : "No Disponible"}
-            size="small"
-            sx={{
-              backgroundColor: item.state === "active" ? "#e8f5e9" : "#eeeeee",
-              color: item.state === "active" ? "#2e7d32" : "#616161",
-              fontWeight: 500,
-              fontSize: "0.75rem",
-            }}
-          />
+          {item.estado && (
+            <Chip
+              label={item.estado === 1 ? "Disponible" : "No Disponible"}
+              size="small"
+              sx={{
+                backgroundColor: item.estado === 1 ? "#e8f5e9" : "#eeeeee",
+                color: item.estado === 1 ? "#2e7d32" : "#616161",
+                fontWeight: 500,
+                fontSize: "0.75rem",
+              }}
+            />
+          )}
         </Box>
 
         <Typography
@@ -77,11 +79,11 @@ export default function InfoCard({ item, onDeactivate, onModify }) {
           }}
         >
           {isExpanded
-            ? item.description
-            : truncateText(item.description, DESCRIPTION_CHAR_LIMIT)}
+            ? item.descripcion
+            : truncateText(item.descripcion, DESCRIPTION_CHAR_LIMIT)}
         </Typography>
 
-        {item.description.length > DESCRIPTION_CHAR_LIMIT && (
+        {item.descripcion.length > DESCRIPTION_CHAR_LIMIT && (
           <Button
             onClick={toggleExpand}
             sx={{
@@ -155,10 +157,9 @@ export default function InfoCard({ item, onDeactivate, onModify }) {
 
 InfoCard.propTypes = {
   item: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    name: PropTypes.string.isRequired,
-    state: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
+    nombre: PropTypes.string.isRequired,
+    estado: PropTypes.string,
+    descripcion: PropTypes.string.isRequired,
   }).isRequired,
   onDeactivate: PropTypes.func.isRequired,
   onModify: PropTypes.func.isRequired,

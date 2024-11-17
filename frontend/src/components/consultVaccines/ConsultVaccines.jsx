@@ -1,27 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  Box,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Button,
 } from "@mui/material";
+import axios from "axios";
 import CardList from "../Consult/CardList";
 
 const ConsultVaccines = () => {
   const [openDeactivate, setOpenDeactivate] = useState(false);
   const [openModify, setOpenModify] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [items, setItems] = useState([]);
 
-  // Sample data
-  const items = Array.from({ length: 20 }, (_, index) => ({
-    id: index + 1,
-    name: `Vacuna ${index + 1}`,
-    state: index % 5 === 0 ? "inactive" : "active",
-    description:
-      "Descripción de vacuna. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-  }));
+  useEffect(() => {
+    const fetchVaccines = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:8000/api/consult-clinic-vaccines/"
+        );
+        setItems(response.data.results);
+      } catch (error) {
+        console.error("Error fetching vaccines:", error);
+      }
+    };
+
+    fetchVaccines();
+  }, []);
 
   const handleDeactivate = (item) => {
     setSelectedItem(item);

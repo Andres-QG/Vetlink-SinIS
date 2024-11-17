@@ -63,6 +63,7 @@ urlpatterns = [
     ),
     # Vacunas
     path("consult-vaccines/", consult_vaccines, name="consult_vaccines"),
+    path("consult-clinic-vaccines/", consult_clinic_vaccines, name="consult_clinic_vaccines"),
     # Sintomas
     path("consult-symptoms/", consult_symptoms, name="consult_symptoms"),
     # Tratamientos

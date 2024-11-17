@@ -32,8 +32,8 @@ const CardList = ({
       }}
     >
       <Grid container spacing={2}>
-        {getCurrentItems().map((item) => (
-          <Grid item xs={12} sm={6} key={item.id}>
+        {getCurrentItems().map((item, index) => (
+          <Grid item xs={12} sm={6} key={index}>
             <InfoCard
               item={item}
               onDeactivate={onDeactivate}
@@ -69,10 +69,9 @@ const CardList = ({
 CardList.propTypes = {
   items: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-      name: PropTypes.string.isRequired,
-      state: PropTypes.string.isRequired,
-      description: PropTypes.string.isRequired,
+      nombre: PropTypes.string.isRequired,
+      estado: PropTypes.string,
+      descripcion: PropTypes.string.isRequired,
     })
   ).isRequired,
   onDeactivate: PropTypes.func.isRequired,

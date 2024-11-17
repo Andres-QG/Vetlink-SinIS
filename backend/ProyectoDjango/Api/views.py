@@ -2823,13 +2823,13 @@ def consult_vets_formatted(request):
 def consult_clinic_vaccines(request):
     try:
         vacunas = Vacunas.objects.all()
-
+        print(f"Total vaccines fetched: {vacunas.count()}")
         paginator = CustomPagination()
         page = paginator.paginate_queryset(vacunas, request)
 
         if page is not None:
             vacunas_list = [
-                {"vacuna_id": vacuna.vacuna_id, "descripcion": vacuna.descripcion, "nombre": vacuna.nombre}
+                {"estado": vacuna.estado, "descripcion": vacuna.descripcion, "nombre": vacuna.nombre}
                 for vacuna in page
             ]
             return paginator.get_paginated_response(vacunas_list)
