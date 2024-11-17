@@ -62,8 +62,13 @@ urlpatterns = [
         name="delete_pet_record",
     ),
     # Vacunas
-    path("consult-vaccines/", consult_vaccines, name="consult_vaccines"),
+    path("consult-vaccines/", consult_vaccines, name="consult_vaccines"), # Vacunas para expediente
+    # vacunas para listado de vacunas
     path("consult-clinic-vaccines/", consult_clinic_vaccines, name="consult_clinic_vaccines"),
+    path("add-clinic-vaccine/", add_clinic_vaccine, name="add_clinic_vaccine"),
+    path("update-clinic-vaccine/", update_clinic_vaccine, name="update_clinic_vaccine"),
+    path("deactivate-clinic-vaccine/", deactivate_clinic_vaccine, name="deactivate_clinic_vaccine"),
+    path("restore-clinic-vaccine/", restore_clinic_vaccine, name="restore_clinic_vaccine"),
     # Sintomas
     path("consult-symptoms/", consult_symptoms, name="consult_symptoms"),
     # Tratamientos
