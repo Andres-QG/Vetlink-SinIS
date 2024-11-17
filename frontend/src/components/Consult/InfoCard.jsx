@@ -11,10 +11,17 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import RestoreIcon from "@mui/icons-material/Restore";
 
 const DESCRIPTION_CHAR_LIMIT = 100;
 
-export default function InfoCard({ item, onDeactivate, onModify }) {
+export default function InfoCard({
+  item,
+  openDelModal,
+  onRestore,
+  openModModal,
+  hasStatus,
+}) {
   const [isExpanded, setIsExpanded] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -27,6 +34,8 @@ export default function InfoCard({ item, onDeactivate, onModify }) {
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
   };
+
+  const isActive = item.estado === 1;
 
   return (
     <Card
@@ -56,13 +65,13 @@ export default function InfoCard({ item, onDeactivate, onModify }) {
           >
             {item.nombre}
           </Typography>
-          {item.estado && (
+          {hasStatus && (
             <Chip
-              label={item.estado === 1 ? "Disponible" : "No Disponible"}
+              label={isActive ? "Disponible" : "No Disponible"}
               size="medium"
               sx={{
-                backgroundColor: item.estado === 1 ? "#e8f5e9" : "#eeeeee",
-                color: item.estado === 1 ? "#2e7d32" : "#616161",
+                backgroundColor: isActive ? "#e8f5e9" : "#eeeeee",
+                color: isActive ? "#2e7d32" : "#616161",
                 fontWeight: 500,
                 fontSize: "0.875rem",
               }}
@@ -113,7 +122,7 @@ export default function InfoCard({ item, onDeactivate, onModify }) {
         >
           <Button
             startIcon={<EditIcon sx={{ fontSize: 20 }} />}
-            onClick={() => onModify(item)}
+            onClick={() => openModModal(item)}
             fullWidth={isMobile}
             sx={{
               textTransform: "none",
@@ -131,9 +140,26 @@ export default function InfoCard({ item, onDeactivate, onModify }) {
           >
             Modificar
           </Button>
+
           <Button
-            startIcon={<DeleteIcon sx={{ fontSize: 20 }} />}
-            onClick={() => onDeactivate(item)}
+            startIcon={
+              hasStatus ? (
+                isActive ? (
+                  <DeleteIcon sx={{ fontSize: 20 }} />
+                ) : (
+                  <RestoreIcon sx={{ fontSize: 20 }} />
+                )
+              ) : (
+                <DeleteIcon sx={{ fontSize: 20 }} />
+              )
+            }
+            onClick={() =>
+              hasStatus
+                ? isActive
+                  ? openDelModal(item)
+                  : onRestore(item)
+                : openDelModal(item)
+            }
             fullWidth={isMobile}
             sx={{
               textTransform: "none",
@@ -141,14 +167,22 @@ export default function InfoCard({ item, onDeactivate, onModify }) {
               fontSize: "1rem",
               padding: "8px 16px",
               minWidth: "auto",
-              backgroundColor: "#dc3545",
+              backgroundColor: hasStatus
+                ? isActive
+                  ? "#dc3545"
+                  : "#28a745"
+                : "#dc3545",
               borderRadius: "4px",
               "&:hover": {
-                backgroundColor: "#c82333",
+                backgroundColor: hasStatus
+                  ? isActive
+                    ? "#c82333"
+                    : "#218838"
+                  : "#c82333",
               },
             }}
           >
-            Desactivar
+            {hasStatus ? (isActive ? "Desactivar" : "Reactivar") : "Eliminar"}
           </Button>
         </Box>
       </Box>
@@ -162,6 +196,8 @@ InfoCard.propTypes = {
     estado: PropTypes.string,
     descripcion: PropTypes.string.isRequired,
   }).isRequired,
-  onDeactivate: PropTypes.func.isRequired,
-  onModify: PropTypes.func.isRequired,
+  openDelModal: PropTypes.func.isRequired,
+  openModModal: PropTypes.func.isRequired,
+  onRestore: PropTypes.func,
+  hasStatus: PropTypes.bool.isRequired,
 };

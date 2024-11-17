@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  CircularProgress,
-  TextField,
-} from "@mui/material";
+import { Button, CircularProgress } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import axios from "axios";
 import CardList from "./CardList";
 import SearchBar from "./GeneralizedSearchBar";
+import { useNotification } from "../Notification";
 
-const ConsultGridView = ({ fetchUrl, columns, itemKey, itemDisplayName }) => {
+const ConsultGridView = ({
+  fetchUrl,
+  addUrl,
+  deletionUrl,
+  restoreUrl,
+  columns,
+  itemKey,
+  itemDisplayName,
+}) => {
   const [openDeactivate, setOpenDeactivate] = useState(false);
   const [openModify, setOpenModify] = useState(false);
   const [openAdd, setOpenAdd] = useState(false);
@@ -22,6 +23,8 @@ const ConsultGridView = ({ fetchUrl, columns, itemKey, itemDisplayName }) => {
   const [filteredItems, setFilteredItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [newItem, setNewItem] = useState({});
+
+  const notify = useNotification();
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -73,128 +76,6 @@ const ConsultGridView = ({ fetchUrl, columns, itemKey, itemDisplayName }) => {
     setFilteredItems(sorted);
   };
 
-  const handleOpenAdd = () => {
-    setNewItem({});
-    setOpenAdd(true);
-  };
-  const handleCloseAdd = () => setOpenAdd(false);
-
-  const handleAddItem = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.post(fetchUrl, newItem);
-      setItems([...items, response.data]);
-      setFilteredItems([...items, response.data]);
-      handleCloseAdd();
-    } catch (error) {
-      console.error(`Error adding ${itemDisplayName}:`, error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const DeactivateModal = (
-    <Dialog
-      open={openDeactivate}
-      onClose={() => setOpenDeactivate(false)}
-      PaperProps={{
-        sx: { borderRadius: "8px" },
-      }}
-    >
-      <DialogTitle>Desactivar {itemDisplayName.slice(0, -1)}</DialogTitle>
-      <DialogContent>
-        ¿Está seguro que desea desactivar {selectedItem?.nombre}?
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => setOpenDeactivate(false)}
-          sx={{ textTransform: "none" }}
-        >
-          Cancelar
-        </Button>
-        <Button
-          onClick={() => setOpenDeactivate(false)}
-          color="error"
-          sx={{ textTransform: "none" }}
-        >
-          Desactivar
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-
-  const ModifyModal = (
-    <Dialog
-      open={openModify}
-      onClose={() => setOpenModify(false)}
-      PaperProps={{
-        sx: { borderRadius: "8px" },
-      }}
-    >
-      <DialogTitle>Modificar {itemDisplayName.slice(0, -1)}</DialogTitle>
-      <DialogContent>
-        {/* Formulario de modificación para {selectedItem?.nombre} */}
-        {/* Agrega aquí tu formulario de modificación */}
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => setOpenModify(false)}
-          sx={{ textTransform: "none" }}
-        >
-          Cancelar
-        </Button>
-        <Button
-          onClick={() => setOpenModify(false)}
-          color="primary"
-          sx={{ textTransform: "none" }}
-        >
-          Guardar Cambios
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-
-  const AddModal = (
-    <Dialog
-      open={openAdd}
-      onClose={handleCloseAdd}
-      PaperProps={{
-        sx: { borderRadius: "8px" },
-      }}
-    >
-      <DialogTitle>Agregar {itemDisplayName.slice(0, -1)}</DialogTitle>
-      <DialogContent>
-        {columns.map((column) => (
-          <TextField
-            key={column}
-            margin="dense"
-            label={column.charAt(0).toUpperCase() + column.slice(1)}
-            type="text"
-            fullWidth
-            variant="outlined"
-            value={newItem[column] || ""}
-            onChange={(e) =>
-              setNewItem({ ...newItem, [column]: e.target.value })
-            }
-          />
-        ))}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleCloseAdd} sx={{ textTransform: "none" }}>
-          Cancelar
-        </Button>
-        <Button
-          onClick={handleAddItem}
-          color="primary"
-          sx={{ textTransform: "none" }}
-          disabled={loading}
-        >
-          {loading ? <CircularProgress size={24} /> : "Agregar"}
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-
   return (
     <div className="flex flex-col">
       <div className="flex-grow">
@@ -230,16 +111,8 @@ const ConsultGridView = ({ fetchUrl, columns, itemKey, itemDisplayName }) => {
             <CircularProgress />
           </div>
         ) : (
-          <CardList
-            items={filteredItems}
-            onDeactivate={handleDeactivate}
-            onModify={handleModify}
-            DeactivateModal={DeactivateModal}
-            ModifyModal={ModifyModal}
-          />
+          <CardList items={filteredItems} />
         )}
-
-        {AddModal}
       </div>
     </div>
   );

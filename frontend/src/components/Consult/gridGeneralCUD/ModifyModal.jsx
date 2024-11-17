@@ -1,26 +1,39 @@
+// EditModal.jsx
+
 import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
+  Modal,
+  Box,
+  Typography,
   TextField,
+  Button,
+  IconButton,
   CircularProgress,
+  InputAdornment,
 } from "@mui/material";
+import { Close, Description, Title } from "@mui/icons-material";
+import axios from "axios";
+
+const validateName = (name) => {
+  const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/;
+  return regex.test(name);
+};
 
 const ModifyModal = ({
   open,
-  onClose,
-  onModify,
+  handleClose,
+  onMod,
+  itemName,
   selectedItem,
-  itemDisplayName,
-  loading,
+  modificationUrl,
 }) => {
   const [formData, setFormData] = useState({
     nombre: "",
     descripcion: "",
   });
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (selectedItem) {
@@ -31,65 +44,163 @@ const ModifyModal = ({
     }
   }, [selectedItem]);
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+  const validate = () => {
+    const newErrors = {};
+
+    if (!formData.nombre) {
+      newErrors.nombre = "El nombre es requerido.";
+    } else if (!validateName(formData.nombre)) {
+      newErrors.nombre =
+        "El nombre solo puede contener letras, espacios, ñ, tildes y ü.";
+    }
+
+    if (!formData.descripcion) {
+      newErrors.descripcion = "La descripción es requerida.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
-    onModify(formData);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validate()) return;
+    setLoading(true);
+
+    try {
+      await axios.put(`${modificationUrl}${selectedItem.id}/`, formData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      onMod(`${itemName} modificado exitosamente.`, "success");
+      handleClose();
+    } catch (error) {
+      const message =
+        error.response?.data?.error || `Error al modificar el ${itemName}.`;
+      onMod(message, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClear = () => {
+    setFormData({
+      nombre: selectedItem.nombre || "",
+      descripcion: selectedItem.descripcion || "",
+    });
+    setErrors({});
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      PaperProps={{
-        sx: { borderRadius: "8px" },
-      }}
-    >
-      <DialogTitle>Modificar {itemDisplayName}</DialogTitle>
-      <DialogContent>
-        <TextField
-          name="nombre"
-          margin="dense"
-          label="Nombre"
-          type="text"
-          fullWidth
-          variant="outlined"
-          value={formData.nombre}
-          onChange={handleChange}
-        />
-        <TextField
-          name="descripcion"
-          margin="dense"
-          label="Descripción"
-          type="text"
-          fullWidth
-          variant="outlined"
-          multiline
-          rows={4}
-          value={formData.descripcion}
-          onChange={handleChange}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} sx={{ textTransform: "none" }}>
-          Cancelar
-        </Button>
-        <Button
-          onClick={handleSubmit}
-          color="primary"
-          sx={{ textTransform: "none" }}
-          disabled={loading}
-        >
-          {loading ? <CircularProgress size={24} /> : "Guardar Cambios"}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <Modal open={open} onClose={handleClose}>
+      <Box
+        sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: "90%",
+          maxWidth: 500,
+          maxHeight: "90vh",
+          bgcolor: "background.paper",
+          boxShadow: 24,
+          p: 4,
+          borderRadius: 2,
+          overflowY: "auto",
+        }}
+      >
+        <form onSubmit={handleSubmit}>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            mb={2}
+          >
+            <Typography variant="h6">Modificar {itemName}</Typography>
+            <IconButton onClick={handleClose}>
+              <Close />
+            </IconButton>
+          </Box>
+
+          <TextField
+            label="Nombre"
+            name="nombre"
+            value={formData.nombre}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+            error={!!errors.nombre}
+            helperText={errors.nombre}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Title />
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <TextField
+            label="Descripción"
+            name="descripcion"
+            value={formData.descripcion}
+            onChange={handleChange}
+            fullWidth
+            multiline
+            rows={4}
+            margin="normal"
+            required
+            error={!!errors.descripcion}
+            helperText={errors.descripcion}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Description />
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
+            <Button
+              variant="outlined"
+              onClick={handleClear}
+              fullWidth
+              disabled={loading}
+            >
+              Limpiar
+            </Button>
+            <Button
+              variant="contained"
+              type="submit"
+              fullWidth
+              disabled={loading}
+              startIcon={loading && <CircularProgress size={20} />}
+            >
+              {loading ? "Modificando..." : `Modificar ${itemName}`}
+            </Button>
+          </Box>
+        </form>
+      </Box>
+    </Modal>
   );
+};
+
+ModifyModal.propTypes = {
+  open: PropTypes.bool.isRequired,
+  handleClose: PropTypes.func.isRequired,
+  onMod: PropTypes.func.isRequired,
+  itemName: PropTypes.string.isRequired,
+  selectedItem: PropTypes.object.isRequired,
+  modificationUrl: PropTypes.string.isRequired,
 };
 
 export default ModifyModal;

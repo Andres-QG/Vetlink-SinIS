@@ -201,7 +201,9 @@ function App() {
               element={
                 <DashBoardLayout>
                   <ProtectedRoute requiredRoles={[1, 2, 3]}>
-                    <ConsultVaccines />
+                    <NotificationProvider>
+                      <ConsultVaccines />
+                    </NotificationProvider>
                   </ProtectedRoute>
                 </DashBoardLayout>
               }

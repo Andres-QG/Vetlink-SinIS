@@ -5,10 +5,10 @@ import InfoCard from "./InfoCard";
 
 const CardList = ({
   items,
-  onDeactivate,
-  onModify,
-  DeactivateModal,
-  ModifyModal,
+  openDelModal,
+  onRestore,
+  openModModal,
+  hasStatus,
 }) => {
   const [page, setPage] = useState(0);
   const itemsPerPage = 9;
@@ -36,8 +36,10 @@ const CardList = ({
           <Grid item xs={12} sm={6} md={4} key={index}>
             <InfoCard
               item={item}
-              onDeactivate={onDeactivate}
-              onModify={onModify}
+              openDelModal={openDelModal}
+              onRestore={onRestore}
+              openModModal={openModModal}
+              hasStatus={hasStatus}
             />
           </Grid>
         ))}
@@ -59,9 +61,6 @@ const CardList = ({
           getItemAriaLabel={(type) => `Ir a la página ${type}`}
         />
       </Box>
-
-      {DeactivateModal}
-      {ModifyModal}
     </Box>
   );
 };
@@ -74,10 +73,10 @@ CardList.propTypes = {
       descripcion: PropTypes.string.isRequired,
     })
   ).isRequired,
-  onDeactivate: PropTypes.func.isRequired,
-  onModify: PropTypes.func.isRequired,
-  DeactivateModal: PropTypes.node,
-  ModifyModal: PropTypes.node,
+  openDelModal: PropTypes.func.isRequired,
+  openModModal: PropTypes.func.isRequired,
+  onRestore: PropTypes.func.isRequired,
+  hasStatus: PropTypes.bool.isRequired,
 };
 
 export default CardList;
