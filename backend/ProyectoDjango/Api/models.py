@@ -780,6 +780,10 @@ class Vacunas(models.Model):
         db_comment="Este campo almacena el nombre de la vacuna. Es fundamental para identificar rßpidamente la vacuna en la base de datos y en las interacciones con los clientes.",
     )
 
+    estado = models.FloatField(
+        max_length=1
+    )
+
     class Meta:
         managed = False
         db_table = "vacunas"

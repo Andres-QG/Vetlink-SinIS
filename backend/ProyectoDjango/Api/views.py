@@ -2817,3 +2817,26 @@ def consult_vets_formatted(request):
 
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)})
+    
+
+@api_view(["GET"])
+def consult_clinic_vaccines(request):
+    try:
+        vacunas = Vacunas.objects.all()
+
+        paginator = CustomPagination()
+        page = paginator.paginate_queryset(vacunas, request)
+
+        if page is not None:
+            vacunas_list = [
+                {"vacuna_id": vacuna.vacuna_id, "descripcion": vacuna.descripcion, "nombre": vacuna.nombre}
+                for vacuna in page
+            ]
+            return paginator.get_paginated_response(vacunas_list)
+
+        return JsonResponse({'success': True, 'data': []}, status=200)
+
+    except Vacunas.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Vacunas no encontradas'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

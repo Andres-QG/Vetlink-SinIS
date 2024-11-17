@@ -12,7 +12,6 @@ const CardList = ({
 }) => {
   const [page, setPage] = useState(0);
   const itemsPerPage = 6;
-  const totalPages = Math.ceil(items.length / itemsPerPage);
 
   const handlePageChange = (event, newPage) => {
     setPage(newPage);
