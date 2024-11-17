@@ -14,7 +14,7 @@ import { Close, Description, Title } from "@mui/icons-material";
 import axios from "axios";
 
 const validateName = (name) => {
-  const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/;
+  const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s0-9]+$/;
   return regex.test(name);
 };
 

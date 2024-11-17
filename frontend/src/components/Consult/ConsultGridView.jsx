@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import { Button, CircularProgress } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import axios from "axios";
@@ -13,9 +14,9 @@ const ConsultGridView = ({
   fetchUrl,
   addUrl,
   deletionUrl,
+  modificationUrl,
   restoreUrl,
   columns,
-  itemKey,
   itemDisplayName,
   hasStatus,
 }) => {
@@ -96,6 +97,17 @@ const ConsultGridView = ({
     setOpenDel(false);
   };
 
+  const onRestore = async (selectedItem) => {
+    try {
+      await axios.put(`${restoreUrl}${selectedItem.id}/`);
+      await fetchItems();
+      notify(`${itemDisplayName} restaurado exitosamente.`, "success");
+    } catch (error) {
+      console.error("Error al restaurar el item:", error);
+      notify(`No se pudo restaurar ${itemDisplayName}.`, "error");
+    }
+  };
+
   return (
     <div className="flex flex-col">
       <div className="flex-grow">
@@ -135,6 +147,7 @@ const ConsultGridView = ({
             items={filteredItems}
             openDelModal={handleOpenDel}
             openModModal={handleOpenMod}
+            onRestore={onRestore}
             hasStatus={hasStatus}
           />
         )}
@@ -183,6 +196,17 @@ const ConsultGridView = ({
       </div>
     </div>
   );
+};
+
+ConsultGridView.propTypes = {
+  fetchUrl: PropTypes.string.isRequired,
+  addUrl: PropTypes.string.isRequired,
+  deletionUrl: PropTypes.string.isRequired,
+  modificationUrl: PropTypes.string.isRequired,
+  restoreUrl: PropTypes.string.isRequired,
+  columns: PropTypes.arrayOf(PropTypes.string).isRequired,
+  itemDisplayName: PropTypes.string.isRequired,
+  hasStatus: PropTypes.bool,
 };
 
 export default ConsultGridView;
