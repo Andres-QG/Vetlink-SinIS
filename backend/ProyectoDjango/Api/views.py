@@ -14,6 +14,7 @@ from django.views.decorators.cache import cache_page
 from .serializers import *
 from datetime import datetime
 import random
+import stripe
 import json
 import sendgrid
 from sendgrid.helpers.mail import Mail
@@ -25,6 +26,7 @@ from django.conf import settings
 import re
 
 
+stripe.api_key = settings.STRIPE_SECRET_KEY
 class CustomPagination(PageNumberPagination):
     page_size = 7  # Número de registros por página
     page_size_query_param = (
