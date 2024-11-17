@@ -9,8 +9,8 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const DESCRIPTION_CHAR_LIMIT = 100;
 
@@ -112,7 +112,7 @@ export default function InfoCard({ item, onDeactivate, onModify }) {
           }}
         >
           <Button
-            startIcon={<EditOutlinedIcon sx={{ fontSize: 20 }} />}
+            startIcon={<EditIcon sx={{ fontSize: 20 }} />}
             onClick={() => onModify(item)}
             fullWidth={isMobile}
             sx={{
@@ -132,7 +132,7 @@ export default function InfoCard({ item, onDeactivate, onModify }) {
             Modificar
           </Button>
           <Button
-            startIcon={<DeleteOutlineIcon sx={{ fontSize: 20 }} />}
+            startIcon={<DeleteIcon sx={{ fontSize: 20 }} />}
             onClick={() => onDeactivate(item)}
             fullWidth={isMobile}
             sx={{
