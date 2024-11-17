@@ -94,8 +94,8 @@ const ModifyModal = ({
 
   const handleClear = () => {
     setFormData({
-      nombre: selectedItem.nombre || "",
-      descripcion: selectedItem.descripcion || "",
+      nombre: "",
+      descripcion: "",
     });
     setErrors({});
   };
