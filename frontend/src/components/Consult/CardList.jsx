@@ -11,7 +11,7 @@ const CardList = ({
   ModifyModal,
 }) => {
   const [page, setPage] = useState(0);
-  const itemsPerPage = 6;
+  const itemsPerPage = 9;
 
   const handlePageChange = (event, newPage) => {
     setPage(newPage);
@@ -27,13 +27,13 @@ const CardList = ({
     <Box
       sx={{
         p: 3,
-        maxWidth: 1200,
+        width: "100%",
         margin: "0 auto",
       }}
     >
       <Grid container spacing={2}>
         {getCurrentItems().map((item, index) => (
-          <Grid item xs={12} sm={6} key={index}>
+          <Grid item xs={12} sm={6} md={4} key={index}>
             <InfoCard
               item={item}
               onDeactivate={onDeactivate}
