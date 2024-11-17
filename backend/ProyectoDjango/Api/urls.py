@@ -131,6 +131,9 @@ urlpatterns = [
     path(
         "deactivate-user/", deactivate_user, name="deactivate_user"
     ),
+    # Pagos APIs
+    path("create-payment/", create_payment, name="create-payment"),
+
 ]
 
 if settings.DEBUG:

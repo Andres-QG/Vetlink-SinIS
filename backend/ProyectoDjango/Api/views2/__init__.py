@@ -15,3 +15,4 @@ from .personalInfo import *
 from .session import *
 from .getRegisters import *
 from .recover import *
+from .payments import *

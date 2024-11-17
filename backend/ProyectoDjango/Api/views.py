@@ -33,21 +33,3 @@ class CustomPagination(PageNumberPagination):
         "page_size"  # Puedes ajustar el tamaño de la página desde la query
     )
     max_page_size = 100  # Tamaño máximo de la página que puedes solicitar
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
