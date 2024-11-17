@@ -765,7 +765,7 @@ class Usuarios(models.Model):
 
 
 class Vacunas(models.Model):
-    vacuna_id = models.FloatField(
+    vacuna_id = models.AutoField(
         primary_key=True,
         db_comment="Este campo es la llave primaria de la tabla. Almacena un identificador ·nico para cada vacuna, lo que permite distinguir claramente entre diferentes vacunas.",
     )

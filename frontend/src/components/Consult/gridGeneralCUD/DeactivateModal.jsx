@@ -1,5 +1,3 @@
-// DeactivateModal.jsx
-
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import {
@@ -18,8 +16,7 @@ const DeactivateModal = ({
   open,
   handleClose,
   itemName,
-  itemIdentifier,
-  customTitle,
+  selectedItem,
   isRestorable,
   deletionUrl,
   onDelete,
@@ -30,13 +27,13 @@ const DeactivateModal = ({
     setLoading(true);
     try {
       if (!isRestorable) {
-        await axios.delete(deletionUrl, {
+        await axios.delete(`${deletionUrl}${selectedItem.id}/`, {
           headers: {
             "Content-Type": "application/json",
           },
         });
       } else {
-        await axios.put(deletionUrl, {
+        await axios.put(`${deletionUrl}${selectedItem.id}/`, {
           headers: {
             "Content-Type": "application/json",
           },
@@ -80,10 +77,9 @@ const DeactivateModal = ({
           <CloseIcon />
         </IconButton>
         <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
-          {customTitle ||
-            `¿Estás seguro de que deseas ${
-              isRestorable ? "desactivar" : "eliminar"
-            } el ${itemName} ${itemIdentifier}?`}
+          {`¿Estás seguro de que deseas ${
+            isRestorable ? "desactivar" : "eliminar"
+          } ${selectedItem.nombre}?`}
         </Typography>
         <Typography variant="body1" sx={{ mb: 4 }}>
           Esta acción{" "}
@@ -126,8 +122,7 @@ DeactivateModal.propTypes = {
   open: PropTypes.bool.isRequired,
   handleClose: PropTypes.func.isRequired,
   itemName: PropTypes.string.isRequired,
-  itemIdentifier: PropTypes.string.isRequired,
-  customTitle: PropTypes.string,
+  selectedItem: PropTypes.object.isRequired,
   isRestorable: PropTypes.bool,
   deletionUrl: PropTypes.string.isRequired,
   onDelete: PropTypes.func.isRequired,

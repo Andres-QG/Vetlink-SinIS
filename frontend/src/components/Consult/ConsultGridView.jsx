@@ -4,6 +4,9 @@ import { Add } from "@mui/icons-material";
 import axios from "axios";
 import CardList from "./CardList";
 import SearchBar from "./GeneralizedSearchBar";
+import AddModal from "../Consult/gridGeneralCUD/AddModal";
+import ModifyModal from "../Consult/gridGeneralCUD/ModifyModal";
+import DeactivateModal from "../Consult/gridGeneralCUD/DeactivateModal";
 import { useNotification } from "../Notification";
 
 const ConsultGridView = ({
@@ -14,44 +17,33 @@ const ConsultGridView = ({
   columns,
   itemKey,
   itemDisplayName,
+  hasStatus,
 }) => {
-  const [openDeactivate, setOpenDeactivate] = useState(false);
-  const [openModify, setOpenModify] = useState(false);
-  const [openAdd, setOpenAdd] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [newItem, setNewItem] = useState({});
+  const [openAdd, setOpenAdd] = useState(false);
+  const [openMod, setOpenMod] = useState(false);
+  const [openDel, setOpenDel] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
 
   const notify = useNotification();
 
+  const fetchItems = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(fetchUrl);
+      setItems(response.data.results);
+      setFilteredItems(response.data.results);
+    } catch (error) {
+      console.error(`Error fetching ${itemDisplayName}:`, error);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    const fetchItems = async () => {
-      setLoading(true);
-      try {
-        const response = await axios.get(fetchUrl);
-        setItems(response.data.results);
-        setFilteredItems(response.data.results);
-      } catch (error) {
-        console.error(`Error fetching ${itemDisplayName}:`, error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchItems();
   }, [fetchUrl, itemDisplayName]);
-
-  const handleDeactivate = (item) => {
-    setSelectedItem(item);
-    setOpenDeactivate(true);
-  };
-
-  const handleModify = (item) => {
-    setSelectedItem(item);
-    setOpenModify(true);
-  };
 
   const handleSearch = (term, column, order) => {
     let searchTerm = term.toLowerCase();
@@ -67,13 +59,41 @@ const ConsultGridView = ({
       item[column].toString().toLowerCase().includes(searchTerm)
     );
 
-    const sorted = filtered.sort((a, b) => {
+    const sorted = filtered.toSorted((a, b) => {
       if (a[column] < b[column]) return order === "asc" ? -1 : 1;
       if (a[column] > b[column]) return order === "asc" ? 1 : -1;
       return 0;
     });
 
     setFilteredItems(sorted);
+  };
+
+  const handleOpenAdd = () => {
+    setOpenAdd(true);
+  };
+
+  const handleCloseAdd = () => {
+    setOpenAdd(false);
+  };
+
+  const handleOpenMod = (selectedItem) => {
+    setSelectedItem(selectedItem);
+    setOpenMod(true);
+  };
+
+  const handleCloseMod = () => {
+    setSelectedItem(null);
+    setOpenMod(false);
+  };
+
+  const handleOpenDel = (selectedItem) => {
+    setSelectedItem(selectedItem);
+    setOpenDel(true);
+  };
+
+  const handleCloseDel = () => {
+    setSelectedItem(null);
+    setOpenDel(false);
   };
 
   return (
@@ -111,7 +131,54 @@ const ConsultGridView = ({
             <CircularProgress />
           </div>
         ) : (
-          <CardList items={filteredItems} />
+          <CardList
+            items={filteredItems}
+            openDelModal={handleOpenDel}
+            openModModal={handleOpenMod}
+            hasStatus={hasStatus}
+          />
+        )}
+        {openAdd && (
+          <AddModal
+            open={openAdd}
+            handleClose={handleCloseAdd}
+            addUrl={addUrl}
+            onAdd={async (message, severity) => {
+              notify(message, severity);
+              handleCloseAdd();
+              await fetchItems();
+            }}
+            itemName={itemDisplayName}
+          />
+        )}
+        {openMod && (
+          <ModifyModal
+            open={openMod}
+            handleClose={handleCloseMod}
+            modificationUrl={modificationUrl}
+            onMod={async (message, severity) => {
+              notify(message, severity);
+              handleCloseMod();
+              await fetchItems();
+            }}
+            itemName={itemDisplayName}
+            selectedItem={selectedItem}
+          />
+        )}
+        {openDel && (
+          <DeactivateModal
+            open={openDel}
+            handleClose={handleCloseDel}
+            deletionUrl={deletionUrl}
+            onDelete={async (message, severity) => {
+              notify(message, severity);
+              handleCloseDel();
+              await fetchItems();
+            }}
+            itemName={itemDisplayName}
+            selectedItem={selectedItem}
+            isRestorable={hasStatus}
+          />
         )}
       </div>
     </div>

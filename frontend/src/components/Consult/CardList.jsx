@@ -76,7 +76,7 @@ CardList.propTypes = {
   openDelModal: PropTypes.func.isRequired,
   openModModal: PropTypes.func.isRequired,
   onRestore: PropTypes.func.isRequired,
-  hasStatus: PropTypes.bool.isRequired,
+  hasStatus: PropTypes.bool,
 };
 
 export default CardList;

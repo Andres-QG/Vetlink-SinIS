@@ -2829,7 +2829,7 @@ def consult_clinic_vaccines(request):
 
         if page is not None:
             vacunas_list = [
-                {"estado": vacuna.estado, "descripcion": vacuna.descripcion, "nombre": vacuna.nombre, "vacuna_id": vacuna.vacuna_id}
+                {"estado": vacuna.estado, "descripcion": vacuna.descripcion, "nombre": vacuna.nombre, "id": vacuna.vacuna_id}
                 for vacuna in page
             ]
             return paginator.get_paginated_response(vacunas_list)
