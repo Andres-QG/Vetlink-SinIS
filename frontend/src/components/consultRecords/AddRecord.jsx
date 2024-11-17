@@ -2,6 +2,9 @@ import React, { useState, forwardRef } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
 import Tag from "../Tag";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import {
   TextField,
   Button,
@@ -18,7 +21,9 @@ import {
   MonitorWeight as MonitorWeightIcon,
   Pets as PetsIcon,
   MedicalInformation as MedicalInformationIcon,
+  CalendarMonth as CalendarIcon,
 } from "@mui/icons-material";
+import dayjs from "dayjs";
 
 const AddRecord = forwardRef(
   ({ open, handleClose, onSuccess, otherData }, ref) => {
@@ -179,6 +184,8 @@ const AddRecord = forwardRef(
             bgcolor: "#fff",
             width: "100%",
             maxWidth: "500px",
+            maxHeight: "90vh",
+            overflowY: "auto",
             mx: "auto",
           }}
         >
@@ -239,21 +246,39 @@ const AddRecord = forwardRef(
               }}
             />
 
-            <TextField
-              label="Fecha y hora de consulta*"
-              type="datetime-local"
-              variant="outlined"
-              fullWidth
-              name="fecha"
-              value={formData.fecha}
-              onChange={handleChange}
-              error={!!errors.fecha}
-              helperText={errors.fecha}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              sx={{ mb: 2 }}
-            />
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DateTimePicker
+                label="Fecha y hora de consulta*"
+                value={formData.fecha ? dayjs(formData.fecha) : null}
+                onChange={(newValue) => {
+                  setFormData({
+                    ...formData,
+
+                    fecha: newValue ? newValue.format("YYYY-MM-DDTHH:mm") : "",
+                  });
+                }}
+                slots={{
+                  openPickerIcon: CalendarIcon,
+                }}
+                slotProps={{
+                  textField: {
+                    variant: "outlined",
+
+                    fullWidth: true,
+
+                    error: !!errors.fecha,
+
+                    helperText: errors.fecha,
+                  },
+
+                  openPickerButton: {
+                    sx: { marginLeft: 0, marginRight: "10px", order: -1 },
+                  },
+                }}
+                sx={{ mb: 2, width: "100%" }}
+                timeSteps={{ minutes: 5 }}
+              />
+            </LocalizationProvider>
 
             <TextField
               label="Peso (Kg)*"
