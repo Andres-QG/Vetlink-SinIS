@@ -34,6 +34,7 @@ const ModifyModal = ({
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [isModified, setIsModified] = useState(false);
 
   useEffect(() => {
     if (selectedItem) {
@@ -65,6 +66,7 @@ const ModifyModal = ({
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+    setIsModified(true);
   };
 
   const handleSubmit = async (e) => {
@@ -182,7 +184,7 @@ const ModifyModal = ({
               variant="contained"
               type="submit"
               fullWidth
-              disabled={loading}
+              disabled={loading || !isModified}
               startIcon={loading && <CircularProgress size={20} />}
             >
               {loading ? "Modificando..." : `Modificar ${itemName}`}

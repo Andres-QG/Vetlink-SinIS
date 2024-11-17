@@ -27,7 +27,7 @@ import DashBoardLayout from "./components/DashBoardLayout";
 import Dashboard from "./routes/Dashboard";
 import { NotificationProvider } from "./components/Notification";
 import ConsultCitas from "./routes/ConsultCitas";
-import ConsultVaccines from "./components/consultVaccines/ConsultVaccines";
+import ConsultVaccines from "./routes/ConsultVaccines";
 
 function App() {
   return (

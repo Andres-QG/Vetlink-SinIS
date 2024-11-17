@@ -33,18 +33,25 @@ const ConsultGridView = ({
   const fetchItems = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(fetchUrl);
-      setItems(response.data.results);
-      setFilteredItems(response.data.results);
+      let allItems = [];
+      let nextPage = fetchUrl;
+      while (nextPage) {
+        const response = await axios.get(nextPage);
+        allItems = allItems.concat(response.data.results);
+        nextPage = response.data.next;
+      }
+      setItems(allItems);
+      setFilteredItems(allItems);
     } catch (error) {
       console.error(`Error fetching ${itemDisplayName}:`, error);
     } finally {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     fetchItems();
-  }, [fetchUrl, itemDisplayName]);
+  }, []);
 
   const handleSearch = (term, column, order) => {
     let searchTerm = term.toLowerCase();

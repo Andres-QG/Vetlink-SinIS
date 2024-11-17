@@ -1,5 +1,5 @@
 import React from "react";
-import ConsultGridView from "../Consult/ConsultGridView";
+import ConsultGridView from "../components/Consult/ConsultGridView";
 
 const ConsultVaccines = () => {
   return (
@@ -10,7 +10,6 @@ const ConsultVaccines = () => {
       deletionUrl="http://localhost:8000/api/deactivate-clinic-vaccine/"
       restoreUrl="http://localhost:8000/api/restore-clinic-vaccine/"
       columns={["nombre", "descripcion", "estado"]}
-      itemKey="id"
       itemDisplayName="Vacunas"
       hasStatus={true}
     />
