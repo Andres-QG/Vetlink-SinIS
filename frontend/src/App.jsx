@@ -28,6 +28,7 @@ import Dashboard from "./routes/Dashboard";
 import { NotificationProvider } from "./components/Notification";
 import ConsultCitas from "./routes/ConsultCitas";
 import ConsultVaccines from "./routes/ConsultVaccines";
+import ConsultMyPaymentMethods from "./routes/ConsultMyPaymentMethods";
 
 function App() {
   return (
@@ -117,6 +118,20 @@ function App() {
                   <ProtectedRoute requiredRoles={[1, 2, 3, 4]}>
                     <Dashboard />
                   </ProtectedRoute>
+                </DashBoardLayout>
+              }
+            />
+
+            {/* consult My Payment Methods */}
+            <Route
+              path="/consultMyPaymentMethods"
+              element={
+                <DashBoardLayout>
+                  <NotificationProvider>
+                    <ProtectedRoute requiredRoles={[4]}>
+                      <ConsultMyPaymentMethods />
+                    </ProtectedRoute>
+                  </NotificationProvider>
                 </DashBoardLayout>
               }
             />
