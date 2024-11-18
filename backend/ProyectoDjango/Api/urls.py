@@ -1,6 +1,5 @@
 from django.urls import path
-#from .views import *
-from .views2 import *
+from .views import *
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -63,7 +62,13 @@ urlpatterns = [
         name="delete_pet_record",
     ),
     # Vacunas
-    path("consult-vaccines/", consult_vaccines, name="consult_vaccines"),
+    path("consult-vaccines/", consult_vaccines, name="consult_vaccines"), # Vacunas para expediente
+    # vacunas para listado de vacunas
+    path("consult-clinic-vaccines/", consult_clinic_vaccines, name="consult_clinic_vaccines"),
+    path("add-clinic-vaccine/", add_clinic_vaccine, name="add_clinic_vaccine"),
+    path("update-clinic-vaccine/<int:vacuna_id>/", update_clinic_vaccine, name="update_clinic_vaccine"),
+    path("deactivate-clinic-vaccine/<int:vacuna_id>/", deactivate_clinic_vaccine, name="deactivate_clinic_vaccine"),
+    path("restore-clinic-vaccine/<int:vacuna_id>/", restore_clinic_vaccine, name="restore_clinic_vaccine"),
     # Sintomas
     path("consult-symptoms/", consult_symptoms, name="consult_symptoms"),
     # Tratamientos

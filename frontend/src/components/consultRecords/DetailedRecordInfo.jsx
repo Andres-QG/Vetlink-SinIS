@@ -39,6 +39,8 @@ const DetailedRecordInfo = ({ open, handleClose, selectedItem }) => {
           bgcolor: "#fff",
           width: "100%",
           maxWidth: "500px",
+          maxHeight: "90vh",
+          overflowY: "auto",
           mx: "auto",
         }}
         className="p-6 bg-white rounded-lg shadow-lg"
@@ -50,7 +52,7 @@ const DetailedRecordInfo = ({ open, handleClose, selectedItem }) => {
         >
           <CloseIcon />
         </IconButton>
-        <h2 className="text-xl font-bold flex items-center">
+        <h2 className="text-xl font-bold flex items-center mr-2">
           <AssignmentIcon sx={{ mr: 1 }} />
           Expediente de consulta ID: {details.consulta_id} de{" "}
           {details.nombre_mascota}

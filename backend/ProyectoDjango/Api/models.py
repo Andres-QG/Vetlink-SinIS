@@ -765,7 +765,7 @@ class Usuarios(models.Model):
 
 
 class Vacunas(models.Model):
-    vacuna_id = models.FloatField(
+    vacuna_id = models.AutoField(
         primary_key=True,
         db_comment="Este campo es la llave primaria de la tabla. Almacena un identificador ·nico para cada vacuna, lo que permite distinguir claramente entre diferentes vacunas.",
     )
@@ -778,6 +778,10 @@ class Vacunas(models.Model):
     nombre = models.CharField(
         max_length=30,
         db_comment="Este campo almacena el nombre de la vacuna. Es fundamental para identificar rßpidamente la vacuna en la base de datos y en las interacciones con los clientes.",
+    )
+
+    estado = models.FloatField(
+        max_length=1
     )
 
     class Meta:

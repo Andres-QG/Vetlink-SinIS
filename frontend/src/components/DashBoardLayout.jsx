@@ -32,6 +32,7 @@ import ClientsIcon from "@mui/icons-material/Group";
 import VetsIcon from "@mui/icons-material/MedicalServices";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import PetsIconAlt from "@mui/icons-material/Pets";
+import { Vaccines } from "@mui/icons-material";
 
 const { Header, Content, Sider, Footer } = Layout;
 
@@ -216,6 +217,12 @@ const DashboardLayout = ({
             icon: <AssignmentIcon />,
             label: "Expedientes",
             onClick: () => handleClick("consultrecords"),
+          },
+          {
+            key: "consultvaccines",
+            icon: <Vaccines />,
+            label: "Vacunas",
+            onClick: () => handleClick("consultvaccines"),
           },
         ]
       : []),
