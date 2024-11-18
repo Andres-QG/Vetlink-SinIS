@@ -1,6 +1,5 @@
 from .common import *
 
-
 from stripe.error import StripeError
 
 @api_view(["POST"])
@@ -28,6 +27,7 @@ def create_payment(request):
             receipt_email=email,
             description=description,
             confirm=True,
+            return_url="https://localhost:5174/appointments",
         )
 
         return Response(
@@ -41,6 +41,7 @@ def create_payment(request):
         )
 
     except StripeError as e:
+        print(str(e))
         # Handle Stripe-specific errors
         return Response(
             {"error": f"Stripe error: {str(e)}"},
