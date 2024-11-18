@@ -1,12 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
-  TextField,
   Typography,
   Grid,
   Button,
   Stack,
   InputAdornment,
+  TextField,
+  Autocomplete,
+  CircularProgress,
 } from "@mui/material";
 import {
   Home as HomeIcon,
@@ -15,12 +17,15 @@ import {
   MailOutline as MailIcon,
   Person as PersonIcon,
   CreditCard as CreditCardIcon,
-  CalendarToday as CalendarIcon,
 } from "@mui/icons-material";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { es } from "date-fns/locale";
 import visaIcon from "../../assets/img/payments/visa.png";
 import paypalIcon from "../../assets/img/payments/paypal.png";
 import mastercardIcon from "../../assets/img/payments/MasterCard.png";
 import americanExpressIcon from "../../assets/img/payments/american-express.png";
+import axios from "axios";
 
 const AddPaymentMethod = () => {
   const [form, setForm] = useState({
@@ -30,10 +35,46 @@ const AddPaymentMethod = () => {
     codigoPostal: "",
     nombreTitular: "",
     numeroTarjeta: "",
-    fechaExpiracion: "",
+    fechaExpiracion: null,
   });
 
   const [errors, setErrors] = useState({});
+  const [countries, setCountries] = useState([]);
+  const [provinces, setProvinces] = useState([]);
+  const [loadingCountries, setLoadingCountries] = useState(true);
+  const [loadingProvinces, setLoadingProvinces] = useState(false);
+
+  useEffect(() => {
+    const fetchCountries = async () => {
+      try {
+        const response = await axios.get("https://restcountries.com/v3.1/all");
+        const countryList = response.data.map((country) => country.name.common);
+        setCountries(countryList.sort());
+      } catch (error) {
+        console.error("Error fetching countries:", error);
+      } finally {
+        setLoadingCountries(false);
+      }
+    };
+    fetchCountries();
+  }, []);
+
+  const fetchProvinces = async (country) => {
+    setLoadingProvinces(true);
+    try {
+      const response = await axios.post(
+        "https://countriesnow.space/api/v0.1/countries/states",
+        { country }
+      );
+      const provinceList = response.data.data.states.map((state) => state.name);
+      setProvinces(provinceList.sort());
+    } catch (error) {
+      console.error("Error fetching provinces:", error);
+      setProvinces([]);
+    } finally {
+      setLoadingProvinces(false);
+    }
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -50,12 +91,8 @@ const AddPaymentMethod = () => {
     if (!form.numeroTarjeta || !/^\d{16}$/.test(form.numeroTarjeta))
       newErrors.numeroTarjeta =
         "El número de tarjeta es obligatorio y debe contener 16 dígitos.";
-    if (
-      !form.fechaExpiracion ||
-      !/^(0[1-9]|1[0-2])\/\d{2}$/.test(form.fechaExpiracion)
-    )
-      newErrors.fechaExpiracion =
-        "La fecha de expiración es obligatoria y debe tener el formato MM/AA.";
+    if (!form.fechaExpiracion)
+      newErrors.fechaExpiracion = "La fecha de expiración es obligatoria.";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -68,6 +105,14 @@ const AddPaymentMethod = () => {
   const handleChange = (field, value) => {
     setForm({ ...form, [field]: value });
     setErrors({ ...errors, [field]: undefined });
+
+    if (field === "pais") {
+      setProvinces([]);
+      setForm((prevForm) => ({ ...prevForm, provincia: "" }));
+      if (value) {
+        fetchProvinces(value);
+      }
+    }
   };
 
   return (
@@ -101,41 +146,73 @@ const AddPaymentMethod = () => {
           />
         </Grid>
         <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="Provincia"
-            placeholder="Ingrese su provincia (Ejemplo: San José)"
-            variant="outlined"
-            value={form.provincia}
-            onChange={(e) => handleChange("provincia", e.target.value)}
-            error={!!errors.provincia}
-            helperText={errors.provincia}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <LocationCityIcon />
-                </InputAdornment>
-              ),
-            }}
+          <Autocomplete
+            options={countries}
+            loading={loadingCountries}
+            value={form.pais}
+            onChange={(event, newValue) => handleChange("pais", newValue)}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                fullWidth
+                label="País"
+                placeholder="Seleccione un país"
+                variant="outlined"
+                error={!!errors.pais}
+                helperText={errors.pais}
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PublicIcon />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <>
+                      {loadingCountries ? (
+                        <CircularProgress color="inherit" size={20} />
+                      ) : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+              />
+            )}
           />
         </Grid>
         <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="País"
-            placeholder="Ingrese su país (Ejemplo: Costa Rica)"
-            variant="outlined"
-            value={form.pais}
-            onChange={(e) => handleChange("pais", e.target.value)}
-            error={!!errors.pais}
-            helperText={errors.pais}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <PublicIcon />
-                </InputAdornment>
-              ),
-            }}
+          <Autocomplete
+            options={provinces}
+            loading={loadingProvinces}
+            value={form.provincia}
+            onChange={(event, newValue) => handleChange("provincia", newValue)}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                fullWidth
+                label="Provincia"
+                placeholder="Seleccione una provincia"
+                variant="outlined"
+                error={!!errors.provincia}
+                helperText={errors.provincia}
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LocationCityIcon />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <>
+                      {loadingProvinces ? (
+                        <CircularProgress color="inherit" size={20} />
+                      ) : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+              />
+            )}
           />
         </Grid>
         <Grid item xs={12} sm={6}>
@@ -250,23 +327,36 @@ const AddPaymentMethod = () => {
           />
         </Grid>
         <Grid item xs={12}>
-          <TextField
-            fullWidth
-            label="Fecha de expiración"
-            placeholder="MM/AA (Ejemplo: 12/25)"
-            variant="outlined"
-            value={form.fechaExpiracion}
-            onChange={(e) => handleChange("fechaExpiracion", e.target.value)}
-            error={!!errors.fechaExpiracion}
-            helperText={errors.fechaExpiracion}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <CalendarIcon />
-                </InputAdornment>
-              ),
-            }}
-          />
+          <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
+            <DatePicker
+              label="Fecha de Expiración"
+              views={["year", "month"]}
+              value={
+                form.fechaExpiracion ? new Date(form.fechaExpiracion) : null
+              } // Convertimos al tipo Date
+              onChange={(date) => {
+                const formattedDate = date
+                  ? `${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`
+                  : "";
+                handleChange("fechaExpiracion", formattedDate);
+              }}
+              format="MM/yyyy" // Mostramos el formato MM/YYYY
+              slotProps={{
+                openPickerButton: {
+                  color: "standard",
+                },
+                inputAdornment: {
+                  position: "start",
+                  size: "small",
+                },
+                textField: {
+                  fullWidth: true,
+                  error: !!errors.fechaExpiracion,
+                  helperText: errors.fechaExpiracion,
+                },
+              }}
+            />
+          </LocalizationProvider>
         </Grid>
       </Grid>
 
