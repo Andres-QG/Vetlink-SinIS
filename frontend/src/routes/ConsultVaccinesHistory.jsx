@@ -27,10 +27,8 @@ const ConsultVaccinesHistory = () => {
       fetchUrl="http://localhost:8000/api/consult-vaccines-history/"
       rowsPerPage={rowsPerPage}
       columns={columns}
-      disableAddButton={true}
-      disableModifyAction={true}
-      disableDeleteAction={true}
-      disableReactivateAction={true}
+      hideActions={true}
+      hideAddButton={true}
     />
   );
 };
