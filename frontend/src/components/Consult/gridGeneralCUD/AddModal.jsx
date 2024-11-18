@@ -35,11 +35,19 @@ const AddModal = ({ open, handleClose, onAdd, addUrl, itemName }) => {
       newErrors.nombre = "El nombre es requerido.";
     } else if (!validateName(formData.nombre)) {
       newErrors.nombre =
-        "El nombre solo puede contener letras, espacios, ñ, tildes y ü.";
+        "El nombre solo puede contener números, letras, espacios, ñ, tildes y ü.";
+    } else if (formData.nombre.length < 3 || formData.nombre.length > 49) {
+      newErrors.nombre = "El nombre debe tener entre 3 y 49 caracteres.";
     }
 
     if (!formData.descripcion) {
       newErrors.descripcion = "La descripción es requerida.";
+    } else if (
+      formData.descripcion.length < 10 ||
+      formData.descripcion.length > 99
+    ) {
+      newErrors.descripcion =
+        "La descripción debe tener entre 10 y 99 caracteres.";
     }
 
     setErrors(newErrors);

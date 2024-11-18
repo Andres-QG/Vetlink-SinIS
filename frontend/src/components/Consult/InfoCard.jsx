@@ -13,7 +13,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import RestoreIcon from "@mui/icons-material/Restore";
 
-const DESCRIPTION_CHAR_LIMIT = 100;
+const DESCRIPTION_CHAR_LIMIT = 50;
 
 export default function InfoCard({
   item,
@@ -86,6 +86,11 @@ export default function InfoCard({
             mb: 2,
             fontSize: "1rem",
             lineHeight: 1.5,
+            wordWrap: "break-word",
+            overflowWrap: "break-word",
+            maxHeight: isExpanded ? "none" : "4.5em",
+            textOverflow: "ellipsis",
+            overflow: "hidden",
           }}
         >
           {isExpanded
