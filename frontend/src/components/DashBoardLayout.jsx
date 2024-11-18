@@ -327,6 +327,10 @@ const DashboardLayout = ({
         return "consultCitas";
       case "/dashboard":
         return "dashboard";
+      case "/consultvaccines":
+        return "consultvaccines";
+      case "/consultVaccinations":
+        return "consultVaccinations";
       default:
         return "dashboard";
     }
