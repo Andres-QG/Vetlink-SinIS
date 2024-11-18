@@ -127,12 +127,12 @@ def consult_vaccines_history(request):
         with connection.cursor() as cursor:
             result_set_cursor = cursor.connection.cursor()
             cursor.callproc('VETLINK.ConsultarVacunasPorUsuario', [logged_user, result_set_cursor])
-            columns = [col[0] for col in result_set_cursor.description]
+            columns = [col[0].lower() for col in result_set_cursor.description]  
             results = [
                 dict(zip(columns, row))
                 for row in result_set_cursor.fetchall()
             ]
         result_set_cursor.close()
-        return JsonResponse({'success': True, 'data': results}, status=200)
+        return JsonResponse({'success': True, 'results': results}, status=200)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)

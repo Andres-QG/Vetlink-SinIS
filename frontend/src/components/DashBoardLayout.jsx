@@ -274,6 +274,12 @@ const DashboardLayout = ({
             onClick: () => handleClick("consultMyPets"),
           },
           {
+            key: "consultVaccinations",
+            icon: <Vaccines />,
+            label: "Vacunación",
+            onClick: () => handleClick("consultVaccinations"),
+          },
+          {
             key: "consultMyPaymentMethods",
             icon: <PaymentIcon />,
             label: "Métodos de Pago",
