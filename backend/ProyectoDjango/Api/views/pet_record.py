@@ -217,6 +217,7 @@ def fetch_pet_records_from_db():
         result_set_cursor = cursor.connection.cursor()
         cursor.callproc("VETLINK.ConsultarExpedientes", [result_set_cursor])
         pet_records = result_set_cursor.fetchall()
+        result_set_cursor.close()
 
     pet_records_list = []
     for entry in pet_records:

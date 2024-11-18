@@ -69,6 +69,8 @@ urlpatterns = [
     path("update-clinic-vaccine/<int:vacuna_id>/", update_clinic_vaccine, name="update_clinic_vaccine"),
     path("deactivate-clinic-vaccine/<int:vacuna_id>/", deactivate_clinic_vaccine, name="deactivate_clinic_vaccine"),
     path("restore-clinic-vaccine/<int:vacuna_id>/", restore_clinic_vaccine, name="restore_clinic_vaccine"),
+    # Vacunas para historial de vacunación
+    path("consult-vaccines-history/", consult_vaccines_history, name="consult_vaccines_history"),
     # Sintomas
     path("consult-symptoms/", consult_symptoms, name="consult_symptoms"),
     # Tratamientos
