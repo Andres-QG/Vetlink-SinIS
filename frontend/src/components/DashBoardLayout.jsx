@@ -32,6 +32,7 @@ import ClientsIcon from "@mui/icons-material/Group";
 import VetsIcon from "@mui/icons-material/MedicalServices";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import PetsIconAlt from "@mui/icons-material/Pets";
+import PaymentIcon from "@mui/icons-material/Payment";
 
 const { Header, Content, Sider, Footer } = Layout;
 
@@ -265,6 +266,12 @@ const DashboardLayout = ({
             label: "Mis Mascotas",
             onClick: () => handleClick("consultMyPets"),
           },
+          {
+            key: "consultMyPaymentMethods",
+            icon: <PaymentIcon />,
+            label: "Métodos de Pago",
+            onClick: () => handleClick("consultMyPaymentMethods"),
+          },
         ]
       : []),
     ...(role <= 4
@@ -297,6 +304,8 @@ const DashboardLayout = ({
         return "consultClinics";
       case "/consultMyPets":
         return "consultMyPets";
+      case "/consultMyPaymentMethods":
+        return "consultMyPaymentMethods";
       case "/Owner":
         return "consultClinics";
       case "/consultAdmins":
