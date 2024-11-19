@@ -1,5 +1,6 @@
 from .common import *
 
+
 @api_view(["GET"])
 def consult_treatments(request):
     search = request.GET.get("search", "")
@@ -14,71 +15,111 @@ def consult_treatments(request):
 
         treatments = treatments.order_by(f"-{column}" if order == "desc" else column)
 
-        serializer = TratamientosSerializer(treatments, many=True)
+        # Paginación
+        paginator = CustomPagination()
+        page = paginator.paginate_queryset(treatments, request)
+
+        serializer = TratamientosSerializer(page, many=True)
         data = serializer.data
 
         # Renombrar 'tratamiento_id' a 'id' en los datos serializados
         for item in data:
             item["id"] = item.pop("tratamiento_id")
 
-        return Response(data, status=status.HTTP_200_OK)
+        return paginator.get_paginated_response(data)
     except Exception as e:
         print(f"Error fetching treatments: {str(e)}")
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response([], status=status.HTTP_200_OK)
 
 
 @api_view(["POST"])
 def add_treatment(request):
     try:
-        serializer = TratamientosSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(
-                {"message": "Tratamiento agregado con éxito."},
-                status=status.HTTP_201_CREATED,
+        nombre = request.data.get("nombre")
+        descripcion = request.data.get("descripcion")
+
+        if not all([nombre, descripcion]):
+            return JsonResponse(
+                {"success": False, "error": "Todos los campos son requeridos"},
+                status=400,
             )
-        else:
-            return Response(
-                {"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
-            )
+
+        Tratamientos.objects.create(
+            nombre=nombre,
+            descripcion=descripcion,
+            estado=1,  # Estado activo por defecto
+        )
+
+        return JsonResponse(
+            {"success": True, "message": "Tratamiento agregado correctamente"},
+            status=201,
+        )
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
 
 
 @api_view(["PUT"])
 def update_treatment(request, id):
     try:
         treatment = Tratamientos.objects.get(pk=id)
-        serializer = TratamientosSerializer(treatment, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(
-                {"message": "Tratamiento actualizado con éxito."},
-                status=status.HTTP_200_OK,
+        nombre = request.data.get("nombre")
+        descripcion = request.data.get("descripcion")
+
+        if not all([nombre, descripcion]):
+            return JsonResponse(
+                {"success": False, "error": "Todos los campos son requeridos"},
+                status=400,
             )
-        else:
-            return Response(
-                {"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
-            )
+
+        treatment.nombre = nombre
+        treatment.descripcion = descripcion
+        treatment.save()
+
+        return JsonResponse(
+            {"success": True, "message": "Tratamiento actualizado correctamente"},
+            status=200,
+        )
     except Tratamientos.DoesNotExist:
-        return Response(
-            {"error": "Tratamiento no encontrado."}, status=status.HTTP_404_NOT_FOUND
+        return JsonResponse(
+            {"success": False, "error": "Tratamiento no encontrado"}, status=404
         )
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
 
 
-@api_view(["DELETE"])
-def delete_treatment(request, id):
+@api_view(["PUT"])
+def deactivate_treatment(request, id):
     try:
         treatment = Tratamientos.objects.get(pk=id)
-        treatment.delete()
-        return Response(
-            {"message": "Tratamiento eliminado con éxito."}, status=status.HTTP_200_OK
+        treatment.estado = 0  # Desactivar
+        treatment.save()
+
+        return JsonResponse(
+            {"success": True, "message": "Tratamiento desactivado correctamente"},
+            status=200,
         )
     except Tratamientos.DoesNotExist:
-        return Response(
-            {"error": "Tratamiento no encontrado."}, status=status.HTTP_404_NOT_FOUND
+        return JsonResponse(
+            {"success": False, "error": "Tratamiento no encontrado"}, status=404
         )
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+
+@api_view(["PUT"])
+def restore_treatment(request, id):
+    try:
+        treatment = Tratamientos.objects.get(pk=id)
+        treatment.estado = 1  # Activar
+        treatment.save()
+
+        return JsonResponse(
+            {"success": True, "message": "Tratamiento activado correctamente"},
+            status=200,
+        )
+    except Tratamientos.DoesNotExist:
+        return JsonResponse(
+            {"success": False, "error": "Tratamiento no encontrado"}, status=404
+        )
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=500)

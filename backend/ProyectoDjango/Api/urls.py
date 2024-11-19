@@ -98,7 +98,10 @@ urlpatterns = [
     path("consult-treatments/", consult_treatments, name="consult_treatments"),
     path("add-treatment/", add_treatment, name="add_treatment"),
     path("update-treatment/<int:id>/", update_treatment, name="update_treatment"),
-    path("delete-treatment/<int:id>/", delete_treatment, name="delete_treatment"),
+    path(
+        "deactivate-treatment/<int:id>/", deactivate_treatment, name="delete_treatment"
+    ),
+    path("restore-treatment/<int:id>/", restore_treatment, name="restore_treatment"),
     # Citas APIs
     path("consult-citas/", consult_citas, name="consult_citas"),
     path("add-cita/", add_cita, name="add_cita"),
