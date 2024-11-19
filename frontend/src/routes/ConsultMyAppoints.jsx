@@ -22,7 +22,6 @@ import {
   CalendarToday as CalendarTodayIcon,
 } from "@mui/icons-material";
 import { Elements } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
 import SearchBar from "../components/Consult/GeneralizedSearchBar";
 import { useNotification } from "../components/Notification";
 import Grid2 from "@mui/material/Grid2";
@@ -49,8 +48,6 @@ const ConsultMyAppoints = () => {
     clientes: [],
     veterinarios: [],
   });
-
-  const stripePromise = loadStripe("pk_test_51QLypMFlNacvOPfn04CgaWzXQXqJ524WVHJAEn2q0ebrAOcEWDBHRUdkj7dDgPuMyyKxpggIVDHNr7RBqo8Fuvsj00AgzIBn7U");
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -409,9 +406,7 @@ const ConsultMyAppoints = () => {
             )}
             {tabIndex === 1 && (
               <Box sx={{ width: "100%" }}>
-                <Elements stripe={stripePromise}>
                   <AddCitaPage otherData={otherData}></AddCitaPage>
-                </Elements>
               </Box>
             )}
           </Box>

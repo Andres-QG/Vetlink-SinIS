@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   Modal,
   Box,
@@ -30,7 +30,8 @@ import {
   CreditCard as CreditCardIcon,
   Lock as LockIcon
 } from "@mui/icons-material";
-import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
+import { CardElement } from "@stripe/react-stripe-js";
+import StripeContext from "../../context/StripeContext";
 import Tag from "../Tag";
 import { parseISO, isValid, add } from "date-fns";
 import axios from "axios";
@@ -39,10 +40,9 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { es } from "date-fns/locale";
 
-const AddCitaModal = ({ open, handleClose, onSuccess, otherData }) => {
-  const stripe = useStripe();
-  const elements = useElements();
+const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
 
+  const { stripe, elements } = useContext(StripeContext);
   const initialFormData = {
     cliente: otherData?.user?.role === 4 ? otherData?.user?.role : null,
     veterinario: null,

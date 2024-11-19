@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   Box,
   Typography,
@@ -23,7 +23,7 @@ import {
   ArrowDropDown as ArrowDropDownIcon,
   CreditCard as CreditCardIcon,
 } from "@mui/icons-material";
-import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
+import { CardElement } from "@stripe/react-stripe-js";
 import Tag from "../Tag";
 import { isValid } from "date-fns";
 import axios from "axios";
@@ -31,10 +31,10 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { es } from "date-fns/locale";
+import StripeContext from "../../context/StripeContext";
 
-const AddCitaPage = ({ onSuccess, otherData }) => {
-  const stripe = useStripe();
-  const elements = useElements();
+const AddCitaPage = ({ onSuccess, otherData}) => {
+  const { stripe, elements} = useContext(StripeContext);
 
   const initialFormData = {
     cliente: otherData?.user || null,
@@ -187,8 +187,6 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
       await addCita();
     }
   };
-
-  console.log(formData)
 
   const addCita = async () => {
     setLoading(true);
