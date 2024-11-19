@@ -154,7 +154,7 @@ const ConsultGridView = ({
             items={filteredItems}
             openDelModal={handleOpenDel}
             openModModal={handleOpenMod}
-            onRestore={onRestore}
+            onRestore={restoreUrl ? onRestore : null}
             hasStatus={hasStatus}
           />
         )}
@@ -210,10 +210,10 @@ ConsultGridView.propTypes = {
   addUrl: PropTypes.string.isRequired,
   deletionUrl: PropTypes.string.isRequired,
   modificationUrl: PropTypes.string.isRequired,
-  restoreUrl: PropTypes.string.isRequired,
+  restoreUrl: PropTypes.string,
   columns: PropTypes.arrayOf(PropTypes.string).isRequired,
   itemDisplayName: PropTypes.string.isRequired,
-  hasStatus: PropTypes.bool,
+  hasStatus: PropTypes.bool.isRequired,
 };
 
 export default ConsultGridView;

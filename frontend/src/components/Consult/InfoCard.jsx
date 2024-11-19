@@ -35,7 +35,18 @@ export default function InfoCard({
     setIsExpanded(!isExpanded);
   };
 
-  const isActive = item.estado === 1;
+  let isActive = false;
+  if (hasStatus) {
+    isActive = item.estado === 1;
+  }
+
+  const handleAction = () => {
+    if (hasStatus && !isActive && onRestore) {
+      onRestore(item);
+    } else {
+      openDelModal(item);
+    }
+  };
 
   return (
     <Card
@@ -148,23 +159,13 @@ export default function InfoCard({
 
           <Button
             startIcon={
-              hasStatus ? (
-                isActive ? (
-                  <DeleteIcon sx={{ fontSize: 20 }} />
-                ) : (
-                  <RestoreIcon sx={{ fontSize: 20 }} />
-                )
+              hasStatus && !isActive ? (
+                <RestoreIcon sx={{ fontSize: 20 }} />
               ) : (
                 <DeleteIcon sx={{ fontSize: 20 }} />
               )
             }
-            onClick={() =>
-              hasStatus
-                ? isActive
-                  ? openDelModal(item)
-                  : onRestore(item)
-                : openDelModal(item)
-            }
+            onClick={handleAction}
             fullWidth={isMobile}
             sx={{
               textTransform: "none",
@@ -172,18 +173,10 @@ export default function InfoCard({
               fontSize: "1rem",
               padding: "8px 16px",
               minWidth: "auto",
-              backgroundColor: hasStatus
-                ? isActive
-                  ? "#dc3545"
-                  : "#28a745"
-                : "#dc3545",
+              backgroundColor: hasStatus && isActive ? "#dc3545" : "#28a745",
               borderRadius: "4px",
               "&:hover": {
-                backgroundColor: hasStatus
-                  ? isActive
-                    ? "#c82333"
-                    : "#218838"
-                  : "#c82333",
+                backgroundColor: hasStatus && isActive ? "#c82333" : "#218838",
               },
             }}
           >
