@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
+
 import os
 from pathlib import Path
 
@@ -34,6 +35,12 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
+# Variables de entorno para encriptación en metodos de pago
+ENCRYPTION_KEY = os.getenv(
+    "ENCRYPTION_KEY", "OWaJeuFRQDvzTSgDvOGjx758sk5Vzvuda00XMlIrUSs="
+)
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -43,7 +50,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "corsheaders", 
+    "corsheaders",
     "rest_framework",
     "Api",
 ]
@@ -59,16 +66,16 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_COOKIE_NAME = 'sesh_cookie'
-SESSION_COOKIE_SAMESITE = 'None'
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
+SESSION_COOKIE_NAME = "sesh_cookie"
+SESSION_COOKIE_SAMESITE = "None"
 SESSION_COOKIE_SECURE = True
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_ALLOW_ALL = True
 # SENDGRID_API_KEY = ''
-STRIPE_SECRET_KEY = 'sk_test_51QLypMFlNacvOPfn2qDh3nva9ee7WkoDyAOrvmmcglXyUzkxwBpJNlAL5gaZRYJhH7VRoDsEiHywYLUxQW02R8Gd007X03wSjQ'
-STRIPE_PUBLISHABLE_KEY = 'pk_test_51QLypMFlNacvOPfn04CgaWzXQXqJ524WVHJAEn2q0ebrAOcEWDBHRUdkj7dDgPuMyyKxpggIVDHNr7RBqo8Fuvsj00AgzIBn7U'
+STRIPE_SECRET_KEY = "sk_test_51QLypMFlNacvOPfn2qDh3nva9ee7WkoDyAOrvmmcglXyUzkxwBpJNlAL5gaZRYJhH7VRoDsEiHywYLUxQW02R8Gd007X03wSjQ"
+STRIPE_PUBLISHABLE_KEY = "pk_test_51QLypMFlNacvOPfn04CgaWzXQXqJ524WVHJAEn2q0ebrAOcEWDBHRUdkj7dDgPuMyyKxpggIVDHNr7RBqo8Fuvsj00AgzIBn7U"
 ROOT_URLCONF = "ConfiguracionProyecto.urls"
 
 TEMPLATES = [
