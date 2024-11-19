@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from "react";
+import React, { createContext } from "react";
 import { useStripe, useElements } from "@stripe/react-stripe-js";
 
 const StripeContext = createContext();

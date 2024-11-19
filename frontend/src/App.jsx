@@ -39,7 +39,7 @@ import ConsultMyAppoints from "./routes/ConsultMyAppoints";
 
 function App() {
 
-  const stripePromise = loadStripe("your-public-key-here");
+  const stripePromise = loadStripe("pk_test_51QLypMFlNacvOPfn04CgaWzXQXqJ524WVHJAEn2q0ebrAOcEWDBHRUdkj7dDgPuMyyKxpggIVDHNr7RBqo8Fuvsj00AgzIBn7U");
   return (
     <>
       <AuthProvider>
