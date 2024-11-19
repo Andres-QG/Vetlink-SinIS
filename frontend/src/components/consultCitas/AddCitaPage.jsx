@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
 import {
-  Modal,
   Box,
   Typography,
   TextField,
   Button,
-  IconButton,
   CircularProgress,
   InputAdornment,
   Autocomplete,
@@ -15,36 +13,31 @@ import {
   StepLabel,
 } from "@mui/material";
 import {
-  Close,
   Person as PersonIcon,
   HealthAndSafety as HealthAndSafetyIcon,
   AccessTime as AccessTimeIcon,
-  LocalHospital as LocalHospitalIcon,
-  Build as BuildIcon,
   Pets as PetsIcon,
   CalendarMonthRounded as CalendarMonthRoundedIcon,
   BorderColor as BorderColorIcon,
   CorporateFare as CorporateFareIcon,
   ArrowDropDown as ArrowDropDownIcon,
-  ConstructionOutlined,
   CreditCard as CreditCardIcon,
-  Lock as LockIcon
 } from "@mui/icons-material";
 import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
 import Tag from "../Tag";
-import { parseISO, isValid, add } from "date-fns";
+import { isValid } from "date-fns";
 import axios from "axios";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { es } from "date-fns/locale";
 
-const AddCitaModal = ({ open, handleClose, onSuccess, otherData }) => {
+const AddCitaPage = ({ onSuccess, otherData }) => {
   const stripe = useStripe();
   const elements = useElements();
 
   const initialFormData = {
-    cliente: otherData?.user?.role === 4 ? otherData?.user?.role : null,
+    cliente: otherData?.user || null,
     veterinario: null,
     mascota: "",
     fecha: null,
@@ -75,8 +68,8 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData }) => {
   const [loadingPets, setLoadingPets] = useState(false);
   const [step, setStep] = useState(0);
   const [user, setUser] = useState({});
-  const [lftText, setLftText] = useState("Volver")
-  const [rgtText, setRgtText] = useState("Siguiente")
+  const [lftText, setLftText] = useState("Volver");
+  const [rgtText, setRgtText] = useState("Siguiente");
 
   useEffect(() => {
     if (otherData) {
@@ -97,22 +90,12 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData }) => {
   }, [otherData]);
 
   useEffect(() => {
-    if (user.clinica && !formData.clinica) {
-      setFormData((prevData) => ({
-        ...prevData,
-        clinica: clinicas.find((clinic) => clinic.clinica_id === user.clinica) || null,
-      }));
-    }
-  }, [user, clinicas]);
-
-
-  useEffect(() => {
     const fetchPets = async () => {
       if (formData.cliente) {
         setLoadingPets(true);
         try {
           const response = await axios.put("http://localhost:8000/api/get-pets/", {
-            cliente: formData.cliente.usuario,
+            cliente: formData.cliente.user,
           });
           setPets(response.data.pets || []);
         } catch (error) {
@@ -128,60 +111,37 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData }) => {
     };
 
     fetchPets();
-  }, [formData.cliente]);
-
-  const fetchAvailableTimes = async () => {
-    try {
-      if (formData.veterinario && formData.clinica && formData.fecha) {
-        setLoadingTimes(true);
-        const formattedDate = formData.fecha.toISOString().split("T")[0];
-
-        const response = await axios.put("http://localhost:8000/api/get-disp-times/", {
-          vet_user: formData.veterinario.usuario,
-          clinica_id: formData.clinica?.clinica_id,
-          full_date: formattedDate,
-        });
-        setHorarios(response.data.available_times || []);
-      }
-    } catch (error) {
-      console.error("Error fetching available times:", error);
-    } finally {
-      setLoadingTimes(false)
-    }
-  };
-
-  // Function used to set the client as the default value
-  useEffect(() => {
-    if (user.role === 4) {
-      const matchingClient = clientes.find((client) => client.usuario === user.user);
-      if (matchingClient) {
-        setFormData((prevData) => ({
-          ...prevData,
-          cliente: matchingClient
-        }));
-      }
-    }
-  }, [user, clientes]);
+  }, []);
 
   useEffect(() => {
+    const fetchAvailableTimes = async () => {
+      try {
+        if (formData.veterinario && formData.clinica && formData.fecha) {
+          setLoadingTimes(true);
+          const formattedDate = formData.fecha.toISOString().split("T")[0];
+
+          const response = await axios.put("http://localhost:8000/api/get-disp-times/", {
+            vet_user: formData.veterinario.usuario,
+            clinica_id: formData.clinica?.clinica_id,
+            full_date: formattedDate,
+          });
+          setHorarios(response.data.available_times || []);
+        }
+      } catch (error) {
+        console.error("Error fetching available times:", error);
+      } finally {
+        setLoadingTimes(false);
+      }
+    };
+
     if (formData.clinica && formData.veterinario && formData.fecha) {
       fetchAvailableTimes();
     } else {
       setHorarios([]);
       setFormData((prevData) => ({ ...prevData, hora: "" }));
-      setLoadingTimes(true)
+      setLoadingTimes(true);
     }
   }, [formData.clinica, formData.veterinario, formData.fecha]);
-
-  useEffect(() => {
-    if (user.clinica) {
-      const clinic = clinicas.find((clinic) => clinic.clinica_id === user.clinica) || null;
-      setFormData((prevData) => ({
-        ...prevData,
-        clinica: clinic,
-      }));
-    }
-  }, [user.clinica, clinicas, setFormData]);
 
   const validateStep = (currentStep) => {
     const newErrors = {};
@@ -200,26 +160,19 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData }) => {
     }
 
     if (currentStep === 2) {
-      // if (!formData.metodo_pago) newErrors.metodo_pago = "Método de pago requerido.";
-      // if (!formData.nombre_tarjeta) newErrors.nombre_tarjeta = "Nombre en la tarjeta requerido.";
-      // if (!formData.numero_tarjeta) newErrors.numero_tarjeta = "Número de tarjeta requerido.";
-      // if (!formData.cvv) newErrors.cvv = "CVV requerido.";
-      // if (!formData.fecha_expiracion) newErrors.fecha_expiracion = "Fecha de expiración requerida.";
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-
     if (!validateStep(step)) {
-      console.log(errors)
+      console.log(errors);
       return;
     }
-    
 
     if (step < 2) {
       setStep(step + 1);
@@ -229,23 +182,37 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData }) => {
       return;
     }
 
-    makePayment()
-    // addCita()
+    const paymentSuccess = await makePayment();
+    if (paymentSuccess) {
+      await addCita();
+    }
   };
+
+  console.log(formData)
 
   const addCita = async () => {
     setLoading(true);
     try {
       await axios.post("http://localhost:8000/api/add-cita/", formData);
-      // onSuccess("Cita agregada correctamente", "success");
-      // handleClose();
+      onSuccess("Cita agregada correctamente", "success");
     } catch (error) {
       console.error(error);
-      // onSuccess("Error al agregar cita.", "error");
+      onSuccess("Error al agregar cita.", "error");
     } finally {
       setLoading(false);
     }
+  };
 
+  const getServInfo = (formData) => {
+    console.log(formData)
+    let sum = 0
+    let desc = ""
+    for (const service of formData.services) {
+      sum += service.costo;
+      desc += `${service.nombre}, `;
+    }
+    desc = desc.slice(0, -2);
+    return {sum: sum, desc: desc }
   }
 
   const makePayment = async () => {
@@ -255,8 +222,10 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData }) => {
       console.error("Stripe has not loaded yet.");
       onSuccess("Error al procesar el pago.", "error");
       setLoading(false);
-      return;
+      return false;
     }
+
+    const servInfo = getServInfo(formData)
 
     try {
       const { error, paymentMethod } = await stripe.createPaymentMethod({
@@ -271,22 +240,18 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData }) => {
         console.error("Error creating payment method:", error.message);
         onSuccess(error.message, "error");
         setLoading(false);
-        return;
+        return false;
       }
-
-      console.log("Payment Method Created:", paymentMethod.id);
 
       const paymentResponse = await axios.post("http://localhost:8000/api/create-payment/", {
         payment_method_id: paymentMethod.id,
-        amount: 1230, 
-        currency: "usd",
-        email: "test@example.com", 
-        description: "Payment for veterinary services",
+        amount: servInfo.sum,
+        currency: "crc",
+        email: "test@example.com",
+        description: `Servicios pagados: ${servInfo.desc}`,
       });
 
       if (paymentResponse.status === 201) {
-        // onSuccess("Cita pagada correctamente", "success");
-        // handleClose();
         return true;
       } else {
         console.error("Payment failed:", paymentResponse.data);
@@ -308,106 +273,70 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData }) => {
     setErrors({});
   };
 
-
-  const steps = ['Elije la mascota', 'Elije un horario', 'Realiza el pago'];
+  const steps = ["Elije la mascota", "Elije un horario", "Realiza el pago"];
   const isStepFailed = (step) => {
     return !errors;
   };
 
   return (
-    <Modal open={open} onClose={handleClose} aria-labelledby="modal-title" aria-describedby="modal-description">
-      <Box
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full sm:w-4/5 md:w-[650px] bg-white shadow-lg p-6 rounded-lg"
-        sx={{
-          maxHeight: { xs: "90vh", sm: "auto" },
-          overflowY: { xs: "auto", sm: "unset" },
-        }}
-      >
-        <IconButton onClick={handleClose} sx={{ position: "absolute", top: 8, right: 8 }}>
-          <Close />
-        </IconButton>
-        <form onSubmit={handleSubmit} className="w-full flex flex-col items-center" noValidate>
-          <Typography id="modal-title" variant="h6" component="h2" sx={{ textAlign: "center", marginBottom: "20px", fontWeight: "bold", color: "#333", borderBottom: "1px solid #ddd", paddingBottom: "10px" }}>
-            Agregar Cita
-          </Typography>
+    <Box
+      className="w-full"
+      sx={{
+        maxWidth: "900px",
+        margin: "0 auto",
+        padding: { xs: 2, sm: 4 },
+        backgroundColor: "#fff",
+        borderRadius: "8px",
+      }}
+    >
+      <form onSubmit={handleSubmit} className="w-full flex flex-col items-center" noValidate>
+        <Stepper activeStep={step} alternativeLabel className="py-5 w-full">
+          {steps.map((label, index) => {
+            const labelProps = {};
+            if (isStepFailed(index)) {
+              labelProps.optional = (
+                <Typography variant="caption" color="error">
+                  La información está errónea
+                </Typography>
+              );
 
-          {otherData?.user.role === 4 && (<Stepper activeStep={step} alternativeLabel className="py-5 w-full">
-            {steps.map((label, index) => {
-              const labelProps = {};
-              if (isStepFailed(index)) {
-                labelProps.optional = (
-                  <Typography variant="caption" color="error">
-                    La información está errónea
-                  </Typography>
-                );
+              labelProps.error = true;
+            }
 
-                labelProps.error = true;
+            const CustomStepIcon = ({ active, completed }) => {
+              let bgColor = "bg-gray-300"; // Default color
+
+              if (active || completed) {
+                bgColor = "bg-primary";
               }
 
-              const CustomStepIcon = ({ active, completed }) => {
-                let bgColor = 'bg-gray-300'; // Default color
-
-                if (active || completed) {
-                  bgColor = 'bg-primary';
-                }
-
-                return (
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center ${bgColor} text-white font-bold`}
-                  >
-                    {completed ? '✓' : index + 1}
-                  </div>
-                );
-              };
-
               return (
-                <Step key={label} >
-                  <StepLabel {...labelProps} StepIconComponent={CustomStepIcon}>{label}</StepLabel>
-                </Step>
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${bgColor} text-white font-bold`}
+                >
+                  {completed ? "✓" : index + 1}
+                </div>
               );
-            })}
-          </Stepper>)}
+            };
 
-          {otherData?.user?.role !== 4 && step === 0 && <Autocomplete
-            options={clientes}
-            getOptionLabel={(option) => option.usuario || ""}
-            value={formData.cliente || ""}
-            className="w-full"
-            onChange={(event, newValue) => setFormData({ ...formData, cliente: newValue })}
-            loading={loadingClients}
-            disabled={user.role === 4}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Cliente"
-                placeholder="Seleccione un cliente"
-                fullWidth
-                error={!!errors.cliente}
-                helperText={errors.cliente}
-                InputProps={{
-                  ...params.InputProps,
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PersonIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <>
-                      {loadingClients ? <CircularProgress color="inherit" size={20} /> : null}
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                }}
-                sx={{ mb: 2 }}
-              />
-            )}
-          />}
+            return (
+              <Step key={label}>
+                <StepLabel {...labelProps} StepIconComponent={CustomStepIcon}>
+                  {label}
+                </StepLabel>
+              </Step>
+            );
+          })}
+        </Stepper>
 
-          {step === 0 && <Autocomplete
+        {step === 0 && (
+          <Autocomplete
             options={pets}
             getOptionLabel={(option) => option.nombre || ""}
             value={formData.mascota || ""}
-            onChange={(event, newValue) => { setFormData({ ...formData, mascota: newValue }) }}
+            onChange={(event, newValue) => {
+              setFormData({ ...formData, mascota: newValue });
+            }}
             loading={loadingPets}
             className="w-full"
             disabled={!formData.cliente}
@@ -437,13 +366,18 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData }) => {
               />
             )}
             renderOption={(props, option) => (
-              <li {...props} key={option.mascota_id || option.nombre + "_" + option.ownerId}>
+              <li
+                {...props}
+                key={option.mascota_id || option.nombre + "_" + option.ownerId}
+              >
                 {option.nombre}
               </li>
             )}
-          />}
+          />
+        )}
 
-          {step === 0 && <Autocomplete
+        {step === 0 && (
+          <Autocomplete
             multiple
             options={services}
             getOptionLabel={(option) => option.nombre || ""}
@@ -478,7 +412,9 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData }) => {
                 {...params}
                 variant="outlined"
                 label="Servicios*"
-                placeholder={formData.services.length === 0 ? "Selecciona los servicios" : ""}
+                placeholder={
+                  formData.services.length === 0 ? "Selecciona los servicios" : ""
+                }
                 error={!!errors.services}
                 helperText={errors.services}
                 sx={{
@@ -499,9 +435,11 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData }) => {
             sx={{
               width: "100%",
             }}
-          />}
+          />
+        )}
 
-          {step === 0 && <TextField
+        {step === 0 && (
+          <TextField
             fullWidth
             className="w-full"
             label="Motivo"
@@ -518,15 +456,18 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData }) => {
                 </InputAdornment>
               ),
             }}
-          />}
+          />
+        )}
 
-
-          {step === 1 && <Autocomplete
+        {step === 1 && (
+          <Autocomplete
             options={veterinarios}
             getOptionLabel={(option) => option.usuario || ""}
             className="w-full"
             value={formData.veterinario || ""}
-            onChange={(event, newValue) => setFormData({ ...formData, veterinario: newValue })}
+            onChange={(event, newValue) =>
+              setFormData({ ...formData, veterinario: newValue })
+            }
             loading={loadingVets}
             renderInput={(params) => (
               <TextField
@@ -553,13 +494,17 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData }) => {
                 sx={{ mb: 2 }}
               />
             )}
-          />}
+          />
+        )}
 
-          {step === 1 && <Autocomplete
+        {step === 1 && (
+          <Autocomplete
             options={clinicas}
             getOptionLabel={(option) => option.nombre || ""}
             value={formData.clinica || ""}
-            onChange={(event, newValue) => setFormData({ ...formData, clinica: newValue })}
+            onChange={(event, newValue) =>
+              setFormData({ ...formData, clinica: newValue })
+            }
             className="w-full"
             loading={loadingClinics}
             disabled={!!user.clinica}
@@ -588,14 +533,21 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData }) => {
                 sx={{ mb: 2 }}
               />
             )}
-          />}
+          />
+        )}
 
-          {step === 1 && <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
+        {step === 1 && (
+          <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
             <DatePicker
               label="Fecha"
               value={formData.fecha || null}
-              onChange={(newDate) => setFormData({ ...formData, fecha: isValid(newDate) ? newDate : null })}
-              minDate={new Date()} // Prevents selection of past dates
+              onChange={(newDate) =>
+                setFormData({
+                  ...formData,
+                  fecha: isValid(newDate) ? newDate : null,
+                })
+              }
+              minDate={new Date()}
               slots={{ openPickerIcon: ArrowDropDownIcon }}
               slotProps={{
                 textField: {
@@ -614,9 +566,11 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData }) => {
                 },
               }}
             />
-          </LocalizationProvider>}
+          </LocalizationProvider>
+        )}
 
-          {step === 1 && <TextField
+        {step === 1 && (
+          <TextField
             select
             fullWidth
             label="Hora"
@@ -647,9 +601,11 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData }) => {
                 No hay horarios disponibles
               </MenuItem>
             )}
-          </TextField>}
+          </TextField>
+        )}
 
-          {step === 2 && <TextField
+        {step === 2 && (
+          <TextField
             select
             fullWidth
             label="Método de Pago"
@@ -670,66 +626,87 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData }) => {
           >
             <MenuItem value="tarjeta_credito">Tarjeta de Crédito</MenuItem>
             <MenuItem value="tarjeta_debito">Tarjeta de Débito</MenuItem>
-          </TextField>}
+          </TextField>
+        )}
 
-          {step === 2 && (
-            <Box className="w-full" sx={{ mb: 2 }}>
-              <Typography
-                variant="body1"
-                sx={{
-                  mb: 2,
-                  fontWeight: "bold",
-                  color: "#333",
-                  textAlign: "left",
-                  width: "100%",
-                }}
-              >
-                Información de la Tarjeta
-              </Typography>
-              <Box
-                sx={{
-                  border: "1px solid #ddd",
-                  borderRadius: "4px",
-                  padding: "10px",
-                  mb: 2,
-                  "& .StripeElement": {
-                    fontSize: "16px",
-                    color: "#424770",
-                  },
-                }}
-              >
-                <CardElement
-                  options={{
-                    style: {
-                      base: {
-                        fontSize: "16px",
-                        color: "#424770",
-                        "::placeholder": {
-                          color: "#aab7c4",
-                        },
-                      },
-                      invalid: {
-                        color: "#9e2146",
+        {step === 2 && (
+          <Box className="w-full" sx={{ mb: 2 }}>
+            <Typography
+              variant="body1"
+              sx={{
+                mb: 2,
+                fontWeight: "bold",
+                color: "#333",
+                textAlign: "left",
+                width: "100%",
+              }}
+            >
+              Información de la Tarjeta
+            </Typography>
+            <Box
+              sx={{
+                border: "1px solid #ddd",
+                borderRadius: "4px",
+                padding: "10px",
+                mb: 2,
+                "& .StripeElement": {
+                  fontSize: "16px",
+                  color: "#424770",
+                },
+              }}
+            >
+              <CardElement
+                options={{
+                  style: {
+                    base: {
+                      fontSize: "16px",
+                      color: "#424770",
+                      "::placeholder": {
+                        color: "#aab7c4",
                       },
                     },
-                  }}
-                />
-              </Box>
+                    invalid: {
+                      color: "#9e2146",
+                    },
+                  },
+                }}
+              />
             </Box>
-          )}
-
-          <Box className="w-full" sx={{ display: "flex", gap: 2, mt: 2 }}>
-            <Button variant="outlined" onClick={handleBackReset} fullWidth disabled={loading} sx={{ borderColor: "#00308F", color: "#00308F", "&:hover": { color: "#00246d", borderColor: "#00246d" } }}>
-              {lftText}
-            </Button>
-            <Button variant="contained" type="submit" fullWidth disabled={loading} startIcon={loading && <CircularProgress size={20} />} sx={{ minWidth: "160px", backgroundColor: "#00308F", "&:hover": { backgroundColor: "#00246d" } }}>
-              {loading ? "Agregando..." : rgtText}
-            </Button>
           </Box>
-        </form>
-      </Box>
-    </Modal>
+        )}
+
+        <Box className="w-full" sx={{ display: "flex", gap: 2, mt: 2 }}>
+          <Button
+            variant="outlined"
+            onClick={handleBackReset}
+            fullWidth
+            disabled={loading}
+            sx={{
+              borderColor: "#00308F",
+              color: "#00308F",
+              "&:hover": { color: "#00246d", borderColor: "#00246d" },
+            }}
+          >
+            {lftText}
+          </Button>
+          <Button
+            variant="contained"
+            type="submit"
+            fullWidth
+            disabled={loading}
+            startIcon={loading && <CircularProgress size={20} />}
+            sx={{
+              minWidth: "160px",
+              backgroundColor: "#00308F",
+              "&:hover": { backgroundColor: "#00246d" },
+            }}
+          >
+            {loading ? "Agregando..." : rgtText}
+          </Button>
+        </Box>
+      </form>
+    </Box>
   );
 };
 
-export default AddCitaModal;
+export default AddCitaPage;

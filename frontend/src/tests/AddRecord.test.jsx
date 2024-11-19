@@ -9,6 +9,9 @@ import {
 } from "@testing-library/react";
 import AddRecord from "../components/consultRecords/AddRecord";
 import axios from "axios";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import userEvent from "@testing-library/user-event";
 
 jest.mock("axios");
 
@@ -46,12 +49,14 @@ describe("AddRecord Component", () => {
 
   test("submits form with valid data", async () => {
     render(
-      <AddRecord
-        open={true}
-        handleClose={mockHandleClose}
-        onSuccess={mockOnSuccess}
-        otherData={mockOtherData}
-      />
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <AddRecord
+          open={true}
+          handleClose={mockHandleClose}
+          onSuccess={mockOnSuccess}
+          otherData={mockOtherData}
+        />
+      </LocalizationProvider>
     );
 
     const autocompleteInput = screen.getByRole("combobox", {
@@ -78,9 +83,9 @@ describe("AddRecord Component", () => {
     );
 
     await act(async () => {
-      fireEvent.change(screen.getByLabelText("Fecha y hora de consulta*"), {
-        target: { value: "2024-10-10T00:00" },
-      });
+      const dateInput = screen.getByLabelText("Fecha y hora de consulta*");
+      userEvent.clear(dateInput);
+      await userEvent.type(dateInput, "10/10/2023 10:00 AM");
 
       fireEvent.change(screen.getByLabelText("Peso (Kg)*"), {
         target: { value: "2" },
@@ -133,21 +138,25 @@ describe("AddRecord Component", () => {
 
   test("form validation fails when invalid data is provided", async () => {
     render(
-      <AddRecord
-        open={true}
-        handleClose={mockHandleClose}
-        onSuccess={mockOnSuccess}
-        otherData={mockOtherData}
-      />
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <AddRecord
+          open={true}
+          handleClose={mockHandleClose}
+          onSuccess={mockOnSuccess}
+          otherData={mockOtherData}
+        />
+      </LocalizationProvider>
     );
 
+    const datePickerInput = screen.getByLabelText(
+      /Fecha y hora de consulta\*/i
+    );
+    fireEvent.change(datePickerInput, {
+      target: { value: "12/12/2025 03:30 PM" },
+    });
     await act(async () => {
       fireEvent.change(screen.getByLabelText("ID de la mascota*"), {
         target: { value: "-1" },
-      });
-
-      fireEvent.change(screen.getByLabelText("Fecha y hora de consulta*"), {
-        target: { value: "2025-10-10T00:00" }, // Future date
       });
 
       fireEvent.change(screen.getByLabelText("Peso (Kg)*"), {
@@ -163,19 +172,20 @@ describe("AddRecord Component", () => {
     await act(async () => {
       fireEvent.click(submitButton);
     });
-
-    expect(
-      screen.getByText("Por favor, introduzca un ID de mascota válido")
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("La fecha no puede ser en el futuro")
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Por favor, introduzca un peso válido")
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("El diagnóstico no puede exceder 255 caracteres")
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByText("Por favor, introduzca un ID de mascota válido")
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText("La fecha no puede ser en el futuro")
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText("Por favor, introduzca un peso válido")
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText("El diagnóstico no puede exceder 255 caracteres")
+      ).toBeInTheDocument();
+    });
   });
 
   test("form validation fails when weight exceeds 4 digits", async () => {
@@ -263,11 +273,14 @@ describe("AddRecord Component", () => {
       "311 - Paco Raban (dueño: test_client1)"
     );
 
-    await act(async () => {
-      fireEvent.change(screen.getByLabelText("Fecha y hora de consulta*"), {
-        target: { value: "2024-10-10T00:00" },
-      });
+    const datePickerInput = screen.getByLabelText(
+      /Fecha y hora de consulta\*/i
+    );
+    fireEvent.change(datePickerInput, {
+      target: { value: "10/10/2023 03:30 PM" },
+    });
 
+    await act(async () => {
       fireEvent.change(screen.getByLabelText("Peso (Kg)*"), {
         target: { value: "2" },
       });
@@ -327,11 +340,13 @@ describe("AddRecord Component", () => {
       "311 - Paco Raban (dueño: test_client1)"
     );
 
+    const datePickerInput = screen.getByLabelText(
+      /Fecha y hora de consulta\*/i
+    );
+    fireEvent.change(datePickerInput, {
+      target: { value: "10/10/2024 03:30 PM" },
+    });
     await act(async () => {
-      fireEvent.change(screen.getByLabelText("Fecha y hora de consulta*"), {
-        target: { value: "2024-10-10T00:00" },
-      });
-
       fireEvent.change(screen.getByLabelText("Peso (Kg)*"), {
         target: { value: "2" },
       });
@@ -391,11 +406,13 @@ describe("AddRecord Component", () => {
       "311 - Paco Raban (dueño: test_client1)"
     );
 
+    const datePickerInput = screen.getByLabelText(
+      /Fecha y hora de consulta\*/i
+    );
+    fireEvent.change(datePickerInput, {
+      target: { value: "10/10/2024 12:00 AM" },
+    });
     await act(async () => {
-      fireEvent.change(screen.getByLabelText("Fecha y hora de consulta*"), {
-        target: { value: "2024-10-10T00:00" },
-      });
-
       fireEvent.change(screen.getByLabelText("Peso (Kg)*"), {
         target: { value: "2" },
       });
@@ -486,11 +503,14 @@ describe("AddRecord Component", () => {
       "311 - Paco Raban (dueño: test_client1)"
     );
 
-    await act(async () => {
-      fireEvent.change(screen.getByLabelText("Fecha y hora de consulta*"), {
-        target: { value: "2024-10-10T00:00" },
-      });
+    const datePickerInput = screen.getByLabelText(
+      /Fecha y hora de consulta\*/i
+    );
+    fireEvent.change(datePickerInput, {
+      target: { value: "10/10/2024 12:00 AM" },
+    });
 
+    await act(async () => {
       fireEvent.change(screen.getByLabelText("Peso (Kg)*"), {
         target: { value: "2" },
       });
@@ -610,11 +630,13 @@ describe("AddRecord Component", () => {
       />
     );
 
+    const datePickerInput = screen.getByLabelText(
+      /Fecha y hora de consulta\*/i
+    );
+    fireEvent.change(datePickerInput, {
+      target: { value: "10/10/2024 12:00 AM" },
+    });
     await act(async () => {
-      fireEvent.change(screen.getByLabelText("Fecha y hora de consulta*"), {
-        target: { value: "2024-10-10T00:00" },
-      });
-
       fireEvent.change(screen.getByLabelText("Peso (Kg)*"), {
         target: { value: "2" },
       });

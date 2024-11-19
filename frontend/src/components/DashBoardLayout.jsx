@@ -34,6 +34,9 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import PetsIconAlt from "@mui/icons-material/Pets";
 import { Vaccines } from "@mui/icons-material";
 import PaymentIcon from "@mui/icons-material/Payment";
+import { ConfigProvider } from "antd";
+import { style } from "@mui/system";
+import { backdropClasses } from "@mui/material";
 
 const { Header, Content, Sider, Footer } = Layout;
 
@@ -274,14 +277,26 @@ const DashboardLayout = ({
             onClick: () => handleClick("consultMyPets"),
           },
           {
+            key: "consultVaccinations",
+            icon: <Vaccines />,
+            label: "Vacunación",
+            onClick: () => handleClick("consultVaccinations"),
+          },
+          {
             key: "consultMyPaymentMethods",
             icon: <PaymentIcon />,
             label: "Métodos de Pago",
             onClick: () => handleClick("consultMyPaymentMethods"),
           },
+          {
+            key: "consultMyAppointments",
+            icon: <CalendarMonthIcon />,
+            label: "Mis Citas",
+            onClick: () => handleClick("myappointments"),
+          },
         ]
       : []),
-    ...(role <= 4
+    ...(role <= 3
       ? [
           {
             key: "consultCitas",
@@ -319,8 +334,14 @@ const DashboardLayout = ({
         return "consultAdmins";
       case "/appointments":
         return "consultCitas";
+      case "/myappointments":
+        return "consultMyAppointments";
       case "/dashboard":
         return "dashboard";
+      case "/consultvaccines":
+        return "consultvaccines";
+      case "/consultVaccinations":
+        return "consultVaccinations";
       default:
         return "dashboard";
     }
@@ -331,192 +352,204 @@ const DashboardLayout = ({
   };
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-      <Header
-        style={{
-          display: "flex",
-          alignItems: "center",
-          padding: "0 24px",
-          position: "fixed",
-          width: "100%",
-          zIndex: 1000,
-        }}
-      >
-        <Tooltip title="Ir a la página principal" placement="bottom">
-          <div
-            onClick={() => handleClick("")}
-            className="logo-container"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              marginRight: "auto",
-              cursor: "pointer",
-              transition: "transform 0.3s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "scale(1.1)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "scale(1)";
-            }}
-          >
-            <img
-              src="./src/assets/icons/logo.png"
-              alt="VetLink logo"
-              style={{ width: 40, height: 40, marginRight: "16px" }}
-            />
-            <span
-              style={{ fontSize: "20px", fontWeight: "bold", color: "white" }}
-            >
-              VetLink
-            </span>
-          </div>
-        </Tooltip>
-
-        {isSmallScreen ? (
-          <Popover
-            content={
-              <Menu
-                items={createHeaderItems()}
-                selectedKeys={[selectedHeaderKey()]}
-              />
-            }
-            trigger="click"
-          >
-            <Button
-              icon={<MenuIcon />}
-              style={{
-                backgroundColor: "#001529",
-                color: "white",
-                border: "none",
-              }}
-            />
-          </Popover>
-        ) : (
-          <Menu
-            theme="dark"
-            mode="horizontal"
-            selectedKeys={[selectedHeaderKey()]}
-            items={createHeaderItems()}
-            style={{
-              flex: 1,
-              minWidth: 0,
-              display: "flex",
-              justifyContent: "center",
-              flexWrap: "wrap",
-            }}
-          />
-        )}
-        <Dropdown
-          menu={isActive ? loggedInMenu : loggedOutMenu}
-          placement="bottomRight"
+    <ConfigProvider
+  theme={{
+    components: {
+      Menu: {
+           itemSelectedColor: "#00308F",
+           itemSelectedBg: "#ecf0f9",
+          },
+        },
+      }}
+    >
+      <Layout style={{ minHeight: "100vh" }}>
+        <Header
+          style={{
+            display: "flex",
+            alignItems: "center",
+            padding: "0 24px",
+            position: "fixed",
+            width: "100%",
+            zIndex: 1000,
+          }}
         >
-          <Avatar
-            style={{
-              backgroundColor: isActive ? "#0BA6A9" : "#808080",
-              cursor: "pointer",
-              marginLeft: "16px",
-            }}
-            icon={<PersonIcon />}
-          />
-        </Dropdown>
-      </Header>
+          <Tooltip title="Ir a la página principal" placement="bottom">
+            <div
+              onClick={() => handleClick("")}
+              className="logo-container"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginRight: "auto",
+                cursor: "pointer",
+                transition: "transform 0.3s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "scale(1.1)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+              }}
+            >
+              <img
+                src="./src/assets/icons/logo.png"
+                alt="VetLink logo"
+                style={{ width: 40, height: 40, marginRight: "16px" }}
+              />
+              <span
+                style={{ fontSize: "20px", fontWeight: "bold", color: "white" }}
+              >
+                VetLink
+              </span>
+            </div>
+          </Tooltip>
 
-      <Layout style={{ marginTop: 64 }}>
-        {!hideSidebar && !isSmallScreen && (
-          <Sider
-            width={200}
-            collapsible
-            collapsed={collapsed}
-            onCollapse={(value) => setCollapsed(value)}
-            style={{
-              background: colorBgContainer,
-              position: "fixed",
-              height: "100%",
-              zIndex: 10,
-            }}
-          >
+          {isSmallScreen ? (
+            <Popover
+              content={
+                <Menu
+                  items={createHeaderItems()}
+                  selectedKeys={[selectedHeaderKey()]}
+                />
+              }
+              trigger="click"
+            >
+              <Button
+                icon={<MenuIcon />}
+                style={{
+                  backgroundColor: "#001529",
+                  color: "white",
+                  border: "none",
+                }}
+              />
+            </Popover>
+          ) : (
             <Menu
-              mode="inline"
-              selectedKeys={[selectedKey()]}
+              theme="dark"
+              mode="horizontal"
+              selectedKeys={[selectedHeaderKey()]}
+              items={createHeaderItems()}
               style={{
-                height: "100%",
-                borderRight: 0,
-                background: colorBgContainer,
+                flex: 1,
+                minWidth: 0,
+                display: "flex",
+                justifyContent: "center",
+                flexWrap: "wrap",
               }}
-              items={createSidebarItems()}
             />
-          </Sider>
-        )}
+          )}
+          <Dropdown
+            menu={isActive ? loggedInMenu : loggedOutMenu}
+            placement="bottomRight"
+          >
+            <Avatar
+              style={{
+                backgroundColor: isActive ? "#0BA6A9" : "#808080",
+                cursor: "pointer",
+                marginLeft: "16px",
+              }}
+              icon={<PersonIcon />}
+            />
+          </Dropdown>
+        </Header>
 
-        {!hideSidebar && isSmallScreen && (
-          <>
-            <FloatButton
-              icon={drawerOpen ? <CloseOutlined /> : <RightOutlined />}
-              onClick={toggleDrawer}
-              style={{
-                bottom: 24,
-                right: 24,
-                color: "white",
-                border: "2px solid #001529", // Cambia #0BA6A9 por el color de borde que prefieras
-              }}
-            />
-            <Drawer
+        <Layout style={{ marginTop: 64 }}>
+          {!hideSidebar && !isSmallScreen && (
+            <Sider
               width={200}
-              title="Menú"
-              placement="left"
-              onClose={toggleDrawer}
-              open={drawerOpen}
-              styles={{ body: { padding: 0 } }}
+              collapsible
+              collapsed={collapsed}
+              onCollapse={(value) => setCollapsed(value)}
+              style={{
+                background: colorBgContainer,
+                position: "fixed",
+                height: "100%",
+                zIndex: 10,
+              }}
             >
               <Menu
                 mode="inline"
                 selectedKeys={[selectedKey()]}
+                itemActiveBg={"#000000"}
+                style={{
+                  height: "100%",
+                  borderRight: 0,
+                  background: colorBgContainer,
+                }}
                 items={createSidebarItems()}
               />
-            </Drawer>
-          </>
-        )}
+            </Sider>
+          )}
 
-        <Layout
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            marginLeft: hideSidebar || isSmallScreen ? 0 : collapsed ? 80 : 200,
-          }}
-        >
-          <Content
+          {!hideSidebar && isSmallScreen && (
+            <>
+              <FloatButton
+                icon={drawerOpen ? <CloseOutlined /> : <RightOutlined />}
+                onClick={toggleDrawer}
+                style={{
+                  bottom: 24,
+                  right: 24,
+                  color: "white",
+                  border: "2px solid #001529", // Cambia #0BA6A9 por el color de borde que prefieras
+                }}
+              />
+              <Drawer
+                width={200}
+                title="Menú"
+                placement="left"
+                onClose={toggleDrawer}
+                open={drawerOpen}
+                styles={{ body: { padding: 0 } }}
+              >
+                <Menu
+                  mode="inline"
+                  selectedKeys={[selectedKey()]}
+                  items={createSidebarItems()}
+                />
+              </Drawer>
+            </>
+          )}
+
+          <Layout
             style={{
-              flexGrow: 1,
-              padding,
-              margin,
-              minHeight: 280,
-              background: colorBgContainer,
-              borderRadius: borderRadiusLG,
-              boxShadow: "0 8px 16px rgba(0, 0, 0, 0.3)",
+              display: "flex",
+              flexDirection: "column",
+              marginLeft: hideSidebar || isSmallScreen ? 0 : collapsed ? 80 : 200,
             }}
           >
-            {children}
-          </Content>
+            <Content
+              style={{
+                flexGrow: 1,
+                padding,
+                margin,
+                minHeight: 280,
+                background: colorBgContainer,
+                borderRadius: borderRadiusLG,
+                boxShadow: "0 8px 16px rgba(0, 0, 0, 0.3)",
+              }}
+            >
+              {children}
+            </Content>
 
-          <Footer
-            style={{
-              textAlign: "center",
-              padding: "16px 0",
-              height: "48px",
-              background: colorBgContainer,
-              borderTop: "1px solid #e8e8e8",
-              marginTop: "auto",
-            }}
-          >
-            <div style={{ color: "#595959" }}>
-              &copy; {new Date().getFullYear()} VetLink. Todos los derechos
-              reservados.
-            </div>
-          </Footer>
+            <Footer
+              style={{
+                textAlign: "center",
+                padding: "16px 0",
+                height: "48px",
+                background: colorBgContainer,
+                borderTop: "1px solid #e8e8e8",
+                marginTop: "auto",
+              }}
+            >
+              <div style={{ color: "#595959" }}>
+                &copy; {new Date().getFullYear()} VetLink. Todos los derechos
+                reservados.
+              </div>
+            </Footer>
+          </Layout>
         </Layout>
       </Layout>
-    </Layout>
+    </ConfigProvider>
   );
 };
 

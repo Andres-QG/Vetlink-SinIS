@@ -225,10 +225,10 @@ const ConsultView = ({
 ConsultView.propTypes = {
   title: PropTypes.string.isRequired,
   fetchUrl: PropTypes.string.isRequired,
-  deletionUrl: PropTypes.string.isRequired,
+  deletionUrl: PropTypes.string,
   restoreUrl: PropTypes.string,
-  addComponent: PropTypes.elementType.isRequired,
-  modifyComponent: PropTypes.elementType.isRequired,
+  addComponent: PropTypes.elementType,
+  modifyComponent: PropTypes.elementType,
   detailedInfoComponent: PropTypes.elementType,
   columns: PropTypes.arrayOf(
     PropTypes.shape({
@@ -241,8 +241,8 @@ ConsultView.propTypes = {
       chipColors: PropTypes.object,
     })
   ).isRequired,
-  pkCol: PropTypes.string.isRequired,
-  visualIdentifierCol: PropTypes.string.isRequired,
+  pkCol: PropTypes.string,
+  visualIdentifierCol: PropTypes.string,
   rowsPerPage: PropTypes.number,
   otherData: PropTypes.object,
   customDeleteTitle: PropTypes.string,

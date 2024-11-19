@@ -303,15 +303,16 @@ const ModifyCitaModal = forwardRef(
                     setFormData({ ...formData, services: uniqueServices });
                   }}
                   renderTags={(value, getTagProps) =>
-                    value.map((option, index) => (
-                      <Tag
-                        key={option.servicio_id || `${option.nombre}_${index}`}
-                        label={option.nombre}
-                        onDelete={() => {}}
-                        {...getTagProps}
-                      />
-                    ))
-                  }
+                    value.map((option, index) => {
+                      const { key, ...tagProps } = getTagProps({ index });
+                      return (
+                        <Tag
+                          key={option.id || `${option.nombre}-${index}`}
+                          label={option.nombre}
+                          {...tagProps}
+                        />
+                      );
+                    })}
                   renderInput={(params) => (
                     <TextField
                       {...params}

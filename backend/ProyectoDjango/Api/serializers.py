@@ -10,7 +10,7 @@ class UsuariosSerializer(serializers.ModelSerializer):
 class ServiciosNameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Servicios
-        fields = ['servicio_id', 'nombre']
+        fields = ['servicio_id', 'nombre', 'costo']
 
 
 class NameUsuariosSerializer(serializers.ModelSerializer):
