@@ -92,7 +92,8 @@ urlpatterns = [
     path("consult-symptoms/", consult_symptoms, name="consult_symptoms"),
     path("add-symptom/", add_symptom, name="add_symptom"),
     path("update-symptom/<int:id>/", update_symptom, name="update_symptom"),
-    path("delete-symptom/<int:id>/", delete_symptom, name="delete_symptom"),
+    path("deactivate-symptom/<int:id>/", deactivate_symptom, name="delete_symptom"),
+    path("restore-symptom/<int:id>/", restore_symptom, name="restore_symptom"),
     # Tratamientos
     path("consult-treatments/", consult_treatments, name="consult_treatments"),
     path("add-treatment/", add_treatment, name="add_treatment"),

@@ -42,6 +42,7 @@ const ConsultGridView = ({
       }
       setItems(allItems);
       setFilteredItems(allItems);
+      // console.log(allItems);
     } catch (error) {
       console.error(`Error fetching ${itemDisplayName}:`, error);
     } finally {
@@ -137,8 +138,7 @@ const ConsultGridView = ({
                 marginRight: { xs: "0px", md: "10px" },
                 width: { xs: "100%", md: "auto" },
                 fontSize: "0.85rem",
-              }}
-            >
+              }}>
               Agregar
             </Button>
             <SearchBar onSearch={handleSearch} columns={columns} />
@@ -154,7 +154,7 @@ const ConsultGridView = ({
             items={filteredItems}
             openDelModal={handleOpenDel}
             openModModal={handleOpenMod}
-            onRestore={restoreUrl ? onRestore : null}
+            onRestore={onRestore}
             hasStatus={hasStatus}
           />
         )}
@@ -208,13 +208,12 @@ const ConsultGridView = ({
 ConsultGridView.propTypes = {
   fetchUrl: PropTypes.string.isRequired,
   addUrl: PropTypes.string.isRequired,
-  deletionUrl: PropTypes.string.isRequire
-  d,
+  deletionUrl: PropTypes.string.isRequired,
   modificationUrl: PropTypes.string.isRequired,
-  restoreUrl: PropTypes.string,
+  restoreUrl: PropTypes.string.isRequired,
   columns: PropTypes.arrayOf(PropTypes.string).isRequired,
   itemDisplayName: PropTypes.string.isRequired,
-  hasStatus: PropTypes.bool.isRequired,
+  hasStatus: PropTypes.bool,
 };
 
 export default ConsultGridView;

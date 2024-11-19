@@ -17,6 +17,8 @@ const CardList = ({
     setPage(newPage);
   };
 
+  // console.log(items);
+
   const getCurrentItems = () => {
     const start = page * itemsPerPage;
     const end = start + itemsPerPage;
@@ -29,8 +31,7 @@ const CardList = ({
         p: 3,
         width: "100%",
         margin: "0 auto",
-      }}
-    >
+      }}>
       <Grid container spacing={2}>
         {getCurrentItems().map((item, index) => (
           <Grid item xs={12} sm={6} md={4} key={index}>

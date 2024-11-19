@@ -15,14 +15,18 @@ def consult_symptoms(request):
 
         symptoms = symptoms.order_by(f"-{column}" if order == "desc" else column)
 
-        serializer = SintomasSerializer(symptoms, many=True)
+        # Paginación
+        paginator = CustomPagination()
+        page = paginator.paginate_queryset(symptoms, request)
+
+        serializer = SintomasSerializer(page, many=True)
         data = serializer.data
 
         # Renombrar 'sintoma_id' a 'id' en los datos serializados
         for item in data:
             item["id"] = item.pop("sintoma_id")
 
-        return Response(data, status=status.HTTP_200_OK)
+        return paginator.get_paginated_response(data)
     except Exception as e:
         print(f"Error fetching symptoms: {str(e)}")
         return Response([], status=status.HTTP_200_OK)
@@ -31,58 +35,84 @@ def consult_symptoms(request):
 @api_view(["POST"])
 def add_symptom(request):
     try:
-        data = {
-            "nombre": request.data.get("nombre"),
-            "descripcion": request.data.get("descripcion"),
-        }
-        serializer = SintomasSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(
-                {"message": "Síntoma agregado con éxito."},
-                status=status.HTTP_201_CREATED,
+        nombre = request.data.get("nombre")
+        descripcion = request.data.get("descripcion")
+
+        if not all([nombre, descripcion]):
+            return JsonResponse(
+                {"success": False, "error": "Todos los campos son requeridos"},
+                status=400,
             )
-        else:
-            return Response(
-                {"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
-            )
+
+        Sintomas.objects.create(
+            nombre=nombre, descripcion=descripcion, estado=1
+        )  # estado activo por defecto
+        return JsonResponse(
+            {"success": True, "message": "Síntoma agregado correctamente"}, status=201
+        )
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
 
 
 @api_view(["PUT"])
 def update_symptom(request, id):
     try:
         symptom = Sintomas.objects.get(pk=id)
-        serializer = SintomasSerializer(symptom, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(
-                {"message": "Síntoma actualizado con éxito."}, status=status.HTTP_200_OK
+        nombre = request.data.get("nombre")
+        descripcion = request.data.get("descripcion")
+
+        if not all([nombre, descripcion]):
+            return JsonResponse(
+                {"success": False, "error": "Todos los campos son requeridos"},
+                status=400,
             )
-        else:
-            return Response(
-                {"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
-            )
+
+        symptom.nombre = nombre
+        symptom.descripcion = descripcion
+        symptom.save()
+
+        return JsonResponse(
+            {"success": True, "message": "Síntoma actualizado correctamente"},
+            status=200,
+        )
     except Sintomas.DoesNotExist:
-        return Response(
-            {"error": "Síntoma no encontrado."}, status=status.HTTP_404_NOT_FOUND
+        return JsonResponse(
+            {"success": False, "error": "Síntoma no encontrado"}, status=404
         )
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
 
 
-@api_view(["DELETE"])
-def delete_symptom(request, id):
+@api_view(["PUT"])
+def deactivate_symptom(request, id):
     try:
         symptom = Sintomas.objects.get(pk=id)
-        symptom.delete()
-        return Response(
-            {"message": "Síntoma eliminado con éxito."}, status=status.HTTP_200_OK
+        symptom.estado = 0  # desactivar
+        symptom.save()
+        return JsonResponse(
+            {"success": True, "message": "Síntoma desactivado correctamente"},
+            status=200,
         )
     except Sintomas.DoesNotExist:
-        return Response(
-            {"error": "Síntoma no encontrado."}, status=status.HTTP_404_NOT_FOUND
+        return JsonResponse(
+            {"success": False, "error": "Síntoma no encontrado"}, status=404
         )
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+
+@api_view(["PUT"])
+def restore_symptom(request, id):
+    try:
+        symptom = Sintomas.objects.get(pk=id)
+        symptom.estado = 1  # activar
+        symptom.save()
+        return JsonResponse(
+            {"success": True, "message": "Síntoma activado correctamente"}, status=200
+        )
+    except Sintomas.DoesNotExist:
+        return JsonResponse(
+            {"success": False, "error": "Síntoma no encontrado"}, status=404
+        )
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=500)

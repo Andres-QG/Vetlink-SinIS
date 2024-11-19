@@ -329,7 +329,7 @@ class DjangoSession(models.Model):
 
 
 class Especialidades(models.Model):
-    especialidad_id = models.FloatField(
+    especialidad_id = models.AutoField(
         primary_key=True,
         db_comment="Este campo es la llave primaria de la tabla. Almacena un identificador ·nico para cada especialidad. DeberÝa ser un valor ·nico que permite distinguir cada especialidad de manera clara.",
     )
@@ -659,7 +659,7 @@ class Servicios(models.Model):
 
 
 class Sintomas(models.Model):
-    sintoma_id = models.FloatField(
+    sintoma_id = models.AutoField(
         primary_key=True,
         db_comment="Este campo es la llave primaria de la tabla. Almacena un identificador ·nico para cada sÝntoma, lo que permite distinguir claramente entre diferentes sÝntomas.",
     )
@@ -673,6 +673,8 @@ class Sintomas(models.Model):
         max_length=30,
         db_comment="Este campo almacena el nombre del sÝntoma. Es fundamental para identificar rßpidamente el sÝntoma en la base de datos y en las interacciones con los clientes.",
     )
+
+    estado = models.FloatField(max_length=1)
 
     class Meta:
         managed = False
