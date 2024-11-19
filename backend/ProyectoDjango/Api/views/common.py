@@ -32,8 +32,12 @@ import re
 from ..models import *
 from ..serializers import *
 
+# Encryption
+from cryptography.fernet import Fernet
+
 # Stripe setup
 stripe.api_key = settings.STRIPE_SECRET_KEY
+
 
 class CustomPagination(PageNumberPagination):
     page_size = 7  # Número de registros por página

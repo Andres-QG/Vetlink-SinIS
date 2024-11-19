@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import *
+from .views.paymentMethods import *
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -62,13 +63,31 @@ urlpatterns = [
         name="delete_pet_record",
     ),
     # Vacunas
-    path("consult-vaccines/", consult_vaccines, name="consult_vaccines"), # Vacunas para expediente
+    path(
+        "consult-vaccines/", consult_vaccines, name="consult_vaccines"
+    ),  # Vacunas para expediente
     # vacunas para listado de vacunas
-    path("consult-clinic-vaccines/", consult_clinic_vaccines, name="consult_clinic_vaccines"),
+    path(
+        "consult-clinic-vaccines/",
+        consult_clinic_vaccines,
+        name="consult_clinic_vaccines",
+    ),
     path("add-clinic-vaccine/", add_clinic_vaccine, name="add_clinic_vaccine"),
-    path("update-clinic-vaccine/<int:vacuna_id>/", update_clinic_vaccine, name="update_clinic_vaccine"),
-    path("deactivate-clinic-vaccine/<int:vacuna_id>/", deactivate_clinic_vaccine, name="deactivate_clinic_vaccine"),
-    path("restore-clinic-vaccine/<int:vacuna_id>/", restore_clinic_vaccine, name="restore_clinic_vaccine"),
+    path(
+        "update-clinic-vaccine/<int:vacuna_id>/",
+        update_clinic_vaccine,
+        name="update_clinic_vaccine",
+    ),
+    path(
+        "deactivate-clinic-vaccine/<int:vacuna_id>/",
+        deactivate_clinic_vaccine,
+        name="deactivate_clinic_vaccine",
+    ),
+    path(
+        "restore-clinic-vaccine/<int:vacuna_id>/",
+        restore_clinic_vaccine,
+        name="restore_clinic_vaccine",
+    ),
     # Sintomas
     path("consult-symptoms/", consult_symptoms, name="consult_symptoms"),
     # Tratamientos
@@ -133,12 +152,16 @@ urlpatterns = [
         update_user_personal_info,
         name="update_user_personal_info",
     ),
-    path(
-        "deactivate-user/", deactivate_user, name="deactivate_user"
-    ),
+    path("deactivate-user/", deactivate_user, name="deactivate_user"),
     # Pagos APIs
     path("create-payment/", create_payment, name="create-payment"),
-
+    # Metodos de pago APIs
+    path("add-payment-method/", add_payment_method, name="add_payment_method"),
+    path(
+        "consult-payment-methods/",
+        consult_payment_methods,
+        name="consult_payment_methods",
+    ),
 ]
 
 if settings.DEBUG:
