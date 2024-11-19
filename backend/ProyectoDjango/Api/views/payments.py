@@ -7,7 +7,7 @@ from stripe.error import StripeError
 def create_payment(request):
     try:
         amount = request.data.get("amount")
-        currency = request.data.get("currency", "usd")
+        currency = request.data.get("currency", "crc")
         description = request.data.get("description", "Payment description")
         email = request.data.get("email")
         payment_method_id = request.data.get("payment_method_id")
@@ -18,16 +18,16 @@ def create_payment(request):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        amount_in_cents = int(float(amount) * 100)
+        amount_fixed = amount * 100
 
         intent = stripe.PaymentIntent.create(
-            amount=amount_in_cents,
+            amount=amount_fixed,
             currency=currency,
             payment_method=payment_method_id,
             receipt_email=email,
             description=description,
             confirm=True,
-            return_url="https://localhost:5174/appointments",
+            return_url="https://localhost:5173/myappointments",
         )
 
         return Response(

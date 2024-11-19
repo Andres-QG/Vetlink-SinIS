@@ -188,6 +188,8 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
     }
   };
 
+  console.log(formData)
+
   const addCita = async () => {
     setLoading(true);
     try {
@@ -201,6 +203,18 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
     }
   };
 
+  const getServInfo = (formData) => {
+    console.log(formData)
+    let sum = 0
+    let desc = ""
+    for (const service of formData.services) {
+      sum += service.costo;
+      desc += `${service.nombre}, `;
+    }
+    desc = desc.slice(0, -2);
+    return {sum: sum, desc: desc }
+  }
+
   const makePayment = async () => {
     setLoading(true);
 
@@ -210,6 +224,8 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
       setLoading(false);
       return false;
     }
+
+    const servInfo = getServInfo(formData)
 
     try {
       const { error, paymentMethod } = await stripe.createPaymentMethod({
@@ -229,10 +245,10 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
 
       const paymentResponse = await axios.post("http://localhost:8000/api/create-payment/", {
         payment_method_id: paymentMethod.id,
-        amount: 1230,
-        currency: "usd",
+        amount: servInfo.sum,
+        currency: "crc",
         email: "test@example.com",
-        description: "Payment for veterinary services",
+        description: `Servicios pagados: ${servInfo.desc}`,
       });
 
       if (paymentResponse.status === 201) {
