@@ -17,6 +17,7 @@ import {
   MailOutline as MailIcon,
   Person as PersonIcon,
   CreditCard as CreditCardIcon,
+  Payment as PaymentIcon,
 } from "@mui/icons-material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -37,7 +38,9 @@ const AddPaymentMethod = () => {
     codigoPostal: "",
     nombreTitular: "",
     numeroTarjeta: "",
-    fechaExpiracion: dayjs().format("MM-YYYY"),
+    tipoTarjeta: "",
+    fechaExpiracion: "",
+    marcaTarjeta: "", // Nueva propiedad
   });
 
   const [errors, setErrors] = useState({});
@@ -45,8 +48,26 @@ const AddPaymentMethod = () => {
   const [provinces, setProvinces] = useState([]);
   const [loadingCountries, setLoadingCountries] = useState(true);
   const [loadingProvinces, setLoadingProvinces] = useState(false);
-  const [loading, setLoading] = useState(false); // Estado para manejar el indicador de carga
+  const [loading, setLoading] = useState(false);
   const showNotification = useNotification();
+
+  const tipoTarjetaOptions = ["Crédito", "Débito"];
+
+  const determineCardBrand = (cardNumber) => {
+    const regexPatterns = {
+      Visa: /^4[0-9]{12}(?:[0-9]{3})?$/,
+      MasterCard: /^5[1-5][0-9]{14}$/,
+      AmericanExpress: /^3[47][0-9]{13}$/,
+      Discover: /^6(?:011|5[0-9]{2})[0-9]{12}$/,
+    };
+
+    for (const [brand, pattern] of Object.entries(regexPatterns)) {
+      if (pattern.test(cardNumber)) {
+        return brand;
+      }
+    }
+    return "Desconocida";
+  };
 
   useEffect(() => {
     const fetchCountries = async () => {
@@ -95,8 +116,13 @@ const AddPaymentMethod = () => {
     if (!form.numeroTarjeta || !/^\d{16}$/.test(form.numeroTarjeta))
       newErrors.numeroTarjeta =
         "El número de tarjeta es obligatorio y debe contener 16 dígitos.";
+    if (!form.tipoTarjeta)
+      newErrors.tipoTarjeta = "El tipo de tarjeta es obligatorio.";
     if (!form.fechaExpiracion)
       newErrors.fechaExpiracion = "La fecha de expiración es obligatoria.";
+    else if (dayjs(form.fechaExpiracion, "MM/YYYY").isBefore(dayjs(), "month"))
+      newErrors.fechaExpiracion =
+        "La fecha de expiración debe ser posterior a la fecha actual.";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -104,9 +130,20 @@ const AddPaymentMethod = () => {
     }
 
     try {
-      setLoading(true); // Activar el estado de carga
+      setLoading(true);
+      console.log("Datos enviados:", {
+        direccion: form.direccion,
+        provincia: form.provincia,
+        pais: form.pais,
+        codigo_postal: form.codigoPostal,
+        nombre_titular: form.nombreTitular,
+        numero_tarjeta: form.numeroTarjeta,
+        tipo_pago: form.tipoTarjeta,
+        fecha_expiracion: form.fechaExpiracion,
+        marca_tarjeta: form.marcaTarjeta, // Marca de la tarjeta
+      });
       const response = await axios.post(
-        "http://localhost:8000/add-payment-method/",
+        "http://localhost:8000/api/add-payment-method/",
         {
           direccion: form.direccion,
           provincia: form.provincia,
@@ -114,11 +151,13 @@ const AddPaymentMethod = () => {
           codigo_postal: form.codigoPostal,
           nombre_titular: form.nombreTitular,
           numero_tarjeta: form.numeroTarjeta,
+          tipo_pago: form.tipoTarjeta,
           fecha_expiracion: form.fechaExpiracion,
+          marca_tarjeta: form.marcaTarjeta,
         },
         {
           headers: { "Content-Type": "application/json" },
-          withCredentials: true, // Incluir cookies para autenticación
+          withCredentials: true,
         }
       );
 
@@ -131,7 +170,9 @@ const AddPaymentMethod = () => {
           codigoPostal: "",
           nombreTitular: "",
           numeroTarjeta: "",
-          fechaExpiracion: dayjs().format("MM-YYYY"),
+          tipoTarjeta: "",
+          fechaExpiracion: "",
+          marcaTarjeta: "",
         });
       }
     } catch (error) {
@@ -142,13 +183,19 @@ const AddPaymentMethod = () => {
       console.error("Error al agregar método de pago:", error);
       showNotification(errorMessage, "error");
     } finally {
-      setLoading(false); // Desactivar el estado de carga
+      setLoading(false);
     }
   };
 
   const handleChange = (field, value) => {
-    setForm({ ...form, [field]: value });
-    setErrors({ ...errors, [field]: undefined });
+    setForm((prevForm) => ({
+      ...prevForm,
+      [field]: value,
+      ...(field === "numeroTarjeta" && {
+        marcaTarjeta: determineCardBrand(value),
+      }),
+    }));
+    setErrors((prevErrors) => ({ ...prevErrors, [field]: undefined }));
 
     if (field === "pais") {
       setProvinces([]);
@@ -351,14 +398,20 @@ const AddPaymentMethod = () => {
             }}
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} sm={6}>
           <TextField
             fullWidth
             label="Número de tarjeta"
             placeholder="Ingrese los 16 dígitos de su tarjeta"
             variant="outlined"
-            value={form.numeroTarjeta}
-            onChange={(e) => handleChange("numeroTarjeta", e.target.value)}
+            value={form.numeroTarjeta.replace(/(\d{4})(?=\d)/g, "$1-")}
+            onChange={(e) => {
+              // Remover guiones y guardar solo los dígitos
+              const rawValue = e.target.value.replace(/-/g, "");
+              if (/^\d{0,16}$/.test(rawValue)) {
+                handleChange("numeroTarjeta", rawValue);
+              }
+            }}
             error={!!errors.numeroTarjeta}
             helperText={errors.numeroTarjeta}
             InputProps={{
@@ -370,14 +423,46 @@ const AddPaymentMethod = () => {
             }}
           />
         </Grid>
+        <Grid item xs={12} sm={6}>
+          <Autocomplete
+            options={tipoTarjetaOptions}
+            value={form.tipoTarjeta}
+            onChange={(event, newValue) =>
+              handleChange("tipoTarjeta", newValue)
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                fullWidth
+                label="Tipo de tarjeta"
+                placeholder="Seleccione el tipo de tarjeta"
+                variant="outlined"
+                error={!!errors.tipoTarjeta}
+                helperText={errors.tipoTarjeta}
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PaymentIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            )}
+          />
+        </Grid>
         <Grid item xs={12}>
           <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
             <DatePicker
               label="Fecha de Expiración"
               views={["year", "month"]}
-              value={dayjs(form.fechaExpiracion).toDate()}
+              value={""}
               minDate={dayjs().toDate()}
               format="MM/yyyy"
+              onChange={(newValue) => {
+                const formattedDate = dayjs(newValue).format("MM/YYYY");
+                handleChange("fechaExpiracion", formattedDate);
+              }}
               slotProps={{
                 openPickerButton: {
                   color: "standard",

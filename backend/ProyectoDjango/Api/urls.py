@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import *
+from .views.paymentMethods import *
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -156,6 +157,11 @@ urlpatterns = [
     path("create-payment/", create_payment, name="create-payment"),
     # Metodos de pago APIs
     path("add-payment-method/", add_payment_method, name="add_payment_method"),
+    path(
+        "consult-payment-methods/",
+        consult_payment_methods,
+        name="consult_payment_methods",
+    ),
 ]
 
 if settings.DEBUG:

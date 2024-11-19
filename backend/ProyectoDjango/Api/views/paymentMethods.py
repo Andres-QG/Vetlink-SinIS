@@ -23,6 +23,61 @@ def decrypt_data(encrypted_data):
     return cipher.decrypt(encrypted_data.encode()).decode()
 
 
+@api_view(["GET"])
+@transaction.atomic
+def consult_payment_methods(request):
+    try:
+        # Obtener usuario y rol de la sesión
+        usuario = request.session.get("user")
+        rol_id = request.session.get("role")
+
+        if not usuario or not rol_id:
+            return Response(
+                {"error": "Usuario no autenticado."},
+                status=401,
+            )
+
+        if rol_id != 4:  # Solo los clientes pueden consultar sus métodos de pago
+            return Response(
+                {"error": "No tiene permisos para consultar métodos de pago."},
+                status=403,
+            )
+
+        # Llamar al procedimiento almacenado
+        with connection.cursor() as cursor:
+            cursor.callproc("VETLINK.CONSULTAR_METODOS_PAGO", [usuario])
+            # Obtener el cursor con los resultados
+            results = cursor.fetchall()
+
+            # Definir los nombres de las columnas para estructurar la respuesta
+            columns = [
+                "metodo_pago_id",
+                "tipo_pago",
+                "marca_tarjeta",
+                "ultimos_4_digitos",
+                "nombre_titular",
+                "fecha_expiracion",
+                "direccion",
+                "provincia",
+                "pais",
+                "codigo_postal",
+                "estado",
+            ]
+
+            # Convertir los resultados en una lista de diccionarios
+            methods = [dict(zip(columns, row)) for row in results]
+
+        # Retornar la lista de métodos de pago
+        return Response(methods, status=200)
+
+    except Exception as e:
+        print(f"Error interno: {e}")  # Log del error
+        return Response(
+            {"error": "Error al consultar los métodos de pago."},
+            status=500,
+        )
+
+
 @api_view(["POST"])
 @transaction.atomic
 def add_payment_method(request):
@@ -47,11 +102,12 @@ def add_payment_method(request):
         tipo_pago = request.data.get("tipo_pago")
         numero_tarjeta = request.data.get("numero_tarjeta")
         nombre_titular = request.data.get("nombre_titular")
-        fecha_expiracion = request.data.get("fecha_expiracion")
+        fecha_expiracion_str = request.data.get("fecha_expiracion")
         direccion = request.data.get("direccion")
         provincia = request.data.get("provincia")
         pais = request.data.get("pais")
         codigo_postal = request.data.get("codigo_postal")
+        marca_tarjeta = request.data.get("marca_tarjeta")  # Nueva entrada
 
         # Validar campos requeridos
         if not all(
@@ -59,11 +115,12 @@ def add_payment_method(request):
                 tipo_pago,
                 numero_tarjeta,
                 nombre_titular,
-                fecha_expiracion,
+                fecha_expiracion_str,
                 direccion,
                 provincia,
                 pais,
                 codigo_postal,
+                marca_tarjeta,  # Validar que la marca de la tarjeta está presente
             ]
         ):
             return Response(
@@ -78,10 +135,32 @@ def add_payment_method(request):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Validar formato de la fecha de expiración (MM/YYYY)
-        if not re.fullmatch(r"(0[1-9]|1[0-2])/\d{4}", fecha_expiracion):
+        # Validar formato y convertir la fecha de expiración
+        try:
+            fecha_expiracion = datetime.strptime(fecha_expiracion_str, "%m/%Y")
+        except ValueError:
             return Response(
-                {"error": "El formato de la fecha de expiración debe ser MM/YYYY."},
+                {"error": "Formato de fecha inválido. Debe ser MM/YYYY."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Validar formato del código postal (4-10 caracteres numéricos)
+        if not re.fullmatch(r"\d{4,10}", codigo_postal):
+            return Response(
+                {"error": "El código postal debe contener entre 4 y 10 dígitos."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Validar la marca de la tarjeta
+        valid_brands = [
+            "Visa",
+            "MasterCard",
+            "American Express",
+            "Discover",
+        ]  # Ejemplo de marcas válidas
+        if marca_tarjeta not in valid_brands:
+            return Response(
+                {"error": f"La marca de la tarjeta '{marca_tarjeta}' no es válida."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -101,11 +180,12 @@ def add_payment_method(request):
                     numero_tarjeta_cifrado,  # NUMERO_TARJETA
                     ultimos_4_digitos,  # ULTIMOS_4_DIGITOS
                     nombre_titular,  # NOMBRE_TITULAR
-                    fecha_expiracion,  # FECHA_EXPIRACION
+                    fecha_expiracion,  # FECHA_EXPIRACION como datetime
                     direccion,  # DIRECCION
                     provincia,  # PROVINCIA
                     pais,  # PAIS
                     codigo_postal,  # CODIGO_POSTAL
+                    marca_tarjeta,  # MARCA_TARJETA
                 ],
             )
 
@@ -116,6 +196,7 @@ def add_payment_method(request):
         )
 
     except Exception as e:
+        print(f"Error interno: {e}")  # Log detallado del error
         error_message = str(e)
         if "ORA-" in error_message:
             return Response(
