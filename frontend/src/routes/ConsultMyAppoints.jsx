@@ -225,39 +225,53 @@ const ConsultMyAppoints = () => {
                 }}
               >
                 <SearchBar
-                  onSearch={handleSearch}
-                  columns={columns}
-                  aria-label="Buscar Métodos de Pago"
-                />
-              </Box>
-            )}
-          </Box>
+                    onSearch={handleSearch}
+                    columns={columns}
+                    aria-label="Buscar Métodos de Pago"
+                  />
+                </Box>
+              )}
+            </Box>
 
-          {/* Separador */}
-          <Divider sx={{ mb: 4 }} />
+            {/* Separador */}
+            <Divider sx={{ mb: 4 }} />
 
-          {/* Contenido principal */}
-          <Box sx={{ display: "flex", flexDirection: "column" }}>
-            {/* Pestañas */}
-            <Tabs
-              className="text-primary"
-              value={tabIndex}
-              onChange={(_, newValue) => setTabIndex(newValue)}
-              textColor="inherit"
-              indicatorColor="inherit"
+            {/* Contenido principal */}
+            <Box sx={{ display: "flex", flexDirection: "column" }}>
+              {/* Pestañas */}
+              <Tabs
+                value={tabIndex}
+                onChange={(_, newValue) => setTabIndex(newValue)}
+                textColor="inherit"
+                indicatorColor="primary"
                 sx={{
                   mb: 0,
                   "& .MuiTabs-indicator": {
                     backgroundColor: "var(--color-primary)",
-    
                   },
-              }}
-            >
-              <Tab className="text-primary" label="Consultar" />
-              <Tab label="Agregar" />
-            </Tabs>
+                }}
+              >
+                <Tab
+                  label="Consultar"
+                  sx={{
+                    color: "gray",
+                    "&.Mui-selected": {
+                      color: "var(--color-primary)",
+                    },
+                  }}
+                />
+                <Tab
+                  label="Agregar"
+                  sx={{
+                    color: "gray",
+                    "&.Mui-selected": {
+                      color: "var(--color-primary)",
+                    },
+                  }}
+                />
+              </Tabs>
 
-            {tabIndex === 0 && (
+              {tabIndex === 0 && (
               <>
                 <Grid2
                   container

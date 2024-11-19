@@ -89,8 +89,6 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
     }
   }, [otherData]);
 
-  console.log(otherData)
-
   useEffect(() => {
     const fetchPets = async () => {
       if (formData.cliente) {
