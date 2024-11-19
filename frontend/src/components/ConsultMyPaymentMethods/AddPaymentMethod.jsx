@@ -162,7 +162,7 @@ const AddPaymentMethod = () => {
       );
 
       if (response.status === 201) {
-        showNotification("Método de pago agregado exitosamente", "success");
+        onSuccess("Método de pago agregado exitosamente", "success");
         setForm({
           direccion: "",
           provincia: "",
@@ -174,7 +174,6 @@ const AddPaymentMethod = () => {
           fechaExpiracion: "",
           marcaTarjeta: "",
         });
-        window.location.reload();
       }
     } catch (error) {
       const errorMessage =
@@ -182,7 +181,7 @@ const AddPaymentMethod = () => {
           ? error.response.data.error
           : "Error al agregar el método de pago. Por favor, intente de nuevo.";
       console.error("Error al agregar método de pago:", error);
-      showNotification(errorMessage, "error");
+      onSuccess(errorMessage, "error");
     } finally {
       setLoading(false);
     }
