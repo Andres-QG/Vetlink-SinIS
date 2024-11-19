@@ -234,6 +234,12 @@ const DashboardLayout = ({
             label: "Síntomas",
             onClick: () => handleClick("Consultsymptoms"),
           },
+          {
+            key: "consultTreatment",
+            icon: <MedicalServices />,
+            label: "Tratamientos",
+            onClick: () => handleClick("ConsultTreatment"),
+          },
         ]
       : []),
     ...(role === 1 || role === 2
@@ -316,6 +322,8 @@ const DashboardLayout = ({
 
   const selectedKey = () => {
     switch (location.pathname) {
+      case "/ConsultTreatment":
+        return "consultTreatment";
       case "/consultSchedules":
         return "consultSchedules";
       case "/Consultsymptoms":

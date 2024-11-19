@@ -88,7 +88,7 @@ def update_treatment(request, id):
 
 
 @api_view(["PUT"])
-def deactivate_treatment(request, id):
+def desactivate_treatment(request, id):
     try:
         treatment = Tratamientos.objects.get(pk=id)
         treatment.estado = 0  # Desactivar

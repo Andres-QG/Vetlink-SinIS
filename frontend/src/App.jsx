@@ -23,6 +23,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Signup from "./routes/Signup";
 import ConsultAdmins from "./routes/ConsultAdmins";
 import ConsultSchedules from "./routes/ConsultSchedules";
+import ConsultTreatment from "./routes/ConsultTreatment";
 import ConsultMyPets from "./routes/ConsultMyPets";
 import DashBoardLayout from "./components/DashBoardLayout";
 import Dashboard from "./routes/Dashboard";
@@ -153,6 +154,19 @@ function App() {
               }
             />
 
+            {/* consult Treatment */}
+            <Route
+              path="/consultTreatment"
+              element={
+                <DashBoardLayout>
+                  <NotificationProvider>
+                    <ProtectedRoute requiredRoles={[1, 2, 3]}>
+                      <ConsultTreatment />
+                    </ProtectedRoute>
+                  </NotificationProvider>
+                </DashBoardLayout>
+              }
+            />
             {/* Consult Pages */}
             <Route
               path="/consultSchedules"
@@ -218,7 +232,7 @@ function App() {
               path="/consultvaccines"
               element={
                 <DashBoardLayout>
-                  <ProtectedRoute requiredRoles={[3]}>
+                  <ProtectedRoute requiredRoles={[1, 2, 3]}>
                     <NotificationProvider>
                       <ConsultVaccines />
                     </NotificationProvider>
