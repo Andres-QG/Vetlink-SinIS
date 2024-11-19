@@ -279,9 +279,15 @@ const DashboardLayout = ({
             label: "Métodos de Pago",
             onClick: () => handleClick("consultMyPaymentMethods"),
           },
+          {
+            key: "consultMyAppointments",
+            icon: <CalendarMonthIcon />,
+            label: "Mis Citas",
+            onClick: () => handleClick("myappointments"),
+          },
         ]
       : []),
-    ...(role <= 4
+    ...(role <= 3
       ? [
           {
             key: "consultCitas",
@@ -319,6 +325,8 @@ const DashboardLayout = ({
         return "consultAdmins";
       case "/appointments":
         return "consultCitas";
+      case "/myappointments":
+        return "consultMyAppointments";
       case "/dashboard":
         return "dashboard";
       default:

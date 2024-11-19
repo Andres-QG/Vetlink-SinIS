@@ -462,12 +462,12 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData }) => {
                 }}
               >
                 {value.map((option, index) => {
-                  const tagProps = getTagProps({ index });
+                  const { key, ...tagProps } = getTagProps({ index });
                   return (
                     <Tag
-                      key={option.id || `${option.nombre}-${index}`} // Pass key directly
+                      key={option.id || `${option.nombre}-${index}`}
                       label={option.nombre}
-                      {...tagProps} // Spread remaining props
+                      {...tagProps}
                     />
                   );
                 })}

@@ -29,6 +29,7 @@ import { NotificationProvider } from "./components/Notification";
 import ConsultCitas from "./routes/ConsultCitas";
 import ConsultVaccines from "./routes/ConsultVaccines";
 import ConsultMyPaymentMethods from "./routes/ConsultMyPaymentMethods";
+import ConsultMyAppoints from "./routes/ConsultMyAppoints";
 
 function App() {
   return (
@@ -265,7 +266,7 @@ function App() {
               path="/appointments"
               element={
                 <DashBoardLayout>
-                  <ProtectedRoute requiredRoles={[1, 2, 3, 4]}>
+                  <ProtectedRoute requiredRoles={[1, 2, 3]}>
                     <NotificationProvider>
                       <ConsultCitas />
                     </NotificationProvider>
@@ -273,7 +274,18 @@ function App() {
                 </DashBoardLayout>
               }
             />
-
+             <Route
+              path="/myappointments"
+              element={
+                <DashBoardLayout>
+                  <ProtectedRoute requiredRoles={[4]}>
+                    <NotificationProvider>
+                      <ConsultMyAppoints/>
+                    </NotificationProvider>
+                  </ProtectedRoute>
+                </DashBoardLayout>
+              }
+            />
             {/*Profile page*/}
             <Route
               path="/profile"

@@ -21,12 +21,14 @@ import {
   Delete as DeleteIcon,
   CalendarToday as CalendarTodayIcon,
 } from "@mui/icons-material";
+import { Elements } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
 import SearchBar from "../components/Consult/GeneralizedSearchBar";
 import { useNotification } from "../components/Notification";
 import Grid2 from "@mui/material/Grid2";
 import AddCitaPage from "../components/consultCitas/AddCitaPage";
 
-const ConsultMyAppoints = (otherData) => {
+const ConsultMyAppoints = () => {
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [filteredPaymentMethods, setFilteredPaymentMethods] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,6 +41,68 @@ const ConsultMyAppoints = (otherData) => {
   const [tabIndex, setTabIndex] = useState(0);
   const paymentMethodsPerPage = 8;
   const showNotification = useNotification();
+
+   const [otherData, setOtherData] = useState({
+    user: {},
+    services: [],
+    clinicas: [],
+    clientes: [],
+    veterinarios: [],
+  });
+
+  const stripePromise = loadStripe("pk_test_51QLypMFlNacvOPfn04CgaWzXQXqJ524WVHJAEn2q0ebrAOcEWDBHRUdkj7dDgPuMyyKxpggIVDHNr7RBqo8Fuvsj00AgzIBn7U");
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const response = await axios.get("http://localhost:8000/api/get-user/", { withCredentials: true });
+      return response.data.data;
+    };
+
+    const fetchClientes = async () => {
+      const response = await axios.get("http://localhost:8000/api/get-clients/");
+      return response.data.clients;
+    };
+
+    const fetchVeterinarios = async () => {
+      const response = await axios.get("http://localhost:8000/api/get-vets/");
+      return response.data.vets;
+    };
+
+    const fetchServices = async () => {
+      const response = await axios.get("http://localhost:8000/api/get-services/");
+      return response.data.services;
+    };
+
+    const fetchClinicas = async () => {
+      const response = await axios.get("http://localhost:8000/api/get-clinics/");
+      return response.data.clinics;
+    };
+
+    const fetchData = async () => {
+      try {
+        const [user, clientes, veterinarios, services, clinicas] = await Promise.all([
+          fetchUser(),
+          fetchClientes(),
+          fetchVeterinarios(),
+          fetchServices(),
+          fetchClinicas(),
+        ]);
+
+        setOtherData({
+          user: user || {},
+          services: services || [],
+          clinicas: clinicas || [],
+          clientes: clientes || [],
+          veterinarios: veterinarios || [],
+        });
+        setUser(user)
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   useEffect(() => {
     fetchPaymentMethods();
@@ -329,10 +393,11 @@ const ConsultMyAppoints = (otherData) => {
                 </Box>
               </>
             )}
-
             {tabIndex === 1 && (
               <Box sx={{ width: "100%" }}>
-                <AddCitaPage otherData={otherData.otherData}></AddCitaPage>
+                <Elements stripe={stripePromise}>
+                  <AddCitaPage otherData={otherData.otherData}></AddCitaPage>
+                </Elements>
               </Box>
             )}
           </Box>

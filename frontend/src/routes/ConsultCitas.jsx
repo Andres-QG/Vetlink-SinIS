@@ -1,19 +1,14 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Elements } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
 
 import ConsultView from "../components/Consult/ConsultView";
 import AddCitaModal from "../components/consultCitas/AddCitaModal";
 import ModifyCitaModal from "../components/consultCitas/ModifyCitaModal";
-import ConsultMyAppoints from "./ConsultMyAppoints";
 
 
 function ConsultCitas() {
   const rowsPerPage = 7;
   const [user, setUser] = useState({})
-  const stripePromise = loadStripe("pk_test_51QLypMFlNacvOPfn04CgaWzXQXqJ524WVHJAEn2q0ebrAOcEWDBHRUdkj7dDgPuMyyKxpggIVDHNr7RBqo8Fuvsj00AgzIBn7U");
-
 
   const columns = [
     { field: "cliente", headerName: "Cliente", type: "text" },
@@ -87,26 +82,24 @@ function ConsultCitas() {
 
   return (
     <>
-      <Elements stripe={stripePromise}>
-        {user.role === 3 &&
-          <ConsultView
-            title="Citas"
-            fetchUrl="http://localhost:8000/api/consult-citas/"
-            deletionUrl="http://localhost:8000/api/delete-cita/"
-            addComponent={AddCitaModal}
-            modifyComponent={ModifyCitaModal}
-            rowsPerPage={rowsPerPage}
-            columns={columns}
-            pkCol="cita_id"
-            visualIdentifierCol="cliente"
-            otherData={otherData}
-            customDeleteTitle="¿Desea eliminar esta cita?"
-            disableAddButton={true}
-            hideAddButton={true}
-            hideActions={true}
-          />
-        }
-        {(user.role === 1 || user.role === 2) && <ConsultView
+      {user.role === 3 ? (
+        <ConsultView
+          title="Citas"
+          fetchUrl="http://localhost:8000/api/consult-citas/"
+          deletionUrl="http://localhost:8000/api/delete-cita/"
+          addComponent={AddCitaModal}
+          modifyComponent={ModifyCitaModal}
+          rowsPerPage={rowsPerPage}
+          columns={columns}
+          pkCol="cita_id"
+          visualIdentifierCol="cliente"
+          otherData={otherData}
+          customDeleteTitle="¿Desea eliminar esta cita?"
+          disableAddButton={true}
+          hideAddButton={true}
+          hideActions={true}
+        />) :
+        <ConsultView
           title="Citas"
           fetchUrl="http://localhost:8000/api/consult-citas/"
           deletionUrl="http://localhost:8000/api/delete-cita/"
@@ -121,10 +114,6 @@ function ConsultCitas() {
           hideAddButton={false}
           hideActions={false}
         />}
-        {user.role === 4 &&
-          <ConsultMyAppoints otherData={otherData}></ConsultMyAppoints>
-        }
-      </Elements>
     </>
   );
 };
