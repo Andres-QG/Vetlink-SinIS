@@ -15,6 +15,7 @@ import {
   Grow,
   Tabs,
   Tab,
+  Grid,
 } from "@mui/material";
 import {
   Edit as EditIcon,
@@ -24,18 +25,24 @@ import {
 import SearchBar from "../components/Consult/GeneralizedSearchBar";
 import AddPaymentMethod from "../components/ConsultMyPaymentMethods/AddPaymentMethod";
 import { useNotification } from "../components/Notification";
-import Grid2 from "@mui/material/Grid2";
+import visaIcon from "../assets/img/payments/visa.png";
+import mastercardIcon from "../assets/img/payments/MasterCard.png";
+import americanExpressIcon from "../assets/img/payments/american-express.png";
+import paypalIcon from "../assets/img/payments/paypal.png";
+import cardUndefinedIcon from "../assets/img/payments/desconocida.png";
+
+const cardIcons = {
+  VISA: visaIcon,
+  MASTERCARD: mastercardIcon,
+  AMERICAN_EXPRESS: americanExpressIcon,
+  PAYPAL: paypalIcon,
+};
 
 const ConsultMyPaymentMethods = () => {
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [filteredPaymentMethods, setFilteredPaymentMethods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [modalState, setModalState] = useState({
-    open: false,
-    type: "",
-    paymentMethod: null,
-  });
   const [tabIndex, setTabIndex] = useState(0);
   const paymentMethodsPerPage = 8;
   const showNotification = useNotification();
@@ -48,7 +55,7 @@ const ConsultMyPaymentMethods = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/consult-my-payment-methods/",
+        "http://localhost:8000/api/consult-payment-methods/",
         {
           withCredentials: true,
         }
@@ -64,6 +71,7 @@ const ConsultMyPaymentMethods = () => {
   };
 
   const handleSearch = (searchTerm, filterColumn, order) => {
+    if (!Array.isArray(paymentMethods)) return; // Validar que paymentMethods es un array
     const resultsToSort = searchTerm
       ? paymentMethods.filter((method) =>
           method[filterColumn]
@@ -94,16 +102,18 @@ const ConsultMyPaymentMethods = () => {
     }
   };
 
-  const columns = ["TIPO_PAGO", "NOMBRE_TITULAR", "NUMERO_TARJETA", "PAIS"];
+  const getCardIcon = (brand) =>
+    cardIcons[brand?.toUpperCase()] || cardUndefinedIcon; // Default to cardUndefinedIcon
 
   const indexOfLastMethod = currentPage * paymentMethodsPerPage;
   const indexOfFirstMethod = indexOfLastMethod - paymentMethodsPerPage;
-  const currentPaymentMethods = filteredPaymentMethods.slice(
-    indexOfFirstMethod,
-    indexOfLastMethod
-  );
+  const currentPaymentMethods = Array.isArray(filteredPaymentMethods)
+    ? filteredPaymentMethods.slice(indexOfFirstMethod, indexOfLastMethod)
+    : [];
   const totalPages = Math.ceil(
-    filteredPaymentMethods.length / paymentMethodsPerPage
+    (Array.isArray(filteredPaymentMethods)
+      ? filteredPaymentMethods.length
+      : 0) / paymentMethodsPerPage
   );
 
   return (
@@ -119,7 +129,6 @@ const ConsultMyPaymentMethods = () => {
         </Box>
       ) : (
         <>
-          {/* Encabezado */}
           <Box
             sx={{
               display: "flex",
@@ -162,19 +171,15 @@ const ConsultMyPaymentMethods = () => {
               >
                 <SearchBar
                   onSearch={handleSearch}
-                  columns={columns}
+                  columns={["TIPO_PAGO", "MARCA_TARJETA", "NOMBRE_TITULAR"]}
                   aria-label="Buscar Métodos de Pago"
                 />
               </Box>
             )}
           </Box>
-
-          {/* Separador */}
           <Divider sx={{ mb: 4 }} />
 
-          {/* Contenido principal */}
           <Box sx={{ display: "flex", flexDirection: "column" }}>
-            {/* Pestañas */}
             <Tabs
               value={tabIndex}
               onChange={(_, newValue) => setTabIndex(newValue)}
@@ -188,107 +193,138 @@ const ConsultMyPaymentMethods = () => {
 
             {tabIndex === 0 && (
               <>
-                <Grid2
-                  container
-                  spacing={3}
-                  sx={{
-                    justifyContent: { xs: "center", md: "center" },
-                  }}
-                >
+                <Grid container spacing={3} justifyContent="flex-start" mt={2}>
                   {currentPaymentMethods.length > 0 ? (
                     currentPaymentMethods.map((method, index) => (
-                      <Grid2
+                      <Grid
                         item
                         xs={12}
                         sm={6}
                         md={4}
-                        lg={3}
                         key={method.METODO_PAGO_ID}
                       >
                         <Grow in timeout={500 + index * 200}>
                           <Card
                             elevation={6}
                             sx={{
-                              transition: "transform 0.3s, box-shadow 0.3s",
                               display: "flex",
                               flexDirection: "column",
-                              height: "100%",
-                              width: "300px",
-                              boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.15)",
+                              justifyContent: "space-between",
+                              borderRadius: 2,
+                              p: 0,
+                              width: "100%",
+                              maxWidth: "400px",
+                              minWidth: "200px",
+                              backgroundColor: "#ffffff",
                               "&:hover": {
                                 transform: "scale(1.05)",
                                 boxShadow: "0px 6px 20px rgba(0, 0, 0, 0.3)",
                               },
                             }}
                           >
-                            <CardContent sx={{ flexGrow: 1 }}>
+                            {/* Header */}
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                backgroundColor: "#f0f0f0",
+                                padding: "10px 16px",
+                                borderTopLeftRadius: 8,
+                                borderTopRightRadius: 8,
+                              }}
+                            >
+                              <Box
+                                component="img"
+                                src={getCardIcon(method.MARCA_TARJETA)}
+                                alt={method.MARCA_TARJETA}
+                                sx={{
+                                  width: 40,
+                                  height: "auto",
+                                  mr: 2,
+                                }}
+                              />
                               <Typography
-                                gutterBottom
-                                variant="h5"
-                                component="div"
-                                sx={{ textAlign: "center" }}
+                                variant="subtitle1"
+                                sx={{
+                                  fontWeight: "bold",
+                                  color: "black",
+                                }}
                               >
-                                {method.TIPO_PAGO}
+                                Tarjeta de {method.TIPO_PAGO}
                               </Typography>
-                              <Stack
-                                direction="column"
-                                spacing={1}
-                                sx={{ mt: 2 }}
+                            </Box>
+
+                            {/* Body */}
+                            <CardContent
+                              sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: 1,
+                                padding: "16px",
+                                backgroundColor: "#ffffff",
+                              }}
+                            >
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
+                                }}
                               >
                                 <Typography
-                                  variant="body2"
-                                  color="text.secondary"
+                                  variant="body1"
+                                  sx={{ fontWeight: "bold", color: "black" }}
                                 >
-                                  <strong>Nombre del Titular:</strong>{" "}
                                   {method.NOMBRE_TITULAR}
                                 </Typography>
                                 <Typography
-                                  variant="body2"
-                                  color="text.secondary"
+                                  variant="body1"
+                                  sx={{ fontWeight: "bold", color: "black" }}
                                 >
-                                  <strong>Número de Tarjeta:</strong> **** ****
-                                  **** {method.NUMERO_TARJETA.slice(-4)}
+                                  •••• {method.ULTIMOS_4_DIGITOS}
                                 </Typography>
-                                <Typography
-                                  variant="body2"
-                                  color="text.secondary"
-                                >
-                                  <strong>Fecha de Expiración:</strong>{" "}
-                                  {new Date(
-                                    method.FECHA_EXPIRACION
-                                  ).toLocaleDateString()}
-                                </Typography>
-                                <Typography
-                                  variant="body2"
-                                  color="text.secondary"
-                                >
-                                  <strong>País:</strong> {method.PAIS}
-                                </Typography>
-                              </Stack>
-                            </CardContent>
-                            <CardActions sx={{ justifyContent: "center" }}>
-                              <Tooltip
-                                title="Editar Método de Pago"
-                                TransitionComponent={Grow}
+                              </Box>
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  color: "gray",
+                                  mt: 0.5,
+                                }}
                               >
+                                Expira: {method.FECHA_EXPIRACION}
+                              </Typography>
+                            </CardContent>
+
+                            {/* Actions */}
+                            <CardActions
+                              sx={{
+                                display: "flex",
+                                justifyContent: "flex-start",
+                                padding: "8px 16px",
+                                backgroundColor: "#ffffff",
+                              }}
+                            >
+                              <Tooltip title="Modificar Método de Pago">
                                 <Button
-                                  size="small"
+                                  variant="outlined"
                                   color="primary"
                                   startIcon={<EditIcon />}
-                                  sx={{ textTransform: "none", mr: 1 }}
+                                  sx={{
+                                    textTransform: "none",
+                                  }}
                                 >
-                                  Editar
+                                  Modificar
                                 </Button>
                               </Tooltip>
-                              <Tooltip
-                                title="Eliminar Método de Pago"
-                                TransitionComponent={Grow}
-                              >
+                              <Tooltip title="Eliminar Método de Pago">
                                 <Button
-                                  size="small"
+                                  variant="contained"
                                   color="error"
                                   startIcon={<DeleteIcon />}
-                                  sx={{ textTransform: "none" }}
+                                  sx={{
+                                    textTransform: "none",
+                                    ml: 2,
+                                  }}
                                 >
                                   Eliminar
                                 </Button>
@@ -296,7 +332,7 @@ const ConsultMyPaymentMethods = () => {
                             </CardActions>
                           </Card>
                         </Grow>
-                      </Grid2>
+                      </Grid>
                     ))
                   ) : (
                     <Typography
@@ -305,13 +341,10 @@ const ConsultMyPaymentMethods = () => {
                       color="textSecondary"
                       sx={{ width: "100%", mt: 4 }}
                     >
-                      No se encontraron métodos de pago para el criterio de
-                      búsqueda especificado.
+                      No se encontraron métodos de pago.
                     </Typography>
                   )}
-                </Grid2>
-
-                {/* Paginación centrada */}
+                </Grid>
                 <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
                   <Pagination
                     count={totalPages}

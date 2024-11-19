@@ -34,47 +34,50 @@ def consult_payment_methods(request):
         if not usuario or not rol_id:
             return Response(
                 {"error": "Usuario no autenticado."},
-                status=401,
+                status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        if rol_id != 4:  # Solo los clientes pueden consultar sus métodos de pago
+        # Verificar que el rol sea de cliente (por ejemplo, rol_id == 4)
+        if rol_id != 4:
             return Response(
-                {"error": "No tiene permisos para consultar métodos de pago."},
-                status=403,
+                {"error": "No tiene permisos para consultar esta información."},
+                status=status.HTTP_403_FORBIDDEN,
             )
 
-        # Llamar al procedimiento almacenado
         with connection.cursor() as cursor:
-            cursor.callproc("VETLINK.CONSULTAR_METODOS_PAGO", [usuario])
-            # Obtener el cursor con los resultados
-            results = cursor.fetchall()
+            # Crear un cursor para recibir el resultado del procedimiento
+            out_cursor = cursor.connection.cursor()
+            cursor.callproc("VETLINK.CONSULTAR_METODOS_PAGO", [usuario, out_cursor])
 
-            # Definir los nombres de las columnas para estructurar la respuesta
-            columns = [
-                "metodo_pago_id",
-                "tipo_pago",
-                "marca_tarjeta",
-                "ultimos_4_digitos",
-                "nombre_titular",
-                "fecha_expiracion",
-                "direccion",
-                "provincia",
-                "pais",
-                "codigo_postal",
-                "estado",
-            ]
+            # Obtener los nombres de las columnas
+            columns = [col[0] for col in out_cursor.description]
+            payment_methods = [dict(zip(columns, row)) for row in out_cursor.fetchall()]
 
-            # Convertir los resultados en una lista de diccionarios
-            methods = [dict(zip(columns, row)) for row in results]
+            if not payment_methods:
+                return Response(
+                    {"message": "No tienes métodos de pago registrados."},
+                    status=status.HTTP_200_OK,
+                )
 
-        # Retornar la lista de métodos de pago
-        return Response(methods, status=200)
+            # Formatear los datos según sea necesario (ejemplo: ajustar fechas)
+            for method in payment_methods:
+                if method["FECHA_EXPIRACION"]:
+                    method["FECHA_EXPIRACION"] = method["FECHA_EXPIRACION"].strftime(
+                        "%m/%Y"
+                    )
+
+            return Response({"results": payment_methods}, status=status.HTTP_200_OK)
 
     except Exception as e:
-        print(f"Error interno: {e}")  # Log del error
+        print(f"Error interno: {str(e)}")
+        error_message = str(e)
+        if "ORA-" in error_message:
+            return Response(
+                {"error": error_message}, status=status.HTTP_400_BAD_REQUEST
+            )
         return Response(
             {"error": "Error al consultar los métodos de pago."},
-            status=500,
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
 
