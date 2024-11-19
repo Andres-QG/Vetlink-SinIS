@@ -26,6 +26,8 @@ import paypalIcon from "../../assets/img/payments/paypal.png";
 import mastercardIcon from "../../assets/img/payments/MasterCard.png";
 import americanExpressIcon from "../../assets/img/payments/american-express.png";
 import axios from "axios";
+import dayjs from "dayjs";
+import { useNotification } from "../Notification";
 
 const AddPaymentMethod = () => {
   const [form, setForm] = useState({
@@ -35,7 +37,7 @@ const AddPaymentMethod = () => {
     codigoPostal: "",
     nombreTitular: "",
     numeroTarjeta: "",
-    fechaExpiracion: null,
+    fechaExpiracion: dayjs().format("MM-YYYY"),
   });
 
   const [errors, setErrors] = useState({});
@@ -43,6 +45,8 @@ const AddPaymentMethod = () => {
   const [provinces, setProvinces] = useState([]);
   const [loadingCountries, setLoadingCountries] = useState(true);
   const [loadingProvinces, setLoadingProvinces] = useState(false);
+  const [loading, setLoading] = useState(false); // Estado para manejar el indicador de carga
+  const showNotification = useNotification();
 
   useEffect(() => {
     const fetchCountries = async () => {
@@ -76,7 +80,7 @@ const AddPaymentMethod = () => {
     }
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     const newErrors = {};
@@ -99,7 +103,47 @@ const AddPaymentMethod = () => {
       return;
     }
 
-    console.log("Método de pago agregado:", form);
+    try {
+      setLoading(true); // Activar el estado de carga
+      const response = await axios.post(
+        "http://localhost:8000/add-payment-method/",
+        {
+          direccion: form.direccion,
+          provincia: form.provincia,
+          pais: form.pais,
+          codigo_postal: form.codigoPostal,
+          nombre_titular: form.nombreTitular,
+          numero_tarjeta: form.numeroTarjeta,
+          fecha_expiracion: form.fechaExpiracion,
+        },
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true, // Incluir cookies para autenticación
+        }
+      );
+
+      if (response.status === 201) {
+        showNotification("Método de pago agregado exitosamente", "success");
+        setForm({
+          direccion: "",
+          provincia: "",
+          pais: "",
+          codigoPostal: "",
+          nombreTitular: "",
+          numeroTarjeta: "",
+          fechaExpiracion: dayjs().format("MM-YYYY"),
+        });
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response && error.response.data && error.response.data.error
+          ? error.response.data.error
+          : "Error al agregar el método de pago. Por favor, intente de nuevo.";
+      console.error("Error al agregar método de pago:", error);
+      showNotification(errorMessage, "error");
+    } finally {
+      setLoading(false); // Desactivar el estado de carga
+    }
   };
 
   const handleChange = (field, value) => {
@@ -331,16 +375,9 @@ const AddPaymentMethod = () => {
             <DatePicker
               label="Fecha de Expiración"
               views={["year", "month"]}
-              value={
-                form.fechaExpiracion ? new Date(form.fechaExpiracion) : null
-              } // Convertimos al tipo Date
-              onChange={(date) => {
-                const formattedDate = date
-                  ? `${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`
-                  : "";
-                handleChange("fechaExpiracion", formattedDate);
-              }}
-              format="MM/yyyy" // Mostramos el formato MM/YYYY
+              value={dayjs(form.fechaExpiracion).toDate()}
+              minDate={dayjs().toDate()}
+              format="MM/yyyy"
               slotProps={{
                 openPickerButton: {
                   color: "standard",
@@ -365,19 +402,20 @@ const AddPaymentMethod = () => {
         <Button
           type="submit"
           variant="contained"
+          disabled={loading} // Deshabilitar el botón mientras se carga
           sx={{
             textTransform: "none",
-            backgroundColor: "#00308F",
+            backgroundColor: loading ? "#cccccc" : "#00308F",
             color: "white",
             width: "100%",
             height: "50px",
             fontSize: "16px",
             "&:hover": {
-              backgroundColor: "#002766",
+              backgroundColor: loading ? "#cccccc" : "#002766",
             },
           }}
         >
-          Agregar
+          {loading ? "Cargando..." : "Agregar"}
         </Button>
       </Box>
     </Box>
