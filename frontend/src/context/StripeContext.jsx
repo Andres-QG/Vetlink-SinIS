@@ -6,6 +6,7 @@ const StripeContext = createContext();
 export const StripeProvider = ({ children }) => {
   const stripe = useStripe();
   const elements = useElements();
+  console.log(stripe, elements)
 
   return (
     <StripeContext.Provider value={{ stripe, elements }}>

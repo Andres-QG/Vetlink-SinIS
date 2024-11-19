@@ -34,7 +34,7 @@ import { es } from "date-fns/locale";
 import StripeContext from "../../context/StripeContext";
 
 const AddCitaPage = ({ onSuccess, otherData}) => {
-  const { stripe, elements} = useContext(StripeContext);
+  const { stripe, elements } = useContext(StripeContext);
 
   const initialFormData = {
     cliente: otherData?.user || null,

@@ -37,88 +37,87 @@ import ConsultVaccinesHistory from "./routes/ConsultVaccinesHistory";
 import ConsultMyPaymentMethods from "./routes/ConsultMyPaymentMethods";
 import ConsultMyAppoints from "./routes/ConsultMyAppoints";
 
-function App() {
+const stripePromise = loadStripe("pk_test_51QLypMFlNacvOPfn04CgaWzXQXqJ524WVHJAEn2q0ebrAOcEWDBHRUdkj7dDgPuMyyKxpggIVDHNr7RBqo8Fuvsj00AgzIBn7U");
 
-  const stripePromise = loadStripe("pk_test_51QLypMFlNacvOPfn04CgaWzXQXqJ524WVHJAEn2q0ebrAOcEWDBHRUdkj7dDgPuMyyKxpggIVDHNr7RBqo8Fuvsj00AgzIBn7U");
+function App() {
   return (
     <>
       <AuthProvider>
-        <Elements stripe={stripePromise}>
-          <Router>
-            <Routes>
-              {/* Landing Page, Services, Login */}
-              <Route
-                path="/"
-                element={
-                  <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
-                    <LandingPage />
-                  </DashBoardLayout>
-                }
-              />
-              <Route
-                path="/services"
-                element={
-                  <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
-                    <Services />
-                  </DashBoardLayout>
-                }
-              />
-              <Route
-                path="/login"
-                element={
-                  <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
-                    <Login />
-                  </DashBoardLayout>
-                }
-              />
-              <Route
-                path="/signup"
-                element={
-                  <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
-                    <NotificationProvider>
-                      <Signup />
-                    </NotificationProvider>
-                  </DashBoardLayout>
-                }
-              />
-              <Route
-                path="/reset"
-                element={
-                  <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
-                    <PassReset />
-                  </DashBoardLayout>
-                }
-              />
-              <Route
-                path="/check-reset"
-                element={
-                  <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
-                    <ProtectedRoute requiredRoles={[5]}>
-                      <CheckCode />
-                    </ProtectedRoute>
-                  </DashBoardLayout>
-                }
-              />
-              <Route
-                path="/change-pass"
-                element={
-                  <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
-                    <ProtectedRoute requiredRoles={[5]}>
-                      <ChangePass />
-                    </ProtectedRoute>
-                  </DashBoardLayout>
-                }
-              />
-              <Route
-                path="/pass-success"
-                element={
-                  <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
-                    <ProtectedRoute requiredRoles={[5]}>
-                      <PassSuccess />
-                    </ProtectedRoute>
-                  </DashBoardLayout>
-                }
-              />
+        <Router>
+          <Routes>
+            {/* Landing Page, Services, Login */}
+            <Route
+              path="/"
+              element={
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <LandingPage />
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/services"
+              element={
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <Services />
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/login"
+              element={
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <Login />
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/signup"
+              element={
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <NotificationProvider>
+                    <Signup />
+                  </NotificationProvider>
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/reset"
+              element={
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <PassReset />
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/check-reset"
+              element={
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <ProtectedRoute requiredRoles={[5]}>
+                    <CheckCode />
+                  </ProtectedRoute>
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/change-pass"
+              element={
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <ProtectedRoute requiredRoles={[5]}>
+                    <ChangePass />
+                  </ProtectedRoute>
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/pass-success"
+              element={
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <ProtectedRoute requiredRoles={[5]}>
+                    <PassSuccess />
+                  </ProtectedRoute>
+                </DashBoardLayout>
+              }
+            />
 
             {/* Consult Pages */}
             <Route
@@ -218,7 +217,7 @@ function App() {
               }
             />
             <Route
-              path="/Consultsymptoms"
+              path="/consultsymptoms"
               element={
                 <DashBoardLayout>
                   <ProtectedRoute requiredRoles={[1, 2, 3]}>
@@ -279,14 +278,20 @@ function App() {
                 </DashBoardLayout>
               }
             />
+
+            {/* Appointments with Stripe */}
             <Route
               path="/appointments"
               element={
                 <DashBoardLayout>
                   <ProtectedRoute requiredRoles={[1, 2, 3]}>
-                    <NotificationProvider>
-                      <ConsultCitas />
-                    </NotificationProvider>
+                    <Elements stripe={stripePromise}>
+                      <StripeProvider>
+                        <NotificationProvider>
+                          <ConsultCitas />
+                        </NotificationProvider>
+                      </StripeProvider>
+                    </Elements>
                   </ProtectedRoute>
                 </DashBoardLayout>
               }
@@ -296,252 +301,79 @@ function App() {
               element={
                 <DashBoardLayout>
                   <ProtectedRoute requiredRoles={[4]}>
-                    <NotificationProvider>
-                      <ConsultMyAppoints />
-                    </NotificationProvider>
-                  </ProtectedRoute>
-                </DashBoardLayout>
-              }
-            />
-            {/*Profile page*/}
-              <Route
-                path="/dashboard"
-                element={
-                  <DashBoardLayout>
-                    <NotificationProvider>
-                      <ProtectedRoute requiredRoles={[1, 2, 3, 4]}>
-                        <Dashboard />
-                      </ProtectedRoute>
-                    </NotificationProvider>
-                  </DashBoardLayout>
-                }
-              />
-
-              {/* consult My Payment Methods */}
-              <Route
-                path="/consultMyPaymentMethods"
-                element={
-                  <DashBoardLayout>
-                    <NotificationProvider>
-                      <ProtectedRoute requiredRoles={[4]}>
-                        <ConsultMyPaymentMethods />
-                      </ProtectedRoute>
-                    </NotificationProvider>
-                  </DashBoardLayout>
-                }
-              />
-
-              {/* consult Services */}
-              <Route
-                path="/consultServices"
-                element={
-                  <DashBoardLayout>
-                    <NotificationProvider>
-                      <ProtectedRoute requiredRoles={[1, 2]}>
-                        <ConsultServices />
-                      </ProtectedRoute>
-                    </NotificationProvider>
-                  </DashBoardLayout>
-                }
-              />
-
-              {/* Consult Pages */}
-              <Route
-                path="/consultSchedules"
-                element={
-                  <DashBoardLayout>
-                    <ProtectedRoute requiredRoles={[1, 2, 3]}>
-                      <NotificationProvider>
-                        <ConsultSchedules />
-                      </NotificationProvider>
-                    </ProtectedRoute>
-                  </DashBoardLayout>
-                }
-              />
-              <Route
-                path="/consultMyPets"
-                element={
-                  <DashBoardLayout>
-                    <ProtectedRoute requiredRoles={[4]}>
-                      <NotificationProvider>
-                        <ConsultMyPets />
-                      </NotificationProvider>
-                    </ProtectedRoute>
-                  </DashBoardLayout>
-                }
-              />
-              <Route
-                path="/consultclients"
-                element={
-                  <DashBoardLayout>
-                    <NotificationProvider>
-                      <ProtectedRoute requiredRoles={[1, 2, 3]}>
-                        <ConsultClients />
-                      </ProtectedRoute>
-                    </NotificationProvider>
-                  </DashBoardLayout>
-                }
-              />
-              <Route
-                path="/consultpets"
-                element={
-                  <DashBoardLayout>
-                    <ProtectedRoute requiredRoles={[1, 2, 3]}>
-                      <NotificationProvider>
-                        <ConsultPets />
-                      </NotificationProvider>
-                    </ProtectedRoute>
-                  </DashBoardLayout>
-                }
-              />
-              <Route
-                path="/consultrecords"
-                element={
-                  <DashBoardLayout>
-                    <ProtectedRoute requiredRoles={[1, 2, 3]}>
-                      <NotificationProvider>
-                        <ConsultRecords />
-                      </NotificationProvider>
-                    </ProtectedRoute>
-                  </DashBoardLayout>
-                }
-              />
-              <Route
-                path="/consultvaccines"
-                element={
-                  <DashBoardLayout>
-                    <ProtectedRoute requiredRoles={[3]}>
-                      <NotificationProvider>
-                        <ConsultVaccines />
-                      </NotificationProvider>
-                    </ProtectedRoute>
-                  </DashBoardLayout>
-                }
-              />
-              <Route
-                path="/Consultsymptoms"
-                element={
-                  <DashBoardLayout>
-                    <ProtectedRoute requiredRoles={[1, 2, 3]}>
-                      <NotificationProvider>
-                        <ConsultSymptoms />
-                      </NotificationProvider>
-                    </ProtectedRoute>
-                  </DashBoardLayout>
-                }
-              />
-              <Route
-                path="/consultVaccinations"
-                element={
-                  <DashBoardLayout>
-                    <ProtectedRoute requiredRoles={[4]}>
-                      <NotificationProvider>
-                        <ConsultVaccinesHistory />
-                      </NotificationProvider>
-                    </ProtectedRoute>
-                  </DashBoardLayout>
-                }
-              />
-              <Route
-                path="/consultvets"
-                element={
-                  <DashBoardLayout>
-                    <NotificationProvider>
-                      <ProtectedRoute requiredRoles={[1, 2]}>
-                        <ConsultVets />
-                      </ProtectedRoute>
-                    </NotificationProvider>
-                  </DashBoardLayout>
-                }
-              />
-              <Route
-                path="/consultAdmins"
-                element={
-                  <DashBoardLayout>
-                    <NotificationProvider>
-                      <ProtectedRoute requiredRoles={[1]}>
-                        <ConsultAdmins />
-                      </ProtectedRoute>
-                    </NotificationProvider>
-                  </DashBoardLayout>
-                }
-              />
-
-              {/* Owner Page */}
-              <Route
-                path="/clinics"
-                element={
-                  <DashBoardLayout>
-                    <ProtectedRoute requiredRoles={[1]}>
-                      <NotificationProvider>
-                        <Owner />
-                      </NotificationProvider>
-                    </ProtectedRoute>
-                  </DashBoardLayout>
-                }
-              />
-              <Route
-                path="/appointments"
-                element={
-                  <DashBoardLayout>
-                    <ProtectedRoute requiredRoles={[1, 2, 3]}>
-                      <StripeProvider>
-                        <NotificationProvider>
-                          <ConsultCitas />
-                        </NotificationProvider>
-                      </StripeProvider>
-                    </ProtectedRoute>
-                  </DashBoardLayout>
-                }
-              />
-              <Route
-                path="/myappointments"
-                element={
-                  <DashBoardLayout>
-                    <ProtectedRoute requiredRoles={[4]}>
+                    <Elements stripe={stripePromise}>
                       <StripeProvider>
                         <NotificationProvider>
                           <ConsultMyAppoints />
                         </NotificationProvider>
                       </StripeProvider>
-                    </ProtectedRoute>
-                  </DashBoardLayout>
-                }
-              />
-              {/*Profile page*/}
-              <Route
-                path="/profile"
-                element={
-                  <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
-                    <NotificationProvider>
-                      <ProtectedRoute requiredRoles={[1, 2, 3, 4]}>
-                        <Profile />
-                      </ProtectedRoute>
-                    </NotificationProvider>
-                  </DashBoardLayout>
-                }
-              />
+                    </Elements>
+                  </ProtectedRoute>
+                </DashBoardLayout>
+              }
+            />
 
-              {/* Error Page */}
-              <Route
-                path="/error"
-                element={
-                  <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
-                    <Error />
-                  </DashBoardLayout>
-                }
-              />
-              <Route
-                path="*"
-                element={
-                  <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
-                    <Error />
-                  </DashBoardLayout>
-                }
-              />
-            </Routes>
-          </Router>
-        </Elements>
+            {/* Dashboard */}
+            <Route
+              path="/dashboard"
+              element={
+                <DashBoardLayout>
+                  <NotificationProvider>
+                    <ProtectedRoute requiredRoles={[1, 2, 3, 4]}>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  </NotificationProvider>
+                </DashBoardLayout>
+              }
+            />
+
+            {/* Consult My Payment Methods */}
+            <Route
+              path="/consultMyPaymentMethods"
+              element={
+                <DashBoardLayout>
+                  <NotificationProvider>
+                    <ProtectedRoute requiredRoles={[4]}>
+                      <ConsultMyPaymentMethods />
+                    </ProtectedRoute>
+                  </NotificationProvider>
+                </DashBoardLayout>
+              }
+            />
+
+            {/* Profile Page */}
+            <Route
+              path="/profile"
+              element={
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <NotificationProvider>
+                    <ProtectedRoute requiredRoles={[1, 2, 3, 4]}>
+                      <Profile />
+                    </ProtectedRoute>
+                  </NotificationProvider>
+                </DashBoardLayout>
+              }
+            />
+
+            {/* Error Page */}
+            <Route
+              path="/error"
+              element={
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <Error />
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="*"
+              element={
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <Error />
+                </DashBoardLayout>
+              }
+            />
+          </Routes>
+        </Router>
       </AuthProvider>
     </>
   );
