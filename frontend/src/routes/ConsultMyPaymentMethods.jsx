@@ -24,6 +24,7 @@ import {
 } from "@mui/icons-material";
 import SearchBar from "../components/Consult/GeneralizedSearchBar";
 import AddPaymentMethod from "../components/ConsultMyPaymentMethods/AddPaymentMethod";
+import ModifyPaymentMethod from "../components/ConsultMyPaymentMethods/ModifyPaymentMethod";
 import { useNotification } from "../components/Notification";
 import visaIcon from "../assets/img/payments/visa.png";
 import mastercardIcon from "../assets/img/payments/MasterCard.png";
@@ -44,6 +45,10 @@ const ConsultMyPaymentMethods = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [tabIndex, setTabIndex] = useState(0);
+  const [modalState, setModalState] = useState({
+    open: false,
+    method: null,
+  });
   const paymentMethodsPerPage = 8;
   const showNotification = useNotification();
 
@@ -71,7 +76,7 @@ const ConsultMyPaymentMethods = () => {
   };
 
   const handleSearch = (searchTerm, filterColumn, order) => {
-    if (!Array.isArray(paymentMethods)) return; // Validar que paymentMethods es un array
+    if (!Array.isArray(paymentMethods)) return;
     const resultsToSort = searchTerm
       ? paymentMethods.filter((method) =>
           method[filterColumn]
@@ -102,8 +107,16 @@ const ConsultMyPaymentMethods = () => {
     }
   };
 
+  const handleOpenModal = (method) => {
+    setModalState({ open: true, method });
+  };
+
+  const handleCloseModal = () => {
+    setModalState({ open: false, method: null });
+  };
+
   const getCardIcon = (brand) =>
-    cardIcons[brand?.toUpperCase()] || cardUndefinedIcon; // Default to cardUndefinedIcon
+    cardIcons[brand?.toUpperCase()] || cardUndefinedIcon;
 
   const indexOfLastMethod = currentPage * paymentMethodsPerPage;
   const indexOfFirstMethod = indexOfLastMethod - paymentMethodsPerPage;
@@ -222,7 +235,6 @@ const ConsultMyPaymentMethods = () => {
                               },
                             }}
                           >
-                            {/* Header */}
                             <Box
                               sx={{
                                 display: "flex",
@@ -254,7 +266,6 @@ const ConsultMyPaymentMethods = () => {
                               </Typography>
                             </Box>
 
-                            {/* Body */}
                             <CardContent
                               sx={{
                                 display: "flex",
@@ -295,7 +306,6 @@ const ConsultMyPaymentMethods = () => {
                               </Typography>
                             </CardContent>
 
-                            {/* Actions */}
                             <CardActions
                               sx={{
                                 display: "flex",
@@ -312,6 +322,7 @@ const ConsultMyPaymentMethods = () => {
                                   sx={{
                                     textTransform: "none",
                                   }}
+                                  onClick={() => handleOpenModal(method)}
                                 >
                                   Modificar
                                 </Button>
@@ -365,6 +376,14 @@ const ConsultMyPaymentMethods = () => {
             )}
           </Box>
         </>
+      )}
+      {modalState.open && (
+        <ModifyPaymentMethod
+          open={modalState.open}
+          handleClose={handleCloseModal}
+          onSuccess={handleActionSuccess}
+          selectedItem={modalState.method}
+        />
       )}
     </Box>
   );

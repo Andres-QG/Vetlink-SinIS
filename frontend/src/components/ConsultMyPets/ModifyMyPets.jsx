@@ -322,7 +322,7 @@ const ModifyMyPets = ({ open, handleClose, petData, onSuccess }) => {
                 "&:hover": { backgroundColor: "#00246d" },
               }}
             >
-              {loading ? "Modificando..." : "Modificar Mascota"}
+              {loading ? "Guardando..." : "Guardar Cambios"}
             </Button>
           </Stack>
         </form>

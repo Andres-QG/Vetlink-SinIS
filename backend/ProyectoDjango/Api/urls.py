@@ -88,6 +88,12 @@ urlpatterns = [
         restore_clinic_vaccine,
         name="restore_clinic_vaccine",
     ),
+    # Vacunas para historial de vacunación
+    path(
+        "consult-vaccines-history/",
+        consult_vaccines_history,
+        name="consult_vaccines_history",
+    ),
     # Sintomas
     path("consult-symptoms/", consult_symptoms, name="consult_symptoms"),
     path("add-symptom/", add_symptom, name="add_symptom"),
@@ -167,6 +173,11 @@ urlpatterns = [
     path("deactivate-user/", deactivate_user, name="deactivate_user"),
     # Pagos APIs
     path("create-payment/", create_payment, name="create-payment"),
+    path(
+        "modify-payment-method/<int:metodo_pago_id>/",
+        modify_payment_method,
+        name="modify_payment_method",
+    ),
 ]
 
 if settings.DEBUG:
