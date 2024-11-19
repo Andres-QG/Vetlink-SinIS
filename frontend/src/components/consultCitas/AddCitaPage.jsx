@@ -89,6 +89,8 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
     }
   }, [otherData]);
 
+  console.log(otherData)
+
   useEffect(() => {
     const fetchPets = async () => {
       if (formData.cliente) {
@@ -274,83 +276,44 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
       }}
     >
       <form onSubmit={handleSubmit} className="w-full flex flex-col items-center" noValidate>
-        {otherData?.user.role === 4 && (
-          <Stepper activeStep={step} alternativeLabel className="py-5 w-full">
-            {steps.map((label, index) => {
-              const labelProps = {};
-              if (isStepFailed(index)) {
-                labelProps.optional = (
-                  <Typography variant="caption" color="error">
-                    La información está errónea
-                  </Typography>
-                );
+        <Stepper activeStep={step} alternativeLabel className="py-5 w-full">
+          {steps.map((label, index) => {
+            const labelProps = {};
+            if (isStepFailed(index)) {
+              labelProps.optional = (
+                <Typography variant="caption" color="error">
+                  La información está errónea
+                </Typography>
+              );
 
-                labelProps.error = true;
+              labelProps.error = true;
+            }
+
+            const CustomStepIcon = ({ active, completed }) => {
+              let bgColor = "bg-gray-300"; // Default color
+
+              if (active || completed) {
+                bgColor = "bg-primary";
               }
 
-              const CustomStepIcon = ({ active, completed }) => {
-                let bgColor = "bg-gray-300"; // Default color
-
-                if (active || completed) {
-                  bgColor = "bg-primary";
-                }
-
-                return (
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center ${bgColor} text-white font-bold`}
-                  >
-                    {completed ? "✓" : index + 1}
-                  </div>
-                );
-              };
-
               return (
-                <Step key={label}>
-                  <StepLabel {...labelProps} StepIconComponent={CustomStepIcon}>
-                    {label}
-                  </StepLabel>
-                </Step>
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${bgColor} text-white font-bold`}
+                >
+                  {completed ? "✓" : index + 1}
+                </div>
               );
-            })}
-          </Stepper>
-        )}
+            };
 
-        {otherData?.user?.role !== 4 && step === 0 && (
-          <Autocomplete
-            options={clientes}
-            getOptionLabel={(option) => option.usuario || ""}
-            value={formData.cliente || ""}
-            className="w-full"
-            onChange={(event, newValue) => setFormData({ ...formData, cliente: newValue })}
-            loading={loadingClients}
-            disabled={user.role === 4}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Cliente"
-                placeholder="Seleccione un cliente"
-                fullWidth
-                error={!!errors.cliente}
-                helperText={errors.cliente}
-                InputProps={{
-                  ...params.InputProps,
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PersonIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <>
-                      {loadingClients ? <CircularProgress color="inherit" size={20} /> : null}
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                }}
-                sx={{ mb: 2 }}
-              />
-            )}
-          />
-        )}
+            return (
+              <Step key={label}>
+                <StepLabel {...labelProps} StepIconComponent={CustomStepIcon}>
+                  {label}
+                </StepLabel>
+              </Step>
+            );
+          })}
+        </Stepper>
 
         {step === 0 && (
           <Autocomplete

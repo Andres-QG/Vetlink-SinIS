@@ -396,7 +396,7 @@ const ConsultMyAppoints = () => {
             {tabIndex === 1 && (
               <Box sx={{ width: "100%" }}>
                 <Elements stripe={stripePromise}>
-                  <AddCitaPage otherData={otherData.otherData}></AddCitaPage>
+                  <AddCitaPage otherData={otherData}></AddCitaPage>
                 </Elements>
               </Box>
             )}
