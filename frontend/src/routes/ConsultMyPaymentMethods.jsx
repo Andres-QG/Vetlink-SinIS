@@ -357,9 +357,11 @@ const ConsultMyPaymentMethods = () => {
             )}
 
             {tabIndex === 1 && (
-              <Box sx={{ width: "100%" }}>
-                <AddPaymentMethod onSuccess={handleActionSuccess} />
-              </Box>
+              <Grow in={tabIndex === 1} timeout={500}>
+                <Box sx={{ width: "100%" }}>
+                  <AddPaymentMethod onSuccess={handleActionSuccess} />
+                </Box>
+              </Grow>
             )}
           </Box>
         </>

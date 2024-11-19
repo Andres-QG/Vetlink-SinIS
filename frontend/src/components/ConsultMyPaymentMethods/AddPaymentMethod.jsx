@@ -174,6 +174,7 @@ const AddPaymentMethod = () => {
           fechaExpiracion: "",
           marcaTarjeta: "",
         });
+        window.location.reload();
       }
     } catch (error) {
       const errorMessage =
