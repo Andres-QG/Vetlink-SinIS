@@ -6,6 +6,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import ConsultView from "../components/Consult/ConsultView";
 import AddCitaModal from "../components/consultCitas/AddCitaModal";
 import ModifyCitaModal from "../components/consultCitas/ModifyCitaModal";
+import ConsultMyAppoints from "./ConsultMyAppoints";
 
 
 function ConsultCitas() {
@@ -87,7 +88,7 @@ function ConsultCitas() {
   return (
     <>
       <Elements stripe={stripePromise}>
-        {user.role === 3 ? (
+        {user.role === 3 &&
           <ConsultView
             title="Citas"
             fetchUrl="http://localhost:8000/api/consult-citas/"
@@ -104,23 +105,25 @@ function ConsultCitas() {
             hideAddButton={true}
             hideActions={true}
           />
-        ) : (
-          <ConsultView
-            title="Citas"
-            fetchUrl="http://localhost:8000/api/consult-citas/"
-            deletionUrl="http://localhost:8000/api/delete-cita/"
-            addComponent={AddCitaModal}
-            modifyComponent={ModifyCitaModal}
-            rowsPerPage={rowsPerPage}
-            columns={columns}
-            pkCol="cita_id"
-            visualIdentifierCol="cliente"
-            otherData={otherData}
-            customDeleteTitle="¿Desea eliminar esta cita?"
-            hideAddButton={false}
-            hideActions={false}
-          />
-        )}
+        }
+        {(user.role === 1 || user.role === 2) && <ConsultView
+          title="Citas"
+          fetchUrl="http://localhost:8000/api/consult-citas/"
+          deletionUrl="http://localhost:8000/api/delete-cita/"
+          addComponent={AddCitaModal}
+          modifyComponent={ModifyCitaModal}
+          rowsPerPage={rowsPerPage}
+          columns={columns}
+          pkCol="cita_id"
+          visualIdentifierCol="cliente"
+          otherData={otherData}
+          customDeleteTitle="¿Desea eliminar esta cita?"
+          hideAddButton={false}
+          hideActions={false}
+        />}
+        {user.role === 4 &&
+          <ConsultMyAppoints otherData={otherData}></ConsultMyAppoints>
+        }
       </Elements>
     </>
   );
