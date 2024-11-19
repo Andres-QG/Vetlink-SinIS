@@ -16,3 +16,4 @@ from .session import *
 from .getRegisters import *
 from .recover import *
 from .payments import *
+from .paymentMethods import *
