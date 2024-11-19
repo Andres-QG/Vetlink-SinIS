@@ -172,6 +172,13 @@ urlpatterns = [
     path("deactivate-user/", deactivate_user, name="deactivate_user"),
     # Pagos APIs
     path("create-payment/", create_payment, name="create-payment"),
+    # Metodos de pago Cliente APIs
+    path("add-payment-method/", add_payment_method, name="add_payment_method"),
+    path(
+        "consult-payment-methods/",
+        consult_payment_methods,
+        name="consult_payment_methods",
+    ),
     path(
         "modify-payment-method/<int:metodo_pago_id>/",
         modify_payment_method,
