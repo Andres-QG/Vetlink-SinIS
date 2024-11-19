@@ -277,6 +277,12 @@ const DashboardLayout = ({
             onClick: () => handleClick("consultMyPets"),
           },
           {
+            key: "consultVaccinations",
+            icon: <Vaccines />,
+            label: "Vacunación",
+            onClick: () => handleClick("consultVaccinations"),
+          },
+          {
             key: "consultMyPaymentMethods",
             icon: <PaymentIcon />,
             label: "Métodos de Pago",
@@ -332,6 +338,10 @@ const DashboardLayout = ({
         return "consultMyAppointments";
       case "/dashboard":
         return "dashboard";
+      case "/consultvaccines":
+        return "consultvaccines";
+      case "/consultVaccinations":
+        return "consultVaccinations";
       default:
         return "dashboard";
     }

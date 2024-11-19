@@ -28,6 +28,7 @@ import Dashboard from "./routes/Dashboard";
 import { NotificationProvider } from "./components/Notification";
 import ConsultCitas from "./routes/ConsultCitas";
 import ConsultVaccines from "./routes/ConsultVaccines";
+import ConsultVaccinesHistory from "./routes/ConsultVaccinesHistory";
 import ConsultMyPaymentMethods from "./routes/ConsultMyPaymentMethods";
 import ConsultMyAppoints from "./routes/ConsultMyAppoints";
 
@@ -216,9 +217,21 @@ function App() {
               path="/consultvaccines"
               element={
                 <DashBoardLayout>
-                  <ProtectedRoute requiredRoles={[1, 2, 3]}>
+                  <ProtectedRoute requiredRoles={[3]}>
                     <NotificationProvider>
                       <ConsultVaccines />
+                    </NotificationProvider>
+                  </ProtectedRoute>
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/consultVaccinations"
+              element={
+                <DashBoardLayout>
+                  <ProtectedRoute requiredRoles={[4]}>
+                    <NotificationProvider>
+                      <ConsultVaccinesHistory />
                     </NotificationProvider>
                   </ProtectedRoute>
                 </DashBoardLayout>
