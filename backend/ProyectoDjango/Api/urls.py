@@ -92,14 +92,16 @@ urlpatterns = [
     path("consult-symptoms/", consult_symptoms, name="consult_symptoms"),
     path("add-symptom/", add_symptom, name="add_symptom"),
     path("update-symptom/<int:id>/", update_symptom, name="update_symptom"),
-    path("deactivate-symptom/<int:id>/", deactivate_symptom, name="delete_symptom"),
+    path("desactivate-symptom/<int:id>/", desactivate_symptom, name="delete_symptom"),
     path("restore-symptom/<int:id>/", restore_symptom, name="restore_symptom"),
     # Tratamientos
     path("consult-treatments/", consult_treatments, name="consult_treatments"),
     path("add-treatment/", add_treatment, name="add_treatment"),
     path("update-treatment/<int:id>/", update_treatment, name="update_treatment"),
     path(
-        "deactivate-treatment/<int:id>/", deactivate_treatment, name="delete_treatment"
+        "desactivate-treatment/<int:id>/",
+        desactivate_treatment,
+        name="delete_treatment",
     ),
     path("restore-treatment/<int:id>/", restore_treatment, name="restore_treatment"),
     # Citas APIs

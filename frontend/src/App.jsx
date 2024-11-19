@@ -25,6 +25,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Signup from "./routes/Signup";
 import ConsultAdmins from "./routes/ConsultAdmins";
 import ConsultSchedules from "./routes/ConsultSchedules";
+import ConsultTreatment from "./routes/ConsultTreatment";
 import ConsultMyPets from "./routes/ConsultMyPets";
 import DashBoardLayout from "./components/DashBoardLayout";
 import Dashboard from "./routes/Dashboard";
@@ -119,14 +120,199 @@ function App() {
                 }
               />
 
-              {/* Consult Pages */}
+            {/* Consult Pages */}
+            <Route
+              path="/consultSchedules"
+              element={
+                <DashBoardLayout>
+                  <ProtectedRoute requiredRoles={[1, 2, 3]}>
+                    <NotificationProvider>
+                      <ConsultSchedules />
+                    </NotificationProvider>
+                  </ProtectedRoute>
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/consultMyPets"
+              element={
+                <DashBoardLayout>
+                  <ProtectedRoute requiredRoles={[4]}>
+                    <NotificationProvider>
+                      <ConsultMyPets />
+                    </NotificationProvider>
+                  </ProtectedRoute>
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/consultServices"
+              element={
+                <DashBoardLayout>
+                  <NotificationProvider>
+                    <ProtectedRoute requiredRoles={[1, 2]}>
+                      <ConsultServices />
+                    </ProtectedRoute>
+                  </NotificationProvider>
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/consultTreatment"
+              element={
+                <DashBoardLayout>
+                  <NotificationProvider>
+                    <ProtectedRoute requiredRoles={[1, 2, 3]}>
+                      <ConsultTreatment />
+                    </ProtectedRoute>
+                  </NotificationProvider>
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/consultclients"
+              element={
+                <DashBoardLayout>
+                  <NotificationProvider>
+                    <ProtectedRoute requiredRoles={[1, 2, 3]}>
+                      <ConsultClients />
+                    </ProtectedRoute>
+                  </NotificationProvider>
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/consultpets"
+              element={
+                <DashBoardLayout>
+                  <ProtectedRoute requiredRoles={[1, 2, 3]}>
+                    <NotificationProvider>
+                      <ConsultPets />
+                    </NotificationProvider>
+                  </ProtectedRoute>
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/consultrecords"
+              element={
+                <DashBoardLayout>
+                  <ProtectedRoute requiredRoles={[1, 2, 3]}>
+                    <NotificationProvider>
+                      <ConsultRecords />
+                    </NotificationProvider>
+                  </ProtectedRoute>
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/consultvaccines"
+              element={
+                <DashBoardLayout>
+                  <ProtectedRoute requiredRoles={[1, 2, 3]}>
+                    <NotificationProvider>
+                      <ConsultVaccines />
+                    </NotificationProvider>
+                  </ProtectedRoute>
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/Consultsymptoms"
+              element={
+                <DashBoardLayout>
+                  <ProtectedRoute requiredRoles={[1, 2, 3]}>
+                    <NotificationProvider>
+                      <ConsultSymptoms />
+                    </NotificationProvider>
+                  </ProtectedRoute>
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/consultVaccinations"
+              element={
+                <DashBoardLayout>
+                  <ProtectedRoute requiredRoles={[4]}>
+                    <NotificationProvider>
+                      <ConsultVaccinesHistory />
+                    </NotificationProvider>
+                  </ProtectedRoute>
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/consultvets"
+              element={
+                <DashBoardLayout>
+                  <NotificationProvider>
+                    <ProtectedRoute requiredRoles={[1, 2]}>
+                      <ConsultVets />
+                    </ProtectedRoute>
+                  </NotificationProvider>
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/consultAdmins"
+              element={
+                <DashBoardLayout>
+                  <NotificationProvider>
+                    <ProtectedRoute requiredRoles={[1]}>
+                      <ConsultAdmins />
+                    </ProtectedRoute>
+                  </NotificationProvider>
+                </DashBoardLayout>
+              }
+            />
+
+            {/* Owner Page */}
+            <Route
+              path="/clinics"
+              element={
+                <DashBoardLayout>
+                  <ProtectedRoute requiredRoles={[1]}>
+                    <NotificationProvider>
+                      <Owner />
+                    </NotificationProvider>
+                  </ProtectedRoute>
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/appointments"
+              element={
+                <DashBoardLayout>
+                  <ProtectedRoute requiredRoles={[1, 2, 3]}>
+                    <NotificationProvider>
+                      <ConsultCitas />
+                    </NotificationProvider>
+                  </ProtectedRoute>
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/myappointments"
+              element={
+                <DashBoardLayout>
+                  <ProtectedRoute requiredRoles={[4]}>
+                    <NotificationProvider>
+                      <ConsultMyAppoints />
+                    </NotificationProvider>
+                  </ProtectedRoute>
+                </DashBoardLayout>
+              }
+            />
+            {/*Profile page*/}
               <Route
                 path="/dashboard"
                 element={
                   <DashBoardLayout>
-                    <ProtectedRoute requiredRoles={[1, 2, 3, 4]}>
-                      <Dashboard />
-                    </ProtectedRoute>
+                    <NotificationProvider>
+                      <ProtectedRoute requiredRoles={[1, 2, 3, 4]}>
+                        <Dashboard />
+                      </ProtectedRoute>
+                    </NotificationProvider>
                   </DashBoardLayout>
                 }
               />

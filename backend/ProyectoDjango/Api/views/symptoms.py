@@ -84,7 +84,7 @@ def update_symptom(request, id):
 
 
 @api_view(["PUT"])
-def deactivate_symptom(request, id):
+def desactivate_symptom(request, id):
     try:
         symptom = Sintomas.objects.get(pk=id)
         symptom.estado = 0  # desactivar

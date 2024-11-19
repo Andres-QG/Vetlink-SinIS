@@ -59,12 +59,9 @@ const ModifyModal = ({
 
     if (!formData.descripcion) {
       newErrors.descripcion = "La descripción es requerida.";
-    } else if (
-      formData.descripcion.length < 10 ||
-      formData.descripcion.length > 99
-    ) {
+    } else if (formData.descripcion.length < 10 || formData.descripcion.length > 251) {
       newErrors.descripcion =
-        "La descripción debe tener entre 10 y 99 caracteres.";
+        "La descripción debe tener entre 10 y 250 caracteres.";
     }
 
     setErrors(newErrors);

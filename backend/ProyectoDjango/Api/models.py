@@ -334,7 +334,7 @@ class Especialidades(models.Model):
         db_comment="Este campo es la llave primaria de la tabla. Almacena un identificador ·nico para cada especialidad. DeberÝa ser un valor ·nico que permite distinguir cada especialidad de manera clara.",
     )
     nombre = models.CharField(
-        max_length=30,
+        max_length=255,
         db_comment='Este campo almacena el nombre de la especialidad (por ejemplo, "DermatologÝa", "CirugÝa", "OdontologÝa"). Es un campo importante para identificar la especialidad de manera comprensible.',
     )
     descripcion = models.CharField(
@@ -664,13 +664,13 @@ class Sintomas(models.Model):
         db_comment="Este campo es la llave primaria de la tabla. Almacena un identificador ·nico para cada sÝntoma, lo que permite distinguir claramente entre diferentes sÝntomas.",
     )
     descripcion = models.CharField(
-        max_length=100,
+        max_length=255,
         blank=True,
         null=True,
         db_comment="Este campo proporciona una descripci¾n del sÝntoma. Es importante para ayudar a los veterinarios y al personal a reconocer y evaluar adecuadamente los sÝntomas que pueden presentar las mascotas.",
     )
     nombre = models.CharField(
-        max_length=30,
+        max_length=255,
         db_comment="Este campo almacena el nombre del sÝntoma. Es fundamental para identificar rßpidamente el sÝntoma en la base de datos y en las interacciones con los clientes.",
     )
 
@@ -683,20 +683,21 @@ class Sintomas(models.Model):
 
 
 class Tratamientos(models.Model):
-    tratamiento_id = models.FloatField(
+    tratamiento_id = models.AutoField(
         primary_key=True,
         db_comment="Este campo es la llave primaria de la tabla. Almacena un identificador ·nico para cada tratamiento. Este valor debe ser ·nico y permite distinguir cada tratamiento de manera clara.",
     )
     descripcion = models.CharField(
-        max_length=100,
+        max_length=255,
         blank=True,
         null=True,
         db_comment="Este campo proporciona una descripci¾n detallada del tratamiento. Es importante para que los veterinarios y el personal de la clÝnica comprendan el prop¾sito y la naturaleza del tratamiento.",
     )
     nombre = models.CharField(
-        max_length=30,
+        max_length=255,
         db_comment="Este campo almacena el nombre del tratamiento. Es fundamental para identificar rßpidamente el tratamiento en la base de datos y en las interacciones con los clientes.",
     )
+    estado = models.FloatField(max_length=1)
 
     class Meta:
         managed = False
