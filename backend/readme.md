@@ -27,6 +27,8 @@ A partir de aquí estarás adentro del entorno virtual y lo que instales solo es
 
 - Instalar backend de correo con pip install sendgrid
 
+- Instalar stripe de correo con pip install stripe
+
 #### Verificacion
 
 pip list

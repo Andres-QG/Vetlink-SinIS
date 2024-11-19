@@ -9,6 +9,7 @@ import ConsultVets from "./routes/ConsultVets";
 import ConsultPets from "./routes/ConsultPets";
 import ConsultRecords from "./routes/ConsultRecords";
 import ConsultServices from "./routes/ConsultServices";
+import ConsultSymptoms from "./routes/ConsultSymptoms";
 import Profile from "./routes/Profile";
 import {
   PassReset,
@@ -218,6 +219,18 @@ function App() {
                   <ProtectedRoute requiredRoles={[1, 2, 3]}>
                     <NotificationProvider>
                       <ConsultVaccines />
+                    </NotificationProvider>
+                  </ProtectedRoute>
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/Consultsymptoms"
+              element={
+                <DashBoardLayout>
+                  <ProtectedRoute requiredRoles={[1, 2, 3]}>
+                    <NotificationProvider>
+                      <ConsultSymptoms />
                     </NotificationProvider>
                   </ProtectedRoute>
                 </DashBoardLayout>

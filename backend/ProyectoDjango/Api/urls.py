@@ -62,17 +62,41 @@ urlpatterns = [
         name="delete_pet_record",
     ),
     # Vacunas
-    path("consult-vaccines/", consult_vaccines, name="consult_vaccines"), # Vacunas para expediente
+    path(
+        "consult-vaccines/", consult_vaccines, name="consult_vaccines"
+    ),  # Vacunas para expediente
     # vacunas para listado de vacunas
-    path("consult-clinic-vaccines/", consult_clinic_vaccines, name="consult_clinic_vaccines"),
+    path(
+        "consult-clinic-vaccines/",
+        consult_clinic_vaccines,
+        name="consult_clinic_vaccines",
+    ),
     path("add-clinic-vaccine/", add_clinic_vaccine, name="add_clinic_vaccine"),
-    path("update-clinic-vaccine/<int:vacuna_id>/", update_clinic_vaccine, name="update_clinic_vaccine"),
-    path("deactivate-clinic-vaccine/<int:vacuna_id>/", deactivate_clinic_vaccine, name="deactivate_clinic_vaccine"),
-    path("restore-clinic-vaccine/<int:vacuna_id>/", restore_clinic_vaccine, name="restore_clinic_vaccine"),
+    path(
+        "update-clinic-vaccine/<int:vacuna_id>/",
+        update_clinic_vaccine,
+        name="update_clinic_vaccine",
+    ),
+    path(
+        "deactivate-clinic-vaccine/<int:vacuna_id>/",
+        deactivate_clinic_vaccine,
+        name="deactivate_clinic_vaccine",
+    ),
+    path(
+        "restore-clinic-vaccine/<int:vacuna_id>/",
+        restore_clinic_vaccine,
+        name="restore_clinic_vaccine",
+    ),
     # Sintomas
     path("consult-symptoms/", consult_symptoms, name="consult_symptoms"),
+    path("add-symptom/", add_symptom, name="add_symptom"),
+    path("update-symptom/<int:id>/", update_symptom, name="update_symptom"),
+    path("delete-symptom/<int:id>/", delete_symptom, name="delete_symptom"),
     # Tratamientos
     path("consult-treatments/", consult_treatments, name="consult_treatments"),
+    path("add-treatment/", add_treatment, name="add_treatment"),
+    path("update-treatment/<int:id>/", update_treatment, name="update_treatment"),
+    path("delete-treatment/<int:id>/", delete_treatment, name="delete_treatment"),
     # Citas APIs
     path("consult-citas/", consult_citas, name="consult_citas"),
     path("add-cita/", add_cita, name="add_cita"),
@@ -133,12 +157,9 @@ urlpatterns = [
         update_user_personal_info,
         name="update_user_personal_info",
     ),
-    path(
-        "deactivate-user/", deactivate_user, name="deactivate_user"
-    ),
+    path("deactivate-user/", deactivate_user, name="deactivate_user"),
     # Pagos APIs
     path("create-payment/", create_payment, name="create-payment"),
-
 ]
 
 if settings.DEBUG:

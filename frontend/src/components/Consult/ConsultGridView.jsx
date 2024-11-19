@@ -208,7 +208,8 @@ const ConsultGridView = ({
 ConsultGridView.propTypes = {
   fetchUrl: PropTypes.string.isRequired,
   addUrl: PropTypes.string.isRequired,
-  deletionUrl: PropTypes.string.isRequired,
+  deletionUrl: PropTypes.string.isRequire
+  d,
   modificationUrl: PropTypes.string.isRequired,
   restoreUrl: PropTypes.string.isRequired,
   columns: PropTypes.arrayOf(PropTypes.string).isRequired,
