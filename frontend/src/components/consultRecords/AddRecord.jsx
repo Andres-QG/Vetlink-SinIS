@@ -320,11 +320,17 @@ const AddRecord = forwardRef(
 
             <Autocomplete
               multiple
-              options={otherData.sintomas}
+              options={
+                Array.isArray(otherData.sintomas) ? otherData.sintomas : []
+              }
               getOptionLabel={(option) => option.nombre}
-              value={otherData.sintomas.filter((sintoma) =>
-                formData.sintomas.includes(sintoma.nombre)
-              )}
+              value={
+                Array.isArray(otherData.sintomas)
+                  ? otherData.sintomas.filter((sintoma) =>
+                      formData.sintomas.includes(sintoma.nombre)
+                    )
+                  : []
+              }
               onChange={(event, newValue) => {
                 setFormData({
                   ...formData,
@@ -364,11 +370,17 @@ const AddRecord = forwardRef(
 
             <Autocomplete
               multiple
-              options={otherData.vacunas}
+              options={
+                Array.isArray(otherData.vacunas) ? otherData.vacunas : []
+              }
               getOptionLabel={(option) => option.nombre}
-              value={otherData.vacunas.filter((vacuna) =>
-                formData.vacunas.includes(vacuna.nombre)
-              )}
+              value={
+                Array.isArray(otherData.vacunas)
+                  ? otherData.vacunas.filter((vacuna) =>
+                      formData.vacunas.includes(vacuna.nombre)
+                    )
+                  : []
+              }
               onChange={(event, newValue) => {
                 setFormData({
                   ...formData,
@@ -408,11 +420,19 @@ const AddRecord = forwardRef(
 
             <Autocomplete
               multiple
-              options={otherData.tratamientos}
+              options={
+                Array.isArray(otherData.tratamientos)
+                  ? otherData.tratamientos
+                  : []
+              }
               getOptionLabel={(option) => option.nombre}
-              value={otherData.tratamientos.filter((tratamiento) =>
-                formData.tratamientos.includes(tratamiento.nombre)
-              )}
+              value={
+                Array.isArray(otherData.tratamientos)
+                  ? otherData.tratamientos.filter((tratamiento) =>
+                      formData.tratamientos.includes(tratamiento.nombre)
+                    )
+                  : []
+              }
               onChange={(event, newValue) => {
                 setFormData({
                   ...formData,

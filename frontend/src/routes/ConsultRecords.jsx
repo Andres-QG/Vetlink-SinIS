@@ -63,10 +63,10 @@ const ConsultRecords = () => {
         ]);
 
         setOtherData({
-          mascotas,
-          vacunas,
-          sintomas,
-          tratamientos,
+          mascotas: Array.isArray(mascotas) ? mascotas : [],
+          vacunas: Array.isArray(vacunas) ? vacunas : [],
+          sintomas: Array.isArray(sintomas) ? sintomas : [],
+          tratamientos: Array.isArray(tratamientos) ? tratamientos : [],
         });
       } catch (error) {
         console.error("Error fetching data:", error);

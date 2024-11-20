@@ -34,16 +34,30 @@ const AddPet = forwardRef(({ open, handleClose, onSuccess }, ref) => {
     especie: "",
     raza: "",
     sexo: "M",
-    otraEspecie: "",
   });
+
+  const speciesOptions = ["Perro", "Gato"];
+  const breedOptions = {
+    Perro: [
+      "Labrador",
+      "Bulldog",
+      "Beagle",
+      "Poodle",
+      "Chihuahua",
+      "Pastor Alemán",
+    ],
+    Gato: ["Persa", "Siamés", "Bengalí", "Sphynx", "Maine Coon", "Angora"],
+  };
 
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+      ...(name === "especie" && { raza: "" }), // Reset breed when species changes
+    }));
   };
 
   const validateForm = () => {
@@ -55,11 +69,14 @@ const AddPet = forwardRef(({ open, handleClose, onSuccess }, ref) => {
     if (!formData.nombre) {
       newErrors.nombre = "Nombre es obligatorio";
     }
-    if (!formData.especie || !/^[a-zA-Z]+$/.test(formData.especie)) {
-      newErrors.especie = "Especie solo puede contener letras";
+    if (
+      !formData.especie ||
+      !/^[a-zA-ZáéíóúüÁÉÍÓÚÜ\s]+$/.test(formData.especie)
+    ) {
+      newErrors.especie = "Especie solo puede contener letras y espacios";
     }
-    if (!/^[a-zA-Z]+$/.test(formData.raza)) {
-      newErrors.raza = "Raza solo puede contener letras";
+    if (!/^[a-zA-ZáéíóúüÁÉÍÓÚÜ\s]+$/.test(formData.raza)) {
+      newErrors.raza = "Raza solo puede contener letras y espacios";
     }
     if (!formData.sexo) {
       newErrors.sexo = "Sexo es obligatorio";
@@ -71,10 +88,6 @@ const AddPet = forwardRef(({ open, handleClose, onSuccess }, ref) => {
       formData.edad > 100
     ) {
       newErrors.edad = "Por favor, introduzca una edad válida";
-    }
-
-    if (formData.especie === "otro" && !formData.otraEspecie) {
-      newErrors.otraEspecie = "Por favor, introduzca la otra especie";
     }
 
     setErrors(newErrors);
@@ -106,8 +119,7 @@ const AddPet = forwardRef(({ open, handleClose, onSuccess }, ref) => {
       usuario_cliente: formData.usuario_cliente,
       nombre: formData.nombre,
       edad: formData.edad,
-      especie:
-        formData.especie === "otro" ? formData.otraEspecie : formData.especie,
+      especie: formData.especie,
       raza: formData.raza || "-",
       sexo: formData.sexo,
     };
@@ -154,7 +166,6 @@ const AddPet = forwardRef(({ open, handleClose, onSuccess }, ref) => {
       especie: "",
       raza: "",
       sexo: "M",
-      otraEspecie: "",
     });
     setErrors({});
   };
@@ -264,47 +275,40 @@ const AddPet = forwardRef(({ open, handleClose, onSuccess }, ref) => {
                 </InputAdornment>
               }
             >
-              <MenuItem value="perro">Perro</MenuItem>
-              <MenuItem value="gato">Gato</MenuItem>
-              <MenuItem value="otro">Otro</MenuItem>
+              {speciesOptions.map((species) => (
+                <MenuItem key={species} value={species}>
+                  {species}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
 
-          {formData.especie === "otro" && (
-            <TextField
-              label="Especifique la especie"
-              variant="outlined"
-              fullWidth
-              name="otraEspecie"
-              value={formData.otraEspecie}
-              onChange={handleChange}
-              startAdornment={
-                <InputAdornment position="start">
-                  <CategoryIcon />
-                </InputAdornment>
-              }
-              sx={{ mb: 2 }}
-            />
-          )}
-
           <TextField
+            select
             label="Raza"
-            variant="outlined"
-            fullWidth
             name="raza"
             value={formData.raza}
             onChange={handleChange}
+            fullWidth
             error={!!errors.raza}
             helperText={errors.raza}
+            variant="outlined"
+            sx={{ mb: 2 }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <BreedIcon />
+                  <BreedIcon fontSize="small" />
                 </InputAdornment>
               ),
             }}
-            sx={{ mb: 2 }}
-          />
+            disabled={!formData.especie}
+          >
+            {(breedOptions[formData.especie] || []).map((breed) => (
+              <MenuItem key={breed} value={breed}>
+                {breed}
+              </MenuItem>
+            ))}
+          </TextField>
 
           <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>Sexo</InputLabel>
