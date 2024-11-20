@@ -25,6 +25,7 @@ import {
 import SearchBar from "../components/Consult/GeneralizedSearchBar";
 import AddPaymentMethod from "../components/ConsultMyPaymentMethods/AddPaymentMethod";
 import ModifyPaymentMethod from "../components/ConsultMyPaymentMethods/ModifyPaymentMethod";
+import DeletePaymentMethod from "../components/ConsultMyPaymentMethods/DeletePaymentMethod";
 import { useNotification } from "../components/Notification";
 import visaIcon from "../assets/img/payments/visa.png";
 import mastercardIcon from "../assets/img/payments/MasterCard.png";
@@ -45,7 +46,11 @@ const ConsultMyPaymentMethods = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [tabIndex, setTabIndex] = useState(0);
-  const [modalState, setModalState] = useState({
+  const [modifyModalState, setModifyModalState] = useState({
+    open: false,
+    method: null,
+  });
+  const [deleteModalState, setDeleteModalState] = useState({
     open: false,
     method: null,
   });
@@ -107,12 +112,20 @@ const ConsultMyPaymentMethods = () => {
     }
   };
 
-  const handleOpenModal = (method) => {
-    setModalState({ open: true, method });
+  const handleOpenModifyModal = (method) => {
+    setModifyModalState({ open: true, method });
   };
 
-  const handleCloseModal = () => {
-    setModalState({ open: false, method: null });
+  const handleCloseModifyModal = () => {
+    setModifyModalState({ open: false, method: null });
+  };
+
+  const handleOpenDeleteModal = (method) => {
+    setDeleteModalState({ open: true, method });
+  };
+
+  const handleCloseDeleteModal = () => {
+    setDeleteModalState({ open: false, method: null });
   };
 
   const getCardIcon = (brand) =>
@@ -322,7 +335,7 @@ const ConsultMyPaymentMethods = () => {
                                   sx={{
                                     textTransform: "none",
                                   }}
-                                  onClick={() => handleOpenModal(method)}
+                                  onClick={() => handleOpenModifyModal(method)}
                                 >
                                   Modificar
                                 </Button>
@@ -336,6 +349,7 @@ const ConsultMyPaymentMethods = () => {
                                     textTransform: "none",
                                     ml: 2,
                                   }}
+                                  onClick={() => handleOpenDeleteModal(method)}
                                 >
                                   Eliminar
                                 </Button>
@@ -377,12 +391,20 @@ const ConsultMyPaymentMethods = () => {
           </Box>
         </>
       )}
-      {modalState.open && (
+      {modifyModalState.open && (
         <ModifyPaymentMethod
-          open={modalState.open}
-          handleClose={handleCloseModal}
+          open={modifyModalState.open}
+          handleClose={handleCloseModifyModal}
           onSuccess={handleActionSuccess}
-          selectedItem={modalState.method}
+          selectedItem={modifyModalState.method}
+        />
+      )}
+      {deleteModalState.open && (
+        <DeletePaymentMethod
+          open={deleteModalState.open}
+          handleClose={handleCloseDeleteModal}
+          onSuccess={handleActionSuccess}
+          paymentData={deleteModalState.method}
         />
       )}
     </Box>
