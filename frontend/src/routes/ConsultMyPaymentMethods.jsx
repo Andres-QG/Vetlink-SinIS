@@ -246,7 +246,17 @@ const ConsultMyPaymentMethods = () => {
 
             {tabIndex === 0 && (
               <>
-                <Grid container spacing={3} justifyContent="center" mt={2}>
+                <Grid
+                  container
+                  spacing={3}
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // Centrar horizontalmente
+                    alignItems: "flex-start", // Alineación vertical inicial
+                    textAlign: "center", // Opcional: Alinear texto dentro de las tarjetas
+                  }}
+                  mt={2}
+                >
                   {currentPaymentMethods.length > 0 ? (
                     currentPaymentMethods.map((method, index) => (
                       <Grid
@@ -255,6 +265,10 @@ const ConsultMyPaymentMethods = () => {
                         sm={6}
                         md={4}
                         key={method.METODO_PAGO_ID}
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center", // Centra cada tarjeta en su columna
+                        }}
                       >
                         <Grow in timeout={500 + index * 200}>
                           <Card
@@ -340,6 +354,7 @@ const ConsultMyPaymentMethods = () => {
                                 sx={{
                                   color: "gray",
                                   mt: 0.5,
+                                  textAlign: "left", // Alineación a la izquierda
                                 }}
                               >
                                 Expira: {method.FECHA_EXPIRACION}
