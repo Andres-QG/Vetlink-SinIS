@@ -1,6 +1,8 @@
 import ConsultView from "../components/Consult/ConsultView";
 import AddPet from "../components/consultPets/AddPet";
 import ModifyPet from "../components/consultPets/ModifyPet";
+import axios from "axios";
+import { useState, useEffect } from "react";
 
 const ConsultPets = () => {
   const rowsPerPage = 7;
@@ -23,11 +25,30 @@ const ConsultPets = () => {
     },
   ];
 
+  const [otherData, setOtherData] = useState({
+    clientes: [],
+  });
+
+  useEffect(() => {
+    const fetchClientes = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:8000/api/get-clients/"
+        );
+        const clientes = response.data.clients.map((client) => client.usuario);
+        setOtherData({ clientes });
+      } catch (error) {
+        console.error("Error fetching clients:", error);
+      }
+    };
+
+    fetchClientes();
+  }, []);
   return (
     <ConsultView
       title="Mascotas"
       fetchUrl="http://localhost:8000/api/consult-mascotas/"
-      deletionUrl="http://localhost:8000/api/delete-pet"
+      deletionUrl="http://localhost:8000/api/delete-pet/"
       restoreUrl=""
       addComponent={AddPet}
       modifyComponent={ModifyPet}
@@ -35,7 +56,7 @@ const ConsultPets = () => {
       columns={columns}
       pkCol="mascota_id"
       visualIdentifierCol="nombre"
-      otherData={[]}
+      otherData={otherData}
     />
   );
 };

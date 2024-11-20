@@ -13,6 +13,7 @@ import {
   InputAdornment,
   CircularProgress,
   Modal,
+  Autocomplete,
 } from "@mui/material";
 import {
   Close as CloseIcon,
@@ -29,6 +30,7 @@ const ModifyPet = ({
   handleClose,
   onSuccess,
   selectedItem = undefined,
+  otherData,
 }) => {
   const [formData, setFormData] = useState({
     usuario_cliente: selectedItem?.usuario_cliente || "",
@@ -230,20 +232,33 @@ const ModifyPet = ({
         </Box>
 
         <Stack spacing={2}>
-          <TextField
-            label="Usuario Cliente"
-            name="usuario_cliente"
-            value={formData.usuario_cliente}
-            onChange={handleChange}
-            error={!!errors.usuario_cliente}
-            helperText={errors.usuario_cliente}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <PersonIcon />
-                </InputAdornment>
-              ),
-            }}
+          <Autocomplete
+            options={otherData.clientes}
+            getOptionLabel={(option) => option || ""}
+            value={formData.usuario_cliente || ""}
+            onChange={(event, newValue) =>
+              setFormData({ ...formData, usuario_cliente: newValue })
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Usuario Cliente"
+                placeholder="Seleccione un cliente"
+                fullWidth
+                error={!!errors.usuario_cliente}
+                helperText={errors.usuario_cliente}
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PersonIcon />
+                    </InputAdornment>
+                  ),
+                  endAdornment: <>{params.InputProps.endAdornment}</>,
+                }}
+                sx={{ mb: 2 }}
+              />
+            )}
           />
           <TextField
             label="Nombre"
