@@ -174,7 +174,7 @@ const ConsultMyPaymentMethods = () => {
               <PaymentIcon
                 sx={{
                   fontSize: 40,
-                  color: "primary.main",
+                  color: "#00308f",
                   verticalAlign: "middle",
                 }}
               />
@@ -197,7 +197,13 @@ const ConsultMyPaymentMethods = () => {
               >
                 <SearchBar
                   onSearch={handleSearch}
-                  columns={["TIPO_PAGO", "MARCA_TARJETA", "NOMBRE_TITULAR"]}
+                  columns={[
+                    "TIPO_PAGO",
+                    "MARCA_TARJETA",
+                    "NOMBRE_TITULAR",
+                    "ULTIMOS_4_DIGITOS",
+                    "FECHA_EXPIRACION",
+                  ]}
                   aria-label="Buscar Métodos de Pago"
                 />
               </Box>
@@ -209,17 +215,38 @@ const ConsultMyPaymentMethods = () => {
             <Tabs
               value={tabIndex}
               onChange={(_, newValue) => setTabIndex(newValue)}
-              sx={{ mb: 0 }}
-              textColor="primary"
+              textColor="inherit"
               indicatorColor="primary"
+              sx={{
+                mb: 0,
+                "& .MuiTabs-indicator": {
+                  backgroundColor: "var(--color-primary)",
+                },
+              }}
             >
-              <Tab label="Consultar" />
-              <Tab label="Agregar" />
+              <Tab
+                label="Consultar"
+                sx={{
+                  color: "gray",
+                  "&.Mui-selected": {
+                    color: "var(--color-primary)",
+                  },
+                }}
+              />
+              <Tab
+                label="Agregar"
+                sx={{
+                  color: "gray",
+                  "&.Mui-selected": {
+                    color: "var(--color-primary)",
+                  },
+                }}
+              />
             </Tabs>
 
             {tabIndex === 0 && (
               <>
-                <Grid container spacing={3} justifyContent="flex-start" mt={2}>
+                <Grid container spacing={3} justifyContent="center" mt={2}>
                   {currentPaymentMethods.length > 0 ? (
                     currentPaymentMethods.map((method, index) => (
                       <Grid
@@ -330,9 +357,10 @@ const ConsultMyPaymentMethods = () => {
                               <Tooltip title="Modificar Método de Pago">
                                 <Button
                                   variant="outlined"
-                                  color="primary"
                                   startIcon={<EditIcon />}
                                   sx={{
+                                    borderColor: "#00308F",
+                                    color: "#00308F",
                                     textTransform: "none",
                                   }}
                                   onClick={() => handleOpenModifyModal(method)}
@@ -375,7 +403,19 @@ const ConsultMyPaymentMethods = () => {
                     count={totalPages}
                     page={currentPage}
                     onChange={handleChangePage}
-                    color="primary"
+                    sx={{
+                      "& .MuiPaginationItem-root": {
+                        color: "#00308F", // Cambia el color del texto
+                      },
+                      "& .Mui-selected": {
+                        backgroundColor: "#00308F", // Cambia el fondo del elemento seleccionado
+                        color: "#fff", // Cambia el color del texto del elemento seleccionado
+                      },
+                      "& .MuiPaginationItem-root:hover": {
+                        backgroundColor: "#00246d", // Cambia el fondo al pasar el cursor
+                        color: "#fff",
+                      },
+                    }}
                   />
                 </Box>
               </>

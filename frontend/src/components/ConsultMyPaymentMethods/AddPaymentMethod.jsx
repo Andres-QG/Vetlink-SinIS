@@ -30,7 +30,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import { useNotification } from "../Notification";
 
-const AddPaymentMethod = () => {
+const AddPaymentMethod = ({ onSuccess }) => {
   const [form, setForm] = useState({
     direccion: "",
     provincia: "",
