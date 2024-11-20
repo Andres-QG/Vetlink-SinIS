@@ -402,15 +402,15 @@ const ConsultMyPets = () => {
               onChange={handleChangePage}
               sx={{
                 "& .MuiPaginationItem-root": {
-                  color: "#00308F", // Cambia el color del texto
+                  color: "#00308F !important", // Asegura el color del texto
                 },
                 "& .Mui-selected": {
-                  backgroundColor: "#00308F", // Cambia el fondo del elemento seleccionado
-                  color: "#fff", // Cambia el color del texto del elemento seleccionado
+                  backgroundColor: "#00308F !important", // Asegura el fondo del elemento seleccionado
+                  color: "#fff !important", // Asegura el color del texto del seleccionado
                 },
                 "& .MuiPaginationItem-root:hover": {
-                  backgroundColor: "#00246d", // Cambia el fondo al pasar el cursor
-                  color: "#fff",
+                  backgroundColor: "#00246d !important", // Fondo al pasar el cursor
+                  color: "#fff !important",
                 },
               }}
             />
