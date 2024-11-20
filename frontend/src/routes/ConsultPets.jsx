@@ -49,7 +49,7 @@ const ConsultPets = () => {
       title="Mascotas"
       fetchUrl="http://localhost:8000/api/consult-mascotas/"
       deletionUrl="http://localhost:8000/api/delete-pet/"
-      restoreUrl=""
+      restoreUrl="http://localhost:8000/api/restore-pet/"
       addComponent={AddPet}
       modifyComponent={ModifyPet}
       rowsPerPage={rowsPerPage}
