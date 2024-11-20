@@ -192,7 +192,7 @@ const ConsultMyPets = () => {
               <PetsIcon
                 sx={{
                   fontSize: 40,
-                  color: "primary.main",
+                  color: "#00308f",
                   verticalAlign: "middle",
                 }}
               />
@@ -353,7 +353,11 @@ const ConsultMyPets = () => {
                             size="small"
                             color="primary"
                             startIcon={<EditIcon />}
-                            sx={{ textTransform: "none", mr: 1 }}
+                            sx={{
+                              textTransform: "none",
+                              mr: 1,
+                              color: "#00308F",
+                            }}
                             onClick={() => openModal("edit", pet)}
                           >
                             Editar
@@ -396,10 +400,21 @@ const ConsultMyPets = () => {
               count={totalPages}
               page={currentPage}
               onChange={handleChangePage}
-              color="primary"
+              sx={{
+                "& .MuiPaginationItem-root": {
+                  color: "#00308F", // Cambia el color del texto
+                },
+                "& .Mui-selected": {
+                  backgroundColor: "#00308F", // Cambia el fondo del elemento seleccionado
+                  color: "#fff", // Cambia el color del texto del elemento seleccionado
+                },
+                "& .MuiPaginationItem-root:hover": {
+                  backgroundColor: "#00246d", // Cambia el fondo al pasar el cursor
+                  color: "#fff",
+                },
+              }}
             />
           </Box>
-
           {/* Modals */}
           {modalState.type === "add" && (
             <AddMyPets

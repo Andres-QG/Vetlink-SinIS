@@ -309,3 +309,50 @@ def modify_payment_method(request, metodo_pago_id):
             {"error": "Error al modificar el método de pago."},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
+
+@api_view(["DELETE"])
+@transaction.atomic
+def delete_payment_method(request, metodo_pago_id):
+    try:
+        # Obtener usuario y rol de la sesión
+        usuario = request.session.get("user")
+        rol_id = request.session.get("role")
+
+        if not usuario or not rol_id:
+            return Response(
+                {"error": "Usuario no autenticado."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        if rol_id != 4:  # Solo los clientes pueden eliminar métodos
+            return Response(
+                {"error": "No tiene permisos para eliminar métodos de pago."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Llamar al procedimiento almacenado para eliminar el método de pago
+        with connection.cursor() as cursor:
+            cursor.callproc(
+                "VETLINK.ELIMINAR_METODO_PAGO",  # Nombre del procedimiento
+                [metodo_pago_id],  # ID del método de pago
+            )
+
+        # Confirmar éxito
+        return Response(
+            {"message": "Método de pago eliminado exitosamente."},
+            status=status.HTTP_200_OK,
+        )
+
+    except Exception as e:
+        print(f"Error interno: {e}")  # Log detallado del error
+        error_message = str(e)
+        if "ORA-" in error_message:
+            return Response(
+                {"error": error_message},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(
+            {"error": "Error al eliminar el método de pago."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )

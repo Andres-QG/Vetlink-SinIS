@@ -184,6 +184,11 @@ urlpatterns = [
         modify_payment_method,
         name="modify_payment_method",
     ),
+    path(
+        "delete-payment-method/<int:metodo_pago_id>/",
+        delete_payment_method,
+        name="delete_payment_method",
+    ),
 ]
 
 if settings.DEBUG:

@@ -25,6 +25,7 @@ import {
 import SearchBar from "../components/Consult/GeneralizedSearchBar";
 import AddPaymentMethod from "../components/ConsultMyPaymentMethods/AddPaymentMethod";
 import ModifyPaymentMethod from "../components/ConsultMyPaymentMethods/ModifyPaymentMethod";
+import DeletePaymentMethod from "../components/ConsultMyPaymentMethods/DeletePaymentMethod";
 import { useNotification } from "../components/Notification";
 import visaIcon from "../assets/img/payments/visa.png";
 import mastercardIcon from "../assets/img/payments/MasterCard.png";
@@ -45,7 +46,11 @@ const ConsultMyPaymentMethods = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [tabIndex, setTabIndex] = useState(0);
-  const [modalState, setModalState] = useState({
+  const [modifyModalState, setModifyModalState] = useState({
+    open: false,
+    method: null,
+  });
+  const [deleteModalState, setDeleteModalState] = useState({
     open: false,
     method: null,
   });
@@ -107,12 +112,20 @@ const ConsultMyPaymentMethods = () => {
     }
   };
 
-  const handleOpenModal = (method) => {
-    setModalState({ open: true, method });
+  const handleOpenModifyModal = (method) => {
+    setModifyModalState({ open: true, method });
   };
 
-  const handleCloseModal = () => {
-    setModalState({ open: false, method: null });
+  const handleCloseModifyModal = () => {
+    setModifyModalState({ open: false, method: null });
+  };
+
+  const handleOpenDeleteModal = (method) => {
+    setDeleteModalState({ open: true, method });
+  };
+
+  const handleCloseDeleteModal = () => {
+    setDeleteModalState({ open: false, method: null });
   };
 
   const getCardIcon = (brand) =>
@@ -161,7 +174,7 @@ const ConsultMyPaymentMethods = () => {
               <PaymentIcon
                 sx={{
                   fontSize: 40,
-                  color: "primary.main",
+                  color: "#00308f",
                   verticalAlign: "middle",
                 }}
               />
@@ -184,7 +197,13 @@ const ConsultMyPaymentMethods = () => {
               >
                 <SearchBar
                   onSearch={handleSearch}
-                  columns={["TIPO_PAGO", "MARCA_TARJETA", "NOMBRE_TITULAR"]}
+                  columns={[
+                    "TIPO_PAGO",
+                    "MARCA_TARJETA",
+                    "NOMBRE_TITULAR",
+                    "ULTIMOS_4_DIGITOS",
+                    "FECHA_EXPIRACION",
+                  ]}
                   aria-label="Buscar Métodos de Pago"
                 />
               </Box>
@@ -196,17 +215,38 @@ const ConsultMyPaymentMethods = () => {
             <Tabs
               value={tabIndex}
               onChange={(_, newValue) => setTabIndex(newValue)}
-              sx={{ mb: 0 }}
-              textColor="primary"
+              textColor="inherit"
               indicatorColor="primary"
+              sx={{
+                mb: 0,
+                "& .MuiTabs-indicator": {
+                  backgroundColor: "var(--color-primary)",
+                },
+              }}
             >
-              <Tab label="Consultar" />
-              <Tab label="Agregar" />
+              <Tab
+                label="Consultar"
+                sx={{
+                  color: "gray",
+                  "&.Mui-selected": {
+                    color: "var(--color-primary)",
+                  },
+                }}
+              />
+              <Tab
+                label="Agregar"
+                sx={{
+                  color: "gray",
+                  "&.Mui-selected": {
+                    color: "var(--color-primary)",
+                  },
+                }}
+              />
             </Tabs>
 
             {tabIndex === 0 && (
               <>
-                <Grid container spacing={3} justifyContent="flex-start" mt={2}>
+                <Grid container spacing={3} justifyContent="center" mt={2}>
                   {currentPaymentMethods.length > 0 ? (
                     currentPaymentMethods.map((method, index) => (
                       <Grid
@@ -317,12 +357,13 @@ const ConsultMyPaymentMethods = () => {
                               <Tooltip title="Modificar Método de Pago">
                                 <Button
                                   variant="outlined"
-                                  color="primary"
                                   startIcon={<EditIcon />}
                                   sx={{
+                                    borderColor: "#00308F",
+                                    color: "#00308F",
                                     textTransform: "none",
                                   }}
-                                  onClick={() => handleOpenModal(method)}
+                                  onClick={() => handleOpenModifyModal(method)}
                                 >
                                   Modificar
                                 </Button>
@@ -336,6 +377,7 @@ const ConsultMyPaymentMethods = () => {
                                     textTransform: "none",
                                     ml: 2,
                                   }}
+                                  onClick={() => handleOpenDeleteModal(method)}
                                 >
                                   Eliminar
                                 </Button>
@@ -361,7 +403,19 @@ const ConsultMyPaymentMethods = () => {
                     count={totalPages}
                     page={currentPage}
                     onChange={handleChangePage}
-                    color="primary"
+                    sx={{
+                      "& .MuiPaginationItem-root": {
+                        color: "#00308F", // Cambia el color del texto
+                      },
+                      "& .Mui-selected": {
+                        backgroundColor: "#00308F", // Cambia el fondo del elemento seleccionado
+                        color: "#fff", // Cambia el color del texto del elemento seleccionado
+                      },
+                      "& .MuiPaginationItem-root:hover": {
+                        backgroundColor: "#00246d", // Cambia el fondo al pasar el cursor
+                        color: "#fff",
+                      },
+                    }}
                   />
                 </Box>
               </>
@@ -377,12 +431,20 @@ const ConsultMyPaymentMethods = () => {
           </Box>
         </>
       )}
-      {modalState.open && (
+      {modifyModalState.open && (
         <ModifyPaymentMethod
-          open={modalState.open}
-          handleClose={handleCloseModal}
+          open={modifyModalState.open}
+          handleClose={handleCloseModifyModal}
           onSuccess={handleActionSuccess}
-          selectedItem={modalState.method}
+          selectedItem={modifyModalState.method}
+        />
+      )}
+      {deleteModalState.open && (
+        <DeletePaymentMethod
+          open={deleteModalState.open}
+          handleClose={handleCloseDeleteModal}
+          onSuccess={handleActionSuccess}
+          paymentData={deleteModalState.method}
         />
       )}
     </Box>
