@@ -34,6 +34,7 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import PetsIconAlt from "@mui/icons-material/Pets";
 import { Vaccines } from "@mui/icons-material";
 import PaymentIcon from "@mui/icons-material/Payment";
+import ReceiptIcon from "@mui/icons-material/Receipt";
 import { ConfigProvider } from "antd";
 import { style } from "@mui/system";
 import { backdropClasses } from "@mui/material";
@@ -262,6 +263,12 @@ const DashboardLayout = ({
             label: "Servicios",
             onClick: () => handleClick("consultservices"),
           },
+          {
+            key: "consultPaymentHistory",
+            icon: <ReceiptIcon />,
+            label: "Historial de Pagos",
+            onClick: () => handleClick("consultPaymentHistory"),
+          },
         ]
       : []),
     ...(role === 1
@@ -305,6 +312,7 @@ const DashboardLayout = ({
             icon: <CalendarMonthIcon />,
             label: "Mis Citas",
             onClick: () => handleClick("myappointments"),
+            ReceiptIcon,
           },
         ]
       : []),
@@ -338,6 +346,8 @@ const DashboardLayout = ({
         return "consultservices";
       case "/consultrecords":
         return "consultrecords";
+      case "/consultPaymentHistory":
+        return "consultPaymentHistory";
       case "/clinics":
         return "consultClinics";
       case "/consultMyPets":
@@ -369,11 +379,11 @@ const DashboardLayout = ({
 
   return (
     <ConfigProvider
-  theme={{
-    components: {
-      Menu: {
-           itemSelectedColor: "#00308F",
-           itemSelectedBg: "#ecf0f9",
+      theme={{
+        components: {
+          Menu: {
+            itemSelectedColor: "#00308F",
+            itemSelectedBg: "#ecf0f9",
           },
         },
       }}
@@ -530,7 +540,8 @@ const DashboardLayout = ({
             style={{
               display: "flex",
               flexDirection: "column",
-              marginLeft: hideSidebar || isSmallScreen ? 0 : collapsed ? 80 : 200,
+              marginLeft:
+                hideSidebar || isSmallScreen ? 0 : collapsed ? 80 : 200,
             }}
           >
             <Content

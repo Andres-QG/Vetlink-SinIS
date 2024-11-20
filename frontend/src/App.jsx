@@ -36,8 +36,11 @@ import ConsultVaccines from "./routes/ConsultVaccines";
 import ConsultVaccinesHistory from "./routes/ConsultVaccinesHistory";
 import ConsultMyPaymentMethods from "./routes/ConsultMyPaymentMethods";
 import ConsultMyAppoints from "./routes/ConsultMyAppoints";
+import ConsultPaymentHistory from "./routes/ConsultPaymentHistory";
 
-const stripePromise = loadStripe("pk_test_51QLypMFlNacvOPfn04CgaWzXQXqJ524WVHJAEn2q0ebrAOcEWDBHRUdkj7dDgPuMyyKxpggIVDHNr7RBqo8Fuvsj00AgzIBn7U");
+const stripePromise = loadStripe(
+  "pk_test_51QLypMFlNacvOPfn04CgaWzXQXqJ524WVHJAEn2q0ebrAOcEWDBHRUdkj7dDgPuMyyKxpggIVDHNr7RBqo8Fuvsj00AgzIBn7U"
+);
 
 function App() {
   return (
@@ -151,6 +154,18 @@ function App() {
                   <NotificationProvider>
                     <ProtectedRoute requiredRoles={[1, 2]}>
                       <ConsultServices />
+                    </ProtectedRoute>
+                  </NotificationProvider>
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/consultPaymentHistory"
+              element={
+                <DashBoardLayout>
+                  <NotificationProvider>
+                    <ProtectedRoute requiredRoles={[1, 2]}>
+                      <ConsultPaymentHistory />
                     </ProtectedRoute>
                   </NotificationProvider>
                 </DashBoardLayout>

@@ -189,6 +189,12 @@ urlpatterns = [
         delete_payment_method,
         name="delete_payment_method",
     ),
+    # Historial de pagos APIs
+    path(
+        "consult-payment-history/",
+        consult_payment_history,
+        name="consult_payment_history",
+    ),
 ]
 
 if settings.DEBUG:

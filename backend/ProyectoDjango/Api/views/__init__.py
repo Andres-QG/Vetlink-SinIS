@@ -17,3 +17,4 @@ from .getRegisters import *
 from .recover import *
 from .payments import *
 from .paymentMethods import *
+from .paymentHistory import *
