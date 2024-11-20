@@ -139,10 +139,10 @@ def update_pet(request, mascota_id):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(["PUT"])
-def reactivate_pet(request, mascota_id):
+def restore_pet(request, mascota_id):
     try:
         mascota = Mascotas.objects.get(pk=mascota_id)
-        mascota.activo = True
+        mascota.activo = 1
         mascota.save()
         return Response(
             {"message": "Mascota reactivada con éxito."},
@@ -160,7 +160,7 @@ def reactivate_pet(request, mascota_id):
 def delete_pet(request, mascota_id):
     try:
         mascota = Mascotas.objects.get(pk=mascota_id)
-        mascota.activo = False
+        mascota.activo = 0
         mascota.save()
         return Response(
             {"message": "Mascota desactivada correctamente."}, status=status.HTTP_200_OK

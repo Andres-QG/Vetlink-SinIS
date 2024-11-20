@@ -13,6 +13,7 @@ import {
   InputAdornment,
   CircularProgress,
   Modal,
+  Autocomplete,
 } from "@mui/material";
 import {
   Close as CloseIcon,
@@ -29,6 +30,7 @@ const ModifyPet = ({
   handleClose,
   onSuccess,
   selectedItem = undefined,
+  otherData,
 }) => {
   const [formData, setFormData] = useState({
     usuario_cliente: selectedItem?.usuario_cliente || "",
@@ -37,16 +39,28 @@ const ModifyPet = ({
     especie: selectedItem?.especie || "",
     raza: selectedItem?.raza || "",
     sexo: selectedItem?.sexo || "M",
-    otraEspecie: selectedItem?.otraEspecie || "",
   });
+
+  const speciesOptions = ["Perro", "Gato"];
+  const breedOptions = {
+    Perro: [
+      "Labrador",
+      "Bulldog",
+      "Beagle",
+      "Poodle",
+      "Chihuahua",
+      "Pastor Alemán",
+    ],
+    Gato: ["Persa", "Siamés", "Bengalí", "Sphynx", "Maine Coon", "Angora"],
+  };
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   function calcularEdad(fechaNacimiento) {
-    const fechaActual = new Date(); // Fecha actual
-    const anoActual = fechaActual.getFullYear(); // Año actual
-    const anoNacimiento = new Date(fechaNacimiento).getFullYear(); // Año de nacimiento
+    const fechaActual = new Date();
+    const anoActual = fechaActual.getFullYear();
+    const anoNacimiento = new Date(fechaNacimiento).getFullYear();
 
     return anoActual - anoNacimiento;
   }
@@ -60,16 +74,17 @@ const ModifyPet = ({
         especie: selectedItem.especie,
         raza: selectedItem.raza,
         sexo: selectedItem.sexo,
-        otraEspecie: selectedItem.otraEspecie,
       });
     }
   }, [selectedItem]);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+      ...(name === "especie" && { raza: "" }),
+    }));
   };
 
   const clearForm = () => {
@@ -80,7 +95,6 @@ const ModifyPet = ({
       especie: "",
       raza: "",
       sexo: "M",
-      otraEspecie: "",
     });
     setErrors({});
   };
@@ -94,10 +108,13 @@ const ModifyPet = ({
     if (!formData.nombre) {
       newErrors.nombre = "Nombre es obligatorio";
     }
-    if (!formData.especie || !/^[a-zA-Z]+$/.test(formData.especie)) {
+    if (
+      !formData.especie ||
+      !/^[a-zA-ZáéíóúüÁÉÍÓÚÜ\s]+$/.test(formData.especie)
+    ) {
       newErrors.especie = "Especie solo puede contener letras";
     }
-    if (!/^[a-zA-Z]+$/.test(formData.raza)) {
+    if (!/^[a-zA-ZáéíóúüÁÉÍÓÚÜ\s]+$/.test(formData.raza)) {
       newErrors.raza = "Raza solo puede contener letras";
     }
     if (!formData.sexo) {
@@ -110,10 +127,6 @@ const ModifyPet = ({
       formData.edad > 100
     ) {
       newErrors.edad = "Por favor, introduzca una edad válida";
-    }
-
-    if (formData.especie === "otro" && !formData.otraEspecie) {
-      newErrors.otraEspecie = "Por favor, introduzca la otra especie";
     }
 
     setErrors(newErrors);
@@ -219,20 +232,33 @@ const ModifyPet = ({
         </Box>
 
         <Stack spacing={2}>
-          <TextField
-            label="Usuario Cliente"
-            name="usuario_cliente"
-            value={formData.usuario_cliente}
-            onChange={handleChange}
-            error={!!errors.usuario_cliente}
-            helperText={errors.usuario_cliente}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <PersonIcon />
-                </InputAdornment>
-              ),
-            }}
+          <Autocomplete
+            options={otherData.clientes}
+            getOptionLabel={(option) => option || ""}
+            value={formData.usuario_cliente || ""}
+            onChange={(event, newValue) =>
+              setFormData({ ...formData, usuario_cliente: newValue })
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Usuario Cliente"
+                placeholder="Seleccione un cliente"
+                fullWidth
+                error={!!errors.usuario_cliente}
+                helperText={errors.usuario_cliente}
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PersonIcon />
+                    </InputAdornment>
+                  ),
+                  endAdornment: <>{params.InputProps.endAdornment}</>,
+                }}
+                sx={{ mb: 2 }}
+              />
+            )}
           />
           <TextField
             label="Nombre"
@@ -278,22 +304,16 @@ const ModifyPet = ({
                 </InputAdornment>
               }
             >
-              <MenuItem value="perro">Perro</MenuItem>
-              <MenuItem value="gato">Gato</MenuItem>
-              <MenuItem value="otro">Otro</MenuItem>
+              {speciesOptions.map((species) => (
+                <MenuItem key={species} value={species}>
+                  {species}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
-          {formData.especie === "otro" && (
-            <TextField
-              label="Otra Especie"
-              name="otraEspecie"
-              value={formData.otraEspecie}
-              onChange={handleChange}
-              error={!!errors.otraEspecie}
-              helperText={errors.otraEspecie}
-            />
-          )}
+
           <TextField
+            select
             label="Raza"
             name="raza"
             value={formData.raza}
@@ -307,7 +327,14 @@ const ModifyPet = ({
                 </InputAdornment>
               ),
             }}
-          />
+            disabled={!formData.especie}
+          >
+            {(breedOptions[formData.especie] || []).map((breed) => (
+              <MenuItem key={breed} value={breed}>
+                {breed}
+              </MenuItem>
+            ))}
+          </TextField>
           <FormControl>
             <InputLabel>Sexo</InputLabel>
             <Select

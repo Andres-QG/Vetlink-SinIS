@@ -35,6 +35,7 @@ urlpatterns = [
     path("create-pet/", create_pet, name="create_pet"),
     path("update-pet/<int:mascota_id>/", update_pet, name="update_pet"),
     path("delete-pet/<int:mascota_id>/", delete_pet, name="delete_pet"),
+    path("restore-pet/<int:mascota_id>/", restore_pet, name="restore_pet"),
     # Admin APIs
     path("consult-admin/", consult_admin, name="consult_admin"),
     path("add-admin/", add_admin, name="add_admin"),
@@ -137,7 +138,7 @@ urlpatterns = [
     ),
     # Reactivate APIs
     path("reactivate-user/<str:usuario>/", reactivate_user, name="reactivate_user"),
-    path("reactivate-pet/<int:mascota_id>/", reactivate_pet, name="reactivate_pet"),
+    path("reactivate-pet/<int:mascota_id>/", restore_pet, name="reactivate_pet"),
     path(
         "reactivate-clinic/<int:clinica_id>/",
         reactivate_clinic,
