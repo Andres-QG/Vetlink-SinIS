@@ -30,7 +30,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import { useNotification } from "../Notification";
 
-const AddPaymentMethod = ({ onSuccess }) => {
+const AddPaymentMethod = ({ onSuccess, hideAdd = false }) => {
   const [form, setForm] = useState({
     direccion: "",
     provincia: "",
@@ -483,7 +483,7 @@ const AddPaymentMethod = ({ onSuccess }) => {
       </Grid>
 
       {/* Botón agregar */}
-      <Box sx={{ textAlign: "center" }}>
+      {!hideAdd && <Box sx={{ textAlign: "center" }}>
         <Button
           type="submit"
           variant="contained"
@@ -502,7 +502,7 @@ const AddPaymentMethod = ({ onSuccess }) => {
         >
           {loading ? "Cargando..." : "Agregar"}
         </Button>
-      </Box>
+      </Box>}
     </Box>
   );
 };

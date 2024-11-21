@@ -32,6 +32,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { es } from "date-fns/locale";
 import StripeContext from "../../context/StripeContext";
+import AddPaymentMethod from "../ConsultMyPaymentMethods/AddPaymentMethod";
 
 const AddCitaPage = ({ onSuccess, otherData}) => {
   const { stripe, elements } = useContext(StripeContext);
@@ -327,6 +328,10 @@ const AddCitaPage = ({ onSuccess, otherData}) => {
           })}
         </Stepper>
 
+        {step === 0 && (<Typography variant="h6" className="self-start pt-4" sx={{ fontWeight: "bold", mb: 2 }}>
+          Selecciona una mascota
+        </Typography>)}
+
         {step === 0 && (
           <Autocomplete
             options={pets}
@@ -457,6 +462,9 @@ const AddCitaPage = ({ onSuccess, otherData}) => {
           />
         )}
 
+        {step === 1 && (<Typography variant="h6" className="self-start pt-4" sx={{ fontWeight: "bold", mb: 2 }}>
+          Selecciona una fecha y veterinario
+        </Typography>)}
         {step === 1 && (
           <Autocomplete
             options={veterinarios}
@@ -602,76 +610,7 @@ const AddCitaPage = ({ onSuccess, otherData}) => {
           </TextField>
         )}
 
-        {step === 2 && (
-          <TextField
-            select
-            fullWidth
-            label="Método de Pago"
-            name="metodo_pago"
-            value={formData.metodo_pago || ""}
-            onChange={(e) => setFormData({ ...formData, metodo_pago: e.target.value })}
-            sx={{ mb: 2 }}
-            required
-            error={!!errors.metodo_pago}
-            helperText={errors.metodo_pago}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <CreditCardIcon fontSize="small" />
-                </InputAdornment>
-              ),
-            }}
-          >
-            <MenuItem value="tarjeta_credito">Tarjeta de Crédito</MenuItem>
-            <MenuItem value="tarjeta_debito">Tarjeta de Débito</MenuItem>
-          </TextField>
-        )}
-
-        {step === 2 && (
-          <Box className="w-full" sx={{ mb: 2 }}>
-            <Typography
-              variant="body1"
-              sx={{
-                mb: 2,
-                fontWeight: "bold",
-                color: "#333",
-                textAlign: "left",
-                width: "100%",
-              }}
-            >
-              Información de la Tarjeta
-            </Typography>
-            <Box
-              sx={{
-                border: "1px solid #ddd",
-                borderRadius: "4px",
-                padding: "10px",
-                mb: 2,
-                "& .StripeElement": {
-                  fontSize: "16px",
-                  color: "#424770",
-                },
-              }}
-            >
-              <CardElement
-                options={{
-                  style: {
-                    base: {
-                      fontSize: "16px",
-                      color: "#424770",
-                      "::placeholder": {
-                        color: "#aab7c4",
-                      },
-                    },
-                    invalid: {
-                      color: "#9e2146",
-                    },
-                  },
-                }}
-              />
-            </Box>
-          </Box>
-        )}
+        {step === 2 && <AddPaymentMethod hideAdd={true}/>} 
 
         <Box className="w-full" sx={{ display: "flex", gap: 2, mt: 2 }}>
           <Button
