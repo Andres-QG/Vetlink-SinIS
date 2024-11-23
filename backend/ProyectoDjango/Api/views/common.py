@@ -39,14 +39,6 @@ from ..serializers import *
 # Encryption
 from cryptography.fernet import Fernet
 
-# xhtml2pdf import
-from xhtml2pdf import pisa  # Agregado para generar PDFs
-
-# Helper for handling static files in PDF generation
-from django.contrib.staticfiles import (
-    finders,
-)  # Agregado para manejar archivos estáticos en PDFs
-
 # Stripe setup
 stripe.api_key = settings.STRIPE_SECRET_KEY
 

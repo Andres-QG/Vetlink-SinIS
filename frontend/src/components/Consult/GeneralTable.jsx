@@ -246,14 +246,16 @@ const GeneralTable = ({
                           Más detalles
                         </Button>
                       )}
-                      <Button
-                        onClick={() => handleOpenModModal(item)}
-                        startIcon={<Edit />}
-                        color="primary"
-                        disabled={disableModifyAction}
-                      >
-                        Modificar
-                      </Button>
+                      {!disableModifyAction && (
+                        <Button
+                          onClick={() => handleOpenModModal(item)}
+                          startIcon={<Edit />}
+                          color="primary"
+                          disabled={disableModifyAction}
+                        >
+                          Modificar
+                        </Button>
+                      )}
                       {item.activo === true || item.activo === "activo" ? (
                         <Button
                           onClick={() => handleOpenModal(item)}
@@ -413,13 +415,15 @@ const GeneralTable = ({
                           <Info />
                         </IconButton>
                       )}
-                      <IconButton
-                        onClick={() => handleOpenModModal(item)}
-                        disabled={disableModifyAction}
-                        color="primary"
-                      >
-                        <Edit />
-                      </IconButton>
+                      {!disableModifyAction && (
+                        <IconButton
+                          onClick={() => handleOpenModModal(item)}
+                          disabled={disableModifyAction}
+                          color="primary"
+                        >
+                          <Edit />
+                        </IconButton>
+                      )}
                       {item.activo === true || item.activo === "activo" ? (
                         <IconButton
                           onClick={() => handleOpenModal(item)}
