@@ -32,11 +32,6 @@ const ConsultMyAppoints = () => {
   const [filteredPaymentMethods, setFilteredPaymentMethods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [modalState, setModalState] = useState({
-    open: false,
-    type: "",
-    paymentMethod: null,
-  });
   const [tabIndex, setTabIndex] = useState(0);
   const paymentMethodsPerPage = 8;
   const showNotification = useNotification();
@@ -84,7 +79,6 @@ const ConsultMyAppoints = () => {
           fetchServices(),
           fetchClinicas(),
         ]);
-
         setOtherData({
           user: user || {},
           services: services || [],
@@ -92,7 +86,6 @@ const ConsultMyAppoints = () => {
           clientes: clientes || [],
           veterinarios: veterinarios || [],
         });
-        setUser(user)
       } catch (error) {
         console.error("Error fetching data:", error);
       }
