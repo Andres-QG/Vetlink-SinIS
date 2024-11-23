@@ -29,6 +29,8 @@ A partir de aquí estarás adentro del entorno virtual y lo que instales solo es
 
 - Instalar stripe de correo con pip install stripe
 
+- Instalar pip install xhtml2pdf
+
 #### Verificacion
 
 pip list

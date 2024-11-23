@@ -195,6 +195,11 @@ urlpatterns = [
         consult_payment_history,
         name="consult_payment_history",
     ),
+    path(
+        "generate-invoice/<int:factura_id>/",
+        generate_invoice,
+        name="generate_invoice",
+    ),
 ]
 
 if settings.DEBUG:

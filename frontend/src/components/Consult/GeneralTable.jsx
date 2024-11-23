@@ -28,6 +28,7 @@ import {
   Info,
   Restore,
   Close as CloseIcon,
+  Download as DownloadIcon, // Importamos el ícono de descarga
 } from "@mui/icons-material";
 import { useNotification } from "../Notification";
 import { green } from "@mui/material/colors";
@@ -52,6 +53,9 @@ const GeneralTable = ({
   disableDeleteAction = false,
   disableReactivateAction = false,
   hideActions = false,
+  /** Nuevos props */
+  onDownload, // Función para manejar la descarga
+  disableDownloadAction = false, // Prop para deshabilitar y ocultar el botón de descarga
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const notify = useNotification();
@@ -166,6 +170,13 @@ const GeneralTable = ({
     setSelectedItem(null);
   };
 
+  /** Función para manejar la descarga */
+  const handleDownload = (item) => {
+    if (onDownload) {
+      onDownload(item);
+    }
+  };
+
   return (
     <>
       {isMobile ? (
@@ -198,16 +209,16 @@ const GeneralTable = ({
                                 item[col.field] === "activo"
                                   ? col.chipColors?.["activo"]
                                   : item[col.field] === "Exitoso"
-                                    ? col.chipColors?.["Exitoso"] || "#b8e6d7" // Verde
+                                    ? col.chipColors?.["Exitoso"] || "#b8e6d7"
                                     : item[col.field] === "Pendiente"
                                       ? col.chipColors?.["Pendiente"] ||
-                                        "#ffe4b3" // Amarillo
+                                        "#ffe4b3"
                                       : item[col.field] === "Fallido"
                                         ? col.chipColors?.["Fallido"] ||
-                                          "#ff7c7d" // Rojo
+                                          "#ff7c7d"
                                         : col.chipColors?.["inactivo"] ||
-                                          "gray", // Predeterminado
-                              color: "black", // Asegura contraste adecuado
+                                          "gray",
+                              color: "black",
                             }}
                           />
                         ) : (
@@ -274,6 +285,16 @@ const GeneralTable = ({
                             Reactivar
                           </Button>
                         )}
+                      {/* Botón de descarga */}
+                      {!disableDownloadAction && onDownload && (
+                        <Button
+                          onClick={() => handleDownload(item)}
+                          startIcon={<DownloadIcon />}
+                          color="secondary"
+                        >
+                          Descargar
+                        </Button>
+                      )}
                     </>
                   )}
                 </Box>
@@ -354,7 +375,6 @@ const GeneralTable = ({
                                         : "Inactivo"
                               }
                               style={{
-                                // modificar tamaño
                                 textAlign: "center",
                                 height: "30px",
                                 width: 80,
@@ -365,16 +385,16 @@ const GeneralTable = ({
                                   item[col.field] === "activo"
                                     ? col.chipColors?.["activo"]
                                     : item[col.field] === "Exitoso"
-                                      ? col.chipColors?.["Exitoso"] || "#b8e6d7" // Verde
+                                      ? col.chipColors?.["Exitoso"] || "#b8e6d7"
                                       : item[col.field] === "Pendiente"
                                         ? col.chipColors?.["Pendiente"] ||
-                                          "#ffe4b3" // Amarillo
+                                          "#ffe4b3"
                                         : item[col.field] === "Fallido"
                                           ? col.chipColors?.["Fallido"] ||
-                                            "#ff7c7d" // Rojo
+                                            "#ff7c7d"
                                           : col.chipColors?.["inactivo"] ||
-                                            "gray", // Predeterminado
-                                color: "black", // Contraste adecuado
+                                            "gray",
+                                color: "black",
                               }}
                             />
                           ) : (
@@ -428,6 +448,15 @@ const GeneralTable = ({
                             <Restore />
                           </IconButton>
                         )}
+                      {/* Botón de descarga */}
+                      {!disableDownloadAction && onDownload && (
+                        <IconButton
+                          onClick={() => handleDownload(item)}
+                          color="secondary"
+                        >
+                          <DownloadIcon />
+                        </IconButton>
+                      )}
                     </TableCell>
                   )}
                 </TableRow>
@@ -591,10 +620,13 @@ GeneralTable.propTypes = {
   ModModal: PropTypes.elementType,
   DetailsModal: PropTypes.elementType,
   otherData: PropTypes.object,
-  disableAddButton: PropTypes.bool,
   disableModifyAction: PropTypes.bool,
   disableDeleteAction: PropTypes.bool,
   disableReactivateAction: PropTypes.bool,
+  hideActions: PropTypes.bool,
+  /** Nuevas PropTypes */
+  onDownload: PropTypes.func,
+  disableDownloadAction: PropTypes.bool,
 };
 
 export default GeneralTable;
