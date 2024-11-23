@@ -27,6 +27,9 @@ const ConsultView = ({
   disableReactivateAction = false,
   hideAddButton = false,
   hideActions = false,
+  /** Nuevos props */
+  onDownload,
+  disableDownloadAction = false,
 }) => {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -77,7 +80,7 @@ const ConsultView = ({
   const applyFilters = () => {
     let results = [...data];
 
-    // // Filtrar inactivos si es necesario
+    // Filtrar inactivos si es necesario
     if (!showInactive && hasActivoAttribute) {
       results = results.filter((item) => item.activo === true);
     }
@@ -202,6 +205,9 @@ const ConsultView = ({
             disableDeleteAction={disableDeleteAction}
             disableReactivateAction={disableReactivateAction}
             hideActions={hideActions}
+            /** Pasamos los nuevos props */
+            onDownload={onDownload}
+            disableDownloadAction={disableDownloadAction}
           />
         )}
 
@@ -252,6 +258,9 @@ ConsultView.propTypes = {
   disableReactivateAction: PropTypes.bool,
   hideAddButton: PropTypes.bool,
   hideActions: PropTypes.bool,
+  /** Nuevas PropTypes */
+  onDownload: PropTypes.func,
+  disableDownloadAction: PropTypes.bool,
 };
 
 export default ConsultView;

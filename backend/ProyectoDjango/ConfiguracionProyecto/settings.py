@@ -13,16 +13,19 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 
-
 BASE_DIR = Path(__file__).resolve().parent
 
 # Configuración para archivos estáticos
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
+# Agregado STATIC_ROOT para xhtml2pdf
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
 # Configuración para archivos media
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -34,12 +37,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
-# Variables de entorno para encriptación en metodos de pago
+# Variables de entorno para encriptación en métodos de pago
 ENCRYPTION_KEY = os.getenv(
     "ENCRYPTION_KEY", "OWaJeuFRQDvzTSgDvOGjx758sk5Vzvuda00XMlIrUSs="
 )
-
 
 # Application definition
 
@@ -73,15 +74,17 @@ SESSION_COOKIE_SECURE = True
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_ALLOW_ALL = True
+
 # SENDGRID_API_KEY = ''
 STRIPE_SECRET_KEY = "sk_test_51QLypMFlNacvOPfn2qDh3nva9ee7WkoDyAOrvmmcglXyUzkxwBpJNlAL5gaZRYJhH7VRoDsEiHywYLUxQW02R8Gd007X03wSjQ"
 STRIPE_PUBLISHABLE_KEY = "pk_test_51QLypMFlNacvOPfn04CgaWzXQXqJ524WVHJAEn2q0ebrAOcEWDBHRUdkj7dDgPuMyyKxpggIVDHNr7RBqo8Fuvsj00AgzIBn7U"
+
 ROOT_URLCONF = "ConfiguracionProyecto.urls"
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [],  # Dejamos 'DIRS' vacío ya que usas 'APP_DIRS': True
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -89,13 +92,14 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                # Agregamos el context processor de estáticos (opcional pero recomendable)
+                "django.template.context_processors.static",
             ],
         },
     },
 ]
 
 WSGI_APPLICATION = "ConfiguracionProyecto.wsgi.application"
-
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -128,7 +132,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -140,11 +143,12 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "static/"
+# Ya hemos definido STATIC_URL y STATICFILES_DIRS anteriormente
+# Elimina la duplicación de STATIC_URL para evitar conflictos
+# STATIC_URL = "static/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
