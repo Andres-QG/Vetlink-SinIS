@@ -31,7 +31,8 @@ const CardList = ({
         p: 3,
         width: "100%",
         margin: "0 auto",
-      }}>
+      }}
+    >
       <Grid container spacing={2}>
         {getCurrentItems().map((item, index) => (
           <Grid item xs={12} sm={6} md={4} key={index}>
@@ -70,7 +71,7 @@ CardList.propTypes = {
   items: PropTypes.arrayOf(
     PropTypes.shape({
       nombre: PropTypes.string.isRequired,
-      estado: PropTypes.string,
+      estado: PropTypes.number,
       descripcion: PropTypes.string.isRequired,
     })
   ).isRequired,

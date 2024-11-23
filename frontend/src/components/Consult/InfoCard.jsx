@@ -60,7 +60,8 @@ export default function InfoCard({
           boxShadow: "0 2px 4px rgba(0,0,0,0.16)",
         },
         padding: "16px",
-      }}>
+      }}
+    >
       <Box sx={{ p: 2 }}>
         <Box
           sx={{
@@ -69,10 +70,12 @@ export default function InfoCard({
             justifyContent: "space-between",
             alignItems: isMobile ? "flex-start" : "center",
             mb: 2,
-          }}>
+          }}
+        >
           <Typography
             variant="h5"
-            sx={{ fontSize: "1rem", fontWeight: 600, mb: isMobile ? 1 : 0 }}>
+            sx={{ fontSize: "1rem", fontWeight: 600, mb: isMobile ? 1 : 0 }}
+          >
             {item.nombre}
           </Typography>
           {hasStatus && (
@@ -101,7 +104,8 @@ export default function InfoCard({
             maxHeight: isExpanded ? "none" : "4.5em",
             textOverflow: "ellipsis",
             overflow: "hidden",
-          }}>
+          }}
+        >
           {isExpanded
             ? item.descripcion
             : truncateText(item.descripcion, DESCRIPTION_CHAR_LIMIT)}
@@ -121,7 +125,8 @@ export default function InfoCard({
                 backgroundColor: "transparent",
                 textDecoration: "underline",
               },
-            }}>
+            }}
+          >
             {isExpanded ? "Leer menos" : "Leer más"}
           </Button>
         )}
@@ -131,7 +136,8 @@ export default function InfoCard({
             display: "flex",
             flexDirection: isMobile ? "column" : "row",
             gap: 1,
-          }}>
+          }}
+        >
           <Button
             startIcon={<EditIcon sx={{ fontSize: 20 }} />}
             onClick={() => openModModal(item)}
@@ -148,7 +154,8 @@ export default function InfoCard({
               "&:hover": {
                 backgroundColor: "#f5f5f5",
               },
-            }}>
+            }}
+          >
             Modificar
           </Button>
 
@@ -173,7 +180,8 @@ export default function InfoCard({
               "&:hover": {
                 backgroundColor: hasStatus && isActive ? "#c82333" : "#218838",
               },
-            }}>
+            }}
+          >
             {hasStatus ? (isActive ? "Desactivar" : "Reactivar") : "Eliminar"}
           </Button>
         </Box>
@@ -185,7 +193,7 @@ export default function InfoCard({
 InfoCard.propTypes = {
   item: PropTypes.shape({
     nombre: PropTypes.string.isRequired,
-    estado: PropTypes.string,
+    estado: PropTypes.number,
     descripcion: PropTypes.string.isRequired,
   }).isRequired,
   openDelModal: PropTypes.func.isRequired,
