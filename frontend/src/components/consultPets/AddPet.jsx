@@ -3,6 +3,7 @@ import { useState, forwardRef } from "react";
 import PropTypes from "prop-types";
 import {
   TextField,
+  Typography,
   Select,
   MenuItem,
   InputLabel,
@@ -190,6 +191,8 @@ const AddPet = forwardRef(
             bgcolor: "#fff",
             width: "100%",
             maxWidth: "500px",
+            maxHeight: "80vh",
+            overflow: "auto",
             mx: "auto",
           }}
         >
@@ -201,7 +204,7 @@ const AddPet = forwardRef(
               alignItems="center"
               mb={2}
             >
-              <h2>Agregar Mascota</h2>
+              <Typography variant="h6">Agregar Mascota</Typography>
               <IconButton onClick={handleClose}>
                 <CloseIcon />
               </IconButton>

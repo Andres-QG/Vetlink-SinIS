@@ -168,13 +168,15 @@ const AddServicesModal = ({ open, handleClose, onSuccess }) => {
           p: 4,
           borderRadius: 2,
           overflowY: "auto",
-        }}>
+        }}
+      >
         <form onSubmit={handleSubmit}>
           <Box
             display="flex"
             justifyContent="space-between"
             alignItems="center"
-            mb={2}>
+            mb={2}
+          >
             <Typography variant="h6">Agregar Servicio</Typography>
             <IconButton onClick={handleClose}>
               <Close />
@@ -285,8 +287,16 @@ const AddServicesModal = ({ open, handleClose, onSuccess }) => {
             variant="contained"
             component="label"
             fullWidth
-            sx={{ mt: 2, mb: 1 }}
-            startIcon={<Image />}>
+            sx={{
+              mt: 2,
+              mb: 1,
+              backgroundColor: "#00308F",
+              "&:hover": {
+                backgroundColor: "#00246d",
+              },
+            }}
+            startIcon={<Image />}
+          >
             {formData.imagen ? "Imagen seleccionada" : "Seleccionar imagen"}
             <input
               type="file"
@@ -302,7 +312,8 @@ const AddServicesModal = ({ open, handleClose, onSuccess }) => {
               color="error"
               variant="caption"
               display="block"
-              sx={{ mb: 2 }}>
+              sx={{ mb: 2 }}
+            >
               {errors.imagen}
             </Typography>
           )}
@@ -311,16 +322,28 @@ const AddServicesModal = ({ open, handleClose, onSuccess }) => {
             <Button
               variant="outlined"
               onClick={handleClear}
+              sx={{
+                borderColor: "#00308F",
+                color: "#00308F",
+              }}
               fullWidth
-              disabled={loading}>
+              disabled={loading}
+            >
               Limpiar
             </Button>
             <Button
               variant="contained"
               type="submit"
+              sx={{
+                backgroundColor: "#00308F",
+                "&:hover": {
+                  backgroundColor: "#00246d",
+                },
+              }}
               fullWidth
               disabled={loading}
-              startIcon={loading && <CircularProgress size={20} />}>
+              startIcon={loading && <CircularProgress size={20} />}
+            >
               {loading ? "Guardando..." : "Agregar Servicio"}
             </Button>
           </Box>

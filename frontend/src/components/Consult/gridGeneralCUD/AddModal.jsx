@@ -42,7 +42,10 @@ const AddModal = ({ open, handleClose, onAdd, addUrl, itemName }) => {
 
     if (!formData.descripcion) {
       newErrors.descripcion = "La descripción es requerida.";
-    } else if (formData.descripcion.length < 10 || formData.descripcion.length > 251) {
+    } else if (
+      formData.descripcion.length < 10 ||
+      formData.descripcion.length > 251
+    ) {
       newErrors.descripcion =
         "La descripción debe tener entre 10 y 250 caracteres.";
     }
@@ -162,6 +165,10 @@ const AddModal = ({ open, handleClose, onAdd, addUrl, itemName }) => {
               onClick={handleClear}
               fullWidth
               disabled={loading}
+              sx={{
+                borderColor: "#00308F",
+                color: "#00308F",
+              }}
             >
               Limpiar
             </Button>
@@ -171,6 +178,12 @@ const AddModal = ({ open, handleClose, onAdd, addUrl, itemName }) => {
               fullWidth
               disabled={loading}
               startIcon={loading && <CircularProgress size={20} />}
+              sx={{
+                backgroundColor: "#00308F",
+                "&:hover": {
+                  backgroundColor: "#00246d",
+                },
+              }}
             >
               {loading ? "Agregando..." : `Agregar ${itemName}`}
             </Button>

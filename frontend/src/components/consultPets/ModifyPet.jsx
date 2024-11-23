@@ -2,6 +2,7 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import {
   TextField,
+  Typography,
   Select,
   MenuItem,
   InputLabel,
@@ -56,6 +57,7 @@ const ModifyPet = ({
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [isModified, setIsModified] = useState(false);
 
   function calcularEdad(fechaNacimiento) {
     const fechaActual = new Date();
@@ -85,6 +87,7 @@ const ModifyPet = ({
       [name]: value,
       ...(name === "especie" && { raza: "" }),
     }));
+    setIsModified(true);
   };
 
   const clearForm = () => {
@@ -216,6 +219,8 @@ const ModifyPet = ({
           bgcolor: "#fff",
           width: "100%",
           maxWidth: "500px",
+          maxHeight: "80vh",
+          overflow: "auto",
           mx: "auto",
         }}
       >
@@ -225,7 +230,7 @@ const ModifyPet = ({
           alignItems="center"
           mb={2}
         >
-          <h2>Modificar Mascota</h2>
+          <Typography variant="h6">Modificar Mascota</Typography>
           <IconButton onClick={handleClose}>
             <CloseIcon />
           </IconButton>
@@ -366,6 +371,10 @@ const ModifyPet = ({
               onClick={clearForm}
               fullWidth
               size="medium"
+              sx={{
+                borderColor: "#00308F",
+                color: "#00308F",
+              }}
             >
               Limpiar
             </Button>
@@ -374,7 +383,7 @@ const ModifyPet = ({
               onClick={handleSubmit}
               fullWidth
               size="medium"
-              disabled={loading}
+              disabled={loading || !isModified}
               startIcon={loading && <CircularProgress size={20} />}
               sx={{
                 backgroundColor: "#00308F",

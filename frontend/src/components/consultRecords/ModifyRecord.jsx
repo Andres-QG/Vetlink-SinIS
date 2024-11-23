@@ -7,6 +7,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import {
   TextField,
+  Typography,
   Button,
   Box,
   Stack,
@@ -48,8 +49,8 @@ const ModifyRecord = forwardRef(
           Array.isArray(str)
             ? str
             : str
-              ? str.split(",").map((item) => item.trim())
-              : [];
+            ? str.split(",").map((item) => item.trim())
+            : [];
 
         setFormData({
           mascota_id: selectedItem.mascota_id,
@@ -199,7 +200,7 @@ const ModifyRecord = forwardRef(
               alignItems="center"
               mb={2}
             >
-              <h2>Modifica Expediente</h2>
+              <Typography variant="h6">Modifica Expediente</Typography>
               <IconButton onClick={handleClose}>
                 <CloseIcon />
               </IconButton>

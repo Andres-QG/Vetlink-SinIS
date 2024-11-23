@@ -42,8 +42,23 @@ export const NotificationProvider = ({ children }) => {
         autoHideDuration={3000}
         onClose={handleClose}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        sx={{
+          "& .MuiSnackbarContent-root": {
+            fontSize: "1.25rem",
+          },
+        }}
       >
-        <Alert onClose={handleClose} severity={notification.type}>
+        <Alert
+          onClose={handleClose}
+          severity={notification.type}
+          sx={{
+            fontSize: "1.25rem",
+            "& .MuiAlertTitle-root": {
+              fontSize: "1.75rem",
+              fontWeight: "bold",
+            },
+          }}
+        >
           <AlertTitle>{getTitle(notification.type)}</AlertTitle>
           {notification.message}
         </Alert>

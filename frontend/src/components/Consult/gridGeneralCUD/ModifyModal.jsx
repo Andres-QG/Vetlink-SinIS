@@ -59,7 +59,10 @@ const ModifyModal = ({
 
     if (!formData.descripcion) {
       newErrors.descripcion = "La descripción es requerida.";
-    } else if (formData.descripcion.length < 10 || formData.descripcion.length > 251) {
+    } else if (
+      formData.descripcion.length < 10 ||
+      formData.descripcion.length > 251
+    ) {
       newErrors.descripcion =
         "La descripción debe tener entre 10 y 250 caracteres.";
     }
@@ -182,6 +185,10 @@ const ModifyModal = ({
               onClick={handleClear}
               fullWidth
               disabled={loading}
+              sx={{
+                borderColor: "#00308F",
+                color: "#00308F",
+              }}
             >
               Limpiar
             </Button>
@@ -191,6 +198,12 @@ const ModifyModal = ({
               fullWidth
               disabled={loading || !isModified}
               startIcon={loading && <CircularProgress size={20} />}
+              sx={{
+                backgroundColor: "#00308F",
+                "&:hover": {
+                  backgroundColor: "#00246d",
+                },
+              }}
             >
               {loading ? "Modificando..." : `Modificar ${itemName}`}
             </Button>
