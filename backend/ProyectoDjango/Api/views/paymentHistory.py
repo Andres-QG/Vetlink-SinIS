@@ -3,6 +3,8 @@ from .common import *
 
 @api_view(["GET"])
 def consult_payment_history(request):
+    from datetime import datetime
+
     # Obtener parámetros de búsqueda, columna, y orden
     search = request.GET.get("search", "")
     column = request.GET.get("column", "fecha_pago")
@@ -24,21 +26,7 @@ def consult_payment_history(request):
             returned_cursor = cursor.connection.cursor()
 
             # Configurar los parámetros según el rol
-            if rol_id == 1:
-                # Dueño puede ver todo el historial de pagos
-                cursor.callproc(
-                    "VETLINK.CONSULTAR_HISTORIAL_PAGOS",
-                    [usuario, rol_id, returned_cursor],
-                )
-            elif rol_id == 2:
-                # Administrador puede ver solo los pagos de su clínica
-                if not clinica_id:
-                    return Response(
-                        {
-                            "error": "No se encontró la clínica asociada al administrador."
-                        },
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
+            if rol_id in [1, 2]:
                 cursor.callproc(
                     "VETLINK.CONSULTAR_HISTORIAL_PAGOS",
                     [usuario, rol_id, returned_cursor],
@@ -55,10 +43,18 @@ def consult_payment_history(request):
             columns = [col[0].lower() for col in returned_cursor.description]
             payments = [dict(zip(columns, row)) for row in returned_cursor.fetchall()]
 
-            # Renombrar claves para coincidir con los nombres esperados
+            # Procesar los datos
             for payment in payments:
-                payment["fecha"] = payment.pop("fecha_factura", None)
+                # Formatear la fecha
+                fecha_factura = payment.pop("fecha_factura", None)
+                if fecha_factura:
+                    payment["fecha"] = fecha_factura.strftime("%d/%m/%Y")
+                else:
+                    payment["fecha"] = "Fecha no disponible"
+
+                # Renombrar claves y formatear datos
                 payment["estado"] = payment.pop("estado_factura", None)
+                payment["monto_total"] = f"₡{payment['monto_total']:,.2f}"
 
             if not payments:
                 return Response(

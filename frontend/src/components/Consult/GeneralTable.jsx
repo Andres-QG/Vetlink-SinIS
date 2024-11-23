@@ -28,6 +28,7 @@ import {
   Info,
   Restore,
   Close as CloseIcon,
+  Download as DownloadIcon, // Importamos el ícono de descarga
 } from "@mui/icons-material";
 import { useNotification } from "../Notification";
 import { green } from "@mui/material/colors";
@@ -52,6 +53,9 @@ const GeneralTable = ({
   disableDeleteAction = false,
   disableReactivateAction = false,
   hideActions = false,
+  /** Nuevos props */
+  onDownload, // Función para manejar la descarga
+  disableDownloadAction = false, // Prop para deshabilitar y ocultar el botón de descarga
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const notify = useNotification();
@@ -166,6 +170,13 @@ const GeneralTable = ({
     setSelectedItem(null);
   };
 
+  /** Función para manejar la descarga */
+  const handleDownload = (item) => {
+    if (onDownload) {
+      onDownload(item);
+    }
+  };
+
   return (
     <>
       {isMobile ? (
@@ -184,14 +195,30 @@ const GeneralTable = ({
                               item[col.field] === true ||
                               item[col.field] === "activo"
                                 ? "Activo"
-                                : "Inactivo"
+                                : item[col.field] === "Exitoso"
+                                  ? "Exitoso"
+                                  : item[col.field] === "Pendiente"
+                                    ? "Pendiente"
+                                    : item[col.field] === "Fallido"
+                                      ? "Fallido"
+                                      : "Inactivo"
                             }
                             style={{
                               backgroundColor:
                                 item[col.field] === true ||
                                 item[col.field] === "activo"
                                   ? col.chipColors?.["activo"]
-                                  : col.chipColors?.["inactivo"] || "gray",
+                                  : item[col.field] === "Exitoso"
+                                    ? col.chipColors?.["Exitoso"] || "#b8e6d7"
+                                    : item[col.field] === "Pendiente"
+                                      ? col.chipColors?.["Pendiente"] ||
+                                        "#ffe4b3"
+                                      : item[col.field] === "Fallido"
+                                        ? col.chipColors?.["Fallido"] ||
+                                          "#ff7c7d"
+                                        : col.chipColors?.["inactivo"] ||
+                                          "gray",
+                              color: "black",
                             }}
                           />
                         ) : (
@@ -219,14 +246,16 @@ const GeneralTable = ({
                           Más detalles
                         </Button>
                       )}
-                      <Button
-                        onClick={() => handleOpenModModal(item)}
-                        startIcon={<Edit />}
-                        color="primary"
-                        disabled={disableModifyAction}
-                      >
-                        Modificar
-                      </Button>
+                      {!disableModifyAction && (
+                        <Button
+                          onClick={() => handleOpenModModal(item)}
+                          startIcon={<Edit />}
+                          color="primary"
+                          disabled={disableModifyAction}
+                        >
+                          Modificar
+                        </Button>
+                      )}
                       {item.activo === true || item.activo === "activo" ? (
                         <Button
                           onClick={() => handleOpenModal(item)}
@@ -258,6 +287,16 @@ const GeneralTable = ({
                             Reactivar
                           </Button>
                         )}
+                      {/* Botón de descarga */}
+                      {!disableDownloadAction && onDownload && (
+                        <Button
+                          onClick={() => handleDownload(item)}
+                          startIcon={<DownloadIcon />}
+                          color="secondary"
+                        >
+                          Descargar
+                        </Button>
+                      )}
                     </>
                   )}
                 </Box>
@@ -329,10 +368,15 @@ const GeneralTable = ({
                                 item[col.field] === true ||
                                 item[col.field] === "activo"
                                   ? "Activo"
-                                  : "Inactivo"
+                                  : item[col.field] === "Exitoso"
+                                    ? "Exitoso"
+                                    : item[col.field] === "Pendiente"
+                                      ? "Pendiente"
+                                      : item[col.field] === "Fallido"
+                                        ? "Fallido"
+                                        : "Inactivo"
                               }
                               style={{
-                                // modificar tamaño
                                 textAlign: "center",
                                 height: "30px",
                                 width: 80,
@@ -342,7 +386,17 @@ const GeneralTable = ({
                                   item[col.field] === true ||
                                   item[col.field] === "activo"
                                     ? col.chipColors?.["activo"]
-                                    : col.chipColors?.["inactivo"] || "gray",
+                                    : item[col.field] === "Exitoso"
+                                      ? col.chipColors?.["Exitoso"] || "#b8e6d7"
+                                      : item[col.field] === "Pendiente"
+                                        ? col.chipColors?.["Pendiente"] ||
+                                          "#ffe4b3"
+                                        : item[col.field] === "Fallido"
+                                          ? col.chipColors?.["Fallido"] ||
+                                            "#ff7c7d"
+                                          : col.chipColors?.["inactivo"] ||
+                                            "gray",
+                                color: "black",
                               }}
                             />
                           ) : (
@@ -361,13 +415,15 @@ const GeneralTable = ({
                           <Info />
                         </IconButton>
                       )}
-                      <IconButton
-                        onClick={() => handleOpenModModal(item)}
-                        disabled={disableModifyAction}
-                        color="primary"
-                      >
-                        <Edit />
-                      </IconButton>
+                      {!disableModifyAction && (
+                        <IconButton
+                          onClick={() => handleOpenModModal(item)}
+                          disabled={disableModifyAction}
+                          color="primary"
+                        >
+                          <Edit />
+                        </IconButton>
+                      )}
                       {item.activo === true || item.activo === "activo" ? (
                         <IconButton
                           onClick={() => handleOpenModal(item)}
@@ -396,6 +452,15 @@ const GeneralTable = ({
                             <Restore />
                           </IconButton>
                         )}
+                      {/* Botón de descarga */}
+                      {!disableDownloadAction && onDownload && (
+                        <IconButton
+                          onClick={() => handleDownload(item)}
+                          color="secondary"
+                        >
+                          <DownloadIcon />
+                        </IconButton>
+                      )}
                     </TableCell>
                   )}
                 </TableRow>
@@ -559,10 +624,13 @@ GeneralTable.propTypes = {
   ModModal: PropTypes.elementType,
   DetailsModal: PropTypes.elementType,
   otherData: PropTypes.object,
-  disableAddButton: PropTypes.bool,
   disableModifyAction: PropTypes.bool,
   disableDeleteAction: PropTypes.bool,
   disableReactivateAction: PropTypes.bool,
+  hideActions: PropTypes.bool,
+  /** Nuevas PropTypes */
+  onDownload: PropTypes.func,
+  disableDownloadAction: PropTypes.bool,
 };
 
 export default GeneralTable;

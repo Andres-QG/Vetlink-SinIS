@@ -6,17 +6,21 @@ from django.contrib.auth import logout
 from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 from django.db import connection, transaction
 from django.db.models import Q
 from django.views.decorators.cache import cache_page
 
 # REST Framework imports
-from rest_framework.decorators import api_view
+from rest_framework.decorators import (
+    api_view,
+    permission_classes,
+)
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 
 # Utilities
 from datetime import datetime
