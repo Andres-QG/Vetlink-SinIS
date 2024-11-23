@@ -7,6 +7,7 @@ const ConsultPaymentHistory = () => {
   const columns = [
     { field: "factura_id", headerName: "Factura ID", type: "text" },
     { field: "usuario_cliente", headerName: "Cliente", type: "text" },
+    { field: "clinica_nombre", headerName: "Clínica", type: "text" }, // Nueva columna para el nombre de la clínica
     { field: "tipo_pago", headerName: "Tipo de Pago", type: "text" },
     { field: "monto_total", headerName: "Monto Total", type: "number" },
     { field: "fecha", headerName: "Fecha de Pago", type: "date" },

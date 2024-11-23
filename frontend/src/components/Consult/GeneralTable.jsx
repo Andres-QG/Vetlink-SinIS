@@ -184,14 +184,30 @@ const GeneralTable = ({
                               item[col.field] === true ||
                               item[col.field] === "activo"
                                 ? "Activo"
-                                : "Inactivo"
+                                : item[col.field] === "Exitoso"
+                                  ? "Exitoso"
+                                  : item[col.field] === "Pendiente"
+                                    ? "Pendiente"
+                                    : item[col.field] === "Fallido"
+                                      ? "Fallido"
+                                      : "Inactivo"
                             }
                             style={{
                               backgroundColor:
                                 item[col.field] === true ||
                                 item[col.field] === "activo"
                                   ? col.chipColors?.["activo"]
-                                  : col.chipColors?.["inactivo"] || "gray",
+                                  : item[col.field] === "Exitoso"
+                                    ? col.chipColors?.["Exitoso"] || "#b8e6d7" // Verde
+                                    : item[col.field] === "Pendiente"
+                                      ? col.chipColors?.["Pendiente"] ||
+                                        "#ffe4b3" // Amarillo
+                                      : item[col.field] === "Fallido"
+                                        ? col.chipColors?.["Fallido"] ||
+                                          "#ff7c7d" // Rojo
+                                        : col.chipColors?.["inactivo"] ||
+                                          "gray", // Predeterminado
+                              color: "black", // Asegura contraste adecuado
                             }}
                           />
                         ) : (
@@ -329,7 +345,13 @@ const GeneralTable = ({
                                 item[col.field] === true ||
                                 item[col.field] === "activo"
                                   ? "Activo"
-                                  : "Inactivo"
+                                  : item[col.field] === "Exitoso"
+                                    ? "Exitoso"
+                                    : item[col.field] === "Pendiente"
+                                      ? "Pendiente"
+                                      : item[col.field] === "Fallido"
+                                        ? "Fallido"
+                                        : "Inactivo"
                               }
                               style={{
                                 // modificar tamaño
@@ -342,7 +364,17 @@ const GeneralTable = ({
                                   item[col.field] === true ||
                                   item[col.field] === "activo"
                                     ? col.chipColors?.["activo"]
-                                    : col.chipColors?.["inactivo"] || "gray",
+                                    : item[col.field] === "Exitoso"
+                                      ? col.chipColors?.["Exitoso"] || "#b8e6d7" // Verde
+                                      : item[col.field] === "Pendiente"
+                                        ? col.chipColors?.["Pendiente"] ||
+                                          "#ffe4b3" // Amarillo
+                                        : item[col.field] === "Fallido"
+                                          ? col.chipColors?.["Fallido"] ||
+                                            "#ff7c7d" // Rojo
+                                          : col.chipColors?.["inactivo"] ||
+                                            "gray", // Predeterminado
+                                color: "black", // Contraste adecuado
                               }}
                             />
                           ) : (
