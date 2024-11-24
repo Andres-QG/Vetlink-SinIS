@@ -130,10 +130,10 @@ const PaymentForm = forwardRef(({ onSubmit, includeCVV = false, initialData = {}
     if (!form.numeroTarjeta || !/^\d{16}$/.test(form.numeroTarjeta))
       newErrors.numeroTarjeta = "El número de tarjeta debe contener 16 dígitos.";
     if (!form.tipoTarjeta) newErrors.tipoTarjeta = "El tipo de tarjeta es obligatorio.";
-    if (!form.fechaExpiracion) newErrors.fechaExpiracion = "La fecha de expiración es obligatoria.";
+    if (!form.fechaExpiracion || !dayjs(form.fechaExpiracion).isValid())
+      newErrors.fecha = "La fecha es obligatoria y debe ser válida.";
     if (includeCVV && (!form.cvv || !/^\d{3,4}$/.test(form.cvv)))
       newErrors.cvv = "El CVV debe contener 3 o 4 dígitos.";
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -146,6 +146,7 @@ const PaymentForm = forwardRef(({ onSubmit, includeCVV = false, initialData = {}
 
   const handleSubmit = () => {
     if (!validateForm()) return false;
+    return true;
   };
 
   useImperativeHandle(ref, () => ({
@@ -162,9 +163,11 @@ const PaymentForm = forwardRef(({ onSubmit, includeCVV = false, initialData = {}
           codigoPostal: form.method.codigo_postal || '',
           nombreTitular: form.method.nombre_titular || '',
           numeroTarjeta: form.method.numero_tarjeta || '',
-          tipoTarjeta: form.method.tipo_tarjeta || '',
+          tipoTarjeta: form.method.tipo_pago || '',
           fechaExpiracion: form.method.fecha_expiracion
-            ? dayjs(form.method.fecha_expiracion, 'MM/YY').toDate()
+            ? dayjs(form.method.fecha_expiracion).isValid()
+              ? new Date(form.method.fecha_expiracion)
+              : null
             : null,
           marcaTarjeta: form.method.marca_tarjeta || '',
           cvv: '',
@@ -202,7 +205,7 @@ const PaymentForm = forwardRef(({ onSubmit, includeCVV = false, initialData = {}
           <Autocomplete
             options={otherData.methods || []}
             getOptionLabel={(option) =>
-              `${option.tipo_pago} - ${option.ultimos_4_digitos || "XXXX"}`
+              `${option.nombre_titular} - ${option.ultimos_4_digitos || "XXXX"}`
             }
             onChange={(event, newValue) => {
               setForm({ ...form, method: newValue });
@@ -456,8 +459,8 @@ const PaymentForm = forwardRef(({ onSubmit, includeCVV = false, initialData = {}
                     textField: {
                       fullWidth: true,
                       required: true,
-                      error: !!errors.fechaExpiracion,
-                      helperText: errors.fechaExpiracion,
+                      error: !!errors.fecha,
+                      helperText: errors.fecha,
                       InputProps: {
                         startAdornment: (
                           <InputAdornment position="start">

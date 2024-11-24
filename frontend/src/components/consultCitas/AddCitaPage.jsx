@@ -116,28 +116,27 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
     fetchPets();
   }, []);
 
-  useEffect(() => {
-    console.log(formData)
-    const fetchAvailableTimes = async () => {
-      try {
-        if (formData.veterinario && formData.clinica && formData.fecha) {
-          setLoadingTimes(true);
-          const formattedDate = formData.fecha.toISOString().split("T")[0];
+  const fetchAvailableTimes = async () => {
+    try {
+      if (formData.veterinario && formData.clinica && formData.fecha) {
+        setLoadingTimes(true);
+        const formattedDate = formData.fecha.toISOString().split("T")[0];
 
-          const response = await axios.put("http://localhost:8000/api/get-disp-times/", {
-            vet_user: formData.veterinario.usuario,
-            clinica_id: formData.clinica?.clinica_id,
-            full_date: formattedDate,
-          });
-          setHorarios(response.data.available_times || []);
-        }
-      } catch (error) {
-        console.error("Error fetching available times:", error);
-      } finally {
-        setLoadingTimes(false);
+        const response = await axios.put("http://localhost:8000/api/get-disp-times/", {
+          vet_user: formData.veterinario.usuario,
+          clinica_id: formData.clinica?.clinica_id,
+          full_date: formattedDate,
+        });
+        setHorarios(response.data.available_times || []);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching available times:", error);
+    } finally {
+      setLoadingTimes(false);
+    }
+  };
 
+  useEffect(() => {
     if (formData.clinica && formData.veterinario && formData.fecha) {
       fetchAvailableTimes();
     } else {
@@ -188,11 +187,11 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
 
     try {
       if (!paymentFormRef.current.submit()) {
-        onSuccess("Pago no pudo ser realizado exitosamente", "error");
         return;
       }
+
       const paymentSuccess = await makePayment();
-      if (paymentSuccess.status === 201) {
+      if (paymentSuccess) {
         await addCita();
       }
       onSuccess("Pago realizado exitosamente", "success");
@@ -227,8 +226,6 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
 
   const makePayment = async () => {
     setLoading(true);
-    console.log("Form Data:", formData);
-
     if (!stripe || !elements) {
       console.error("Stripe has not loaded yet.");
       setLoading(false);
@@ -263,7 +260,6 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
       );
 
       if (paymentResponse.status === 201) {
-        console.log("Payment successful:", paymentResponse.data);
         return true;
       } else {
         console.error("Payment failed:", paymentResponse.data);
