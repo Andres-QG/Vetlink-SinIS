@@ -194,7 +194,6 @@ const ConsultMyPaymentHistory = () => {
               />
             </Box>
           </Box>
-          <Divider sx={{ mb: 4 }} />
 
           <Grid container spacing={3} justifyContent="center">
             {currentItems.length > 0 ? (
