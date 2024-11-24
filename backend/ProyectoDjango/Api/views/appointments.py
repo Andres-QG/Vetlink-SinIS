@@ -91,7 +91,7 @@ def consult_citas(request):
 @transaction.atomic
 def add_cita(request):
     try:
-        cliente_id = request.data.get("cliente").get("usuario")
+        cliente_id = request.data.get("cliente").get("user")
         veterinario_id = request.data.get("veterinario").get("usuario")
         mascota_id = request.data.get("mascota").get("mascota_id")
         clinica_id = request.data.get("clinica").get("clinica_id")

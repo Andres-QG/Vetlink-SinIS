@@ -63,6 +63,7 @@ def create_payment(request):
             receipt_email=email,
             description=description,
             confirm=True,
+            return_url="http://localhost:5173/myappointments",
         )
 
         return Response(

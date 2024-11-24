@@ -21,7 +21,6 @@ import {
   Delete as DeleteIcon,
   CalendarToday as CalendarTodayIcon,
 } from "@mui/icons-material";
-import { Elements } from "@stripe/react-stripe-js";
 import SearchBar from "../components/Consult/GeneralizedSearchBar";
 import { useNotification } from "../components/Notification";
 import Grid2 from "@mui/material/Grid2";
@@ -145,6 +144,7 @@ const ConsultMyAppoints = () => {
     showNotification(message, type);
     if (type === "success") {
       fetchPaymentMethods();
+      setTabIndex(0);
     }
   };
 
@@ -399,7 +399,7 @@ const ConsultMyAppoints = () => {
             )}
             {tabIndex === 1 && (
               <Box sx={{ width: "100%" }}>
-                  <AddCitaPage otherData={otherData}></AddCitaPage>
+                  <AddCitaPage onSuccess={handleActionSuccess} otherData={otherData}></AddCitaPage>
               </Box>
             )}
           </Box>

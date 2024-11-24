@@ -23,7 +23,6 @@ import {
   ArrowDropDown as ArrowDropDownIcon,
   CreditCard as CreditCardIcon,
 } from "@mui/icons-material";
-import { CardElement } from "@stripe/react-stripe-js";
 import Tag from "../Tag";
 import { isValid } from "date-fns";
 import axios from "axios";
@@ -32,7 +31,6 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { es } from "date-fns/locale";
 import StripeContext from "../../context/StripeContext";
-import AddPaymentMethod from "../ConsultMyPaymentMethods/AddPaymentMethod";
 import PaymentForm from "../PaymentForm";
 
 const AddCitaPage = ({ onSuccess, otherData }) => {
@@ -192,20 +190,26 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
       return;
     }
 
-    const paymentSuccess = await makePayment();
-    if (paymentSuccess) {
-      await addCita();
+    try {
+      const paymentSuccess = await makePayment();
+      if (paymentSuccess) {
+        await addCita();
+      }
+      onSuccess("Pago realizado exitosamente", "success");
+    }  catch (error) {
+      console.log(error)
+      onSuccess("Pago no pudo ser realizado exitosamente", "error");
     }
   };
 
   const addCita = async () => {
     setLoading(true);
+    console.log("Adding")
+    console.log(formData)
     try {
       await axios.post("http://localhost:8000/api/add-cita/", formData);
-      onSuccess("Cita agregada correctamente", "success");
     } catch (error) {
       console.error(error);
-      onSuccess("Error al agregar cita.", "error");
     } finally {
       setLoading(false);
     }
@@ -228,7 +232,6 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
 
     if (!stripe || !elements) {
       console.error("Stripe has not loaded yet.");
-      onSuccess("Error al procesar el pago.", "error");
       setLoading(false);
       return false;
     }
@@ -262,16 +265,13 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
 
       if (paymentResponse.status === 201) {
         console.log("Payment successful:", paymentResponse.data);
-        onSuccess("Pago exitoso.", "success");
         return true;
       } else {
         console.error("Payment failed:", paymentResponse.data);
-        onSuccess("Error al procesar el pago.", "error");
         return false;
       }
     } catch (error) {
       console.error("Error during payment:", error.message || error);
-      onSuccess("Error al procesar el pago.", "error");
       return false;
     } finally {
       setLoading(false);
@@ -626,7 +626,6 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
       {step === 2 && (
         <PaymentForm
           onSubmit={async (formData, onCompletion) => {
-            console.log("CALLED submit")
             setFormData((prev) => ({ ...prev, ...formData }));
 
             await handleSubmit({
