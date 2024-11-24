@@ -162,7 +162,6 @@ const DashboardLayout = ({
   const createHeaderItems = () => [
     { key: "1", label: "Sobre nosotros", onClick: () => handleClick("about") },
     { key: "2", label: "Servicios", onClick: () => handleClick("services") },
-    { key: "3", label: "Contacto", onClick: () => handleClick("#") },
     ...(role === 1 || role === 2 || role === 3
       ? [
           {
@@ -308,6 +307,12 @@ const DashboardLayout = ({
             onClick: () => handleClick("consultMyPaymentMethods"),
           },
           {
+            key: "consultMyPaymentHistory",
+            icon: <ReceiptIcon />,
+            label: "Historial de Pagos",
+            onClick: () => handleClick("consultMyPaymentHistory"),
+          },
+          {
             key: "consultMyAppointments",
             icon: <CalendarMonthIcon />,
             label: "Mis Citas",
@@ -348,6 +353,8 @@ const DashboardLayout = ({
         return "consultrecords";
       case "/consultPaymentHistory":
         return "consultPaymentHistory";
+      case "/consultMyPaymentHistory":
+        return "consultMyPaymentHistory";
       case "/clinics":
         return "consultClinics";
       case "/consultMyPets":
