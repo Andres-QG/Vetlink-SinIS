@@ -1,5 +1,6 @@
 import React from "react";
 import ConsultView from "../components/Consult/ConsultView";
+import { Vaccines } from "@mui/icons-material";
 
 const ConsultVaccinesHistory = () => {
   const rowsPerPage = 7;
@@ -24,6 +25,7 @@ const ConsultVaccinesHistory = () => {
   return (
     <ConsultView
       title="Historial de Vacunación"
+      titleIcon={Vaccines}
       fetchUrl="http://localhost:8000/api/consult-vaccines-history/"
       rowsPerPage={rowsPerPage}
       columns={columns}
