@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState, forwardRef } from "react";
+import React, { useState, forwardRef } from "react";
 import PropTypes from "prop-types";
 import {
   TextField,
@@ -36,7 +36,7 @@ const AddPet = forwardRef(
       edad: "",
       especie: "",
       raza: "",
-      sexo: "M",
+      sexo: "",
     });
 
     const speciesOptions = ["Perro", "Gato"];
@@ -171,7 +171,7 @@ const AddPet = forwardRef(
         edad: "",
         especie: "",
         raza: "",
-        sexo: "M",
+        sexo: "",
       });
       setErrors({});
     };
@@ -204,7 +204,7 @@ const AddPet = forwardRef(
               alignItems="center"
               mb={2}
             >
-              <Typography variant="h6">Agregar Mascota</Typography>
+              <Typography variant="h6">Agrega Mascota</Typography>
               <IconButton onClick={handleClose}>
                 <CloseIcon />
               </IconButton>
@@ -213,7 +213,7 @@ const AddPet = forwardRef(
             {/* Campos del formulario */}
             <Autocomplete
               options={otherData.clientes}
-              getOptionLabel={(option) => option || ""}
+              getOptionLabel={(option) => option.toString() || ""}
               value={formData.usuario_cliente || ""}
               onChange={(event, newValue) =>
                 setFormData({ ...formData, usuario_cliente: newValue })
@@ -279,8 +279,10 @@ const AddPet = forwardRef(
             />
 
             <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel>Especie</InputLabel>
+              <InputLabel id="especie-label">Especie</InputLabel>
               <Select
+                labelId="especie-label"
+                id="especie"
                 label="Especie"
                 name="especie"
                 value={formData.especie}
@@ -329,8 +331,10 @@ const AddPet = forwardRef(
             </TextField>
 
             <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel>Sexo</InputLabel>
+              <InputLabel id="sexo-label">Sexo</InputLabel>
               <Select
+                labelId="sexo-label"
+                id="sexo"
                 label="Sexo"
                 name="sexo"
                 value={formData.sexo}
