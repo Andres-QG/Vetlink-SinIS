@@ -42,6 +42,29 @@ from cryptography.fernet import Fernet
 # Stripe setup
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
+cipher = Fernet(settings.ENCRYPTION_KEY.encode())
+
+
+def encrypt_data(data):
+    """
+    Cifra datos sensibles.
+    :param data: Texto a cifrar
+    :return: Texto cifrado
+    """
+    if not isinstance(data, bytes):
+        data = data.encode()
+    return cipher.encrypt(data).decode()
+
+
+def decrypt_data(encrypted_data):
+    """
+    Descifra datos previamente cifrados.
+    :param encrypted_data: Texto cifrado
+    :return: Texto original
+    """
+    return cipher.decrypt(encrypted_data.encode()).decode()
+
+
 
 class CustomPagination(PageNumberPagination):
     page_size = 7  # Número de registros por página

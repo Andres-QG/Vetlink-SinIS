@@ -634,6 +634,8 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
             onCompletion();
           }}
           ref={paymentFormRef}
+          paymentMethods={true}
+          otherData={otherData}
           includeCVV={true}
           setParentFormData={(data) => setFormData((prev) => ({ ...prev, ...data }))}
         />

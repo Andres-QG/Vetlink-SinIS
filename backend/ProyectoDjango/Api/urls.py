@@ -20,6 +20,7 @@ urlpatterns = [
     path("get-clients/", get_clients, name="get_clients"),
     path("get-vets/", get_vets, name="get_vets"),
     path("get-pets/", get_pets, name="get_pets"),
+    path("get-payment-methods/", get_payment_methods, name="get_payment_methods"),
     # Client APIs
     path("consult-client/", consult_client, name="consult_client"),
     path("add-client/", add_client, name="add_client"),

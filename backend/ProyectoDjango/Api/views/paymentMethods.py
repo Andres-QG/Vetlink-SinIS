@@ -1,28 +1,5 @@
 from .common import *
 
-cipher = Fernet(settings.ENCRYPTION_KEY.encode())
-
-
-def encrypt_data(data):
-    """
-    Cifra datos sensibles.
-    :param data: Texto a cifrar
-    :return: Texto cifrado
-    """
-    if not isinstance(data, bytes):
-        data = data.encode()
-    return cipher.encrypt(data).decode()
-
-
-def decrypt_data(encrypted_data):
-    """
-    Descifra datos previamente cifrados.
-    :param encrypted_data: Texto cifrado
-    :return: Texto original
-    """
-    return cipher.decrypt(encrypted_data.encode()).decode()
-
-
 @api_view(["GET"])
 @transaction.atomic
 def consult_payment_methods(request):

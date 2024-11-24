@@ -107,3 +107,22 @@ def get_clinics(request):
     except Exception as e:
         print("Error:", str(e))
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(["GET"])
+def get_payment_methods(request):
+    try:
+        in_client = request.session.get("user")
+        with connection.cursor() as cursor:
+            out_metodos = cursor.var(str).var
+            cursor.callproc("VETLINK.OBTENER_METODOS_DE_PAGO_JSON", [in_client, out_metodos])
+
+        metodos_data = out_metodos.getvalue()
+        if metodos_data is None:
+            return Response({"methods": []})
+
+        metodos_json = json.loads(out_metodos.getvalue())
+        return Response({"methods": metodos_json})
+
+    except Exception as e:
+        print("Error:", str(e))
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

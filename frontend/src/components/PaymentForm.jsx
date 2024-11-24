@@ -31,7 +31,7 @@ import visaIcon from "../assets/img/payments/visa.png";
 import mastercardIcon from "../assets/img/payments/MasterCard.png";
 import americanExpressIcon from "../assets/img/payments/american-express.png";
 
-const PaymentForm = forwardRef(({ onSubmit, includeCVV = false, initialData = {}, setParentFormData }, ref) => {
+const PaymentForm = forwardRef(({ onSubmit, includeCVV = false, initialData = {}, paymentMethods = false, setParentFormData, otherData }, ref) => {
   const [form, setForm] = useState({
     direccion: initialData.direccion || "",
     provincia: initialData.provincia || "",
@@ -51,6 +51,7 @@ const PaymentForm = forwardRef(({ onSubmit, includeCVV = false, initialData = {}
   const [loadingCountries, setLoadingCountries] = useState(true);
   const [loadingProvinces, setLoadingProvinces] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingMethod, setLoadingMethod] = useState(false);
 
   const tipoTarjetaOptions = ["Crédito", "Débito"];
 
@@ -85,6 +86,7 @@ const PaymentForm = forwardRef(({ onSubmit, includeCVV = false, initialData = {}
   }, []);
 
   const fetchProvinces = async (country) => {
+    console.log(otherData)
     setLoadingProvinces(true);
     try {
       const response = await fetch(
@@ -156,6 +158,60 @@ const PaymentForm = forwardRef(({ onSubmit, includeCVV = false, initialData = {}
 
   return (
     <Box component="form">
+      {paymentMethods && (
+        <>
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
+            Métodos de pago
+          </Typography>
+          <Autocomplete
+            options={otherData.methods || []} // Ensure it uses the correct data source
+            getOptionLabel={(option) =>
+              `${option.tipo_pago} (${option.ultimos_4_digitos || "XXXX"})`
+            } // Label includes payment type and last 4 digits
+            onChange={(event, newValue) => {
+              setFormData({ ...formData, method: newValue });
+            }}
+            loading={loadingMethod}
+            className="w-full"
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Métodos de pago"
+                placeholder="Seleccione un método de pago"
+                fullWidth
+                error={!!errors.method}
+                helperText={errors.method}
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <CreditCardIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <>
+                      {loadingMethod ? <CircularProgress color="inherit" size={21} /> : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+                sx={{ mb: 2 }}
+              />
+            )}
+            renderOption={(props, option) => (
+              <li {...props} key={option.numero_tarjeta || `${option.tipo_pago}_${option.ultimos_4_digitos}`}>
+                <div>
+                  <strong>{option.tipo_pago}</strong> - {option.ultimos_4_digitos} <br />
+                  Titular: {option.nombre_titular} <br />
+                  Expira: {option.fecha_expiracion} <br />
+                  Marca: {option.marca_tarjeta}
+                </div>
+              </li>
+            )}
+          />
+        </>
+      )}
+
       <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
         Detalles personales
       </Typography>
