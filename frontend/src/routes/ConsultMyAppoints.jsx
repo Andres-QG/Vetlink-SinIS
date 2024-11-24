@@ -258,7 +258,7 @@ const ConsultMyAppoints = () => {
             sx={{
               display: "flex",
               flexDirection: { xs: "column", sm: "row" },
-              justifyContent: "between",
+              justifyContent: "space-between",
               alignItems: "center",
               mb: 2,
               gap: 1,
