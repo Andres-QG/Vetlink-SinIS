@@ -196,6 +196,11 @@ urlpatterns = [
         consult_payment_history,
         name="consult_payment_history",
     ),
+    path(
+        "consult-payment-history-client/",
+        consult_payment_history_client,
+        name="consult_payment_history_client",
+    ),
 ]
 
 if settings.DEBUG:
