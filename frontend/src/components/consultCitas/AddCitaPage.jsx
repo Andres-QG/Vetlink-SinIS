@@ -205,7 +205,6 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
   const addCita = async () => {
     setLoading(true);
     console.log("Adding")
-    console.log(formData)
     try {
       await axios.post("http://localhost:8000/api/add-cita/", formData);
     } catch (error) {

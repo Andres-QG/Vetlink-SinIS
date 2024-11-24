@@ -22,7 +22,6 @@ def consult_citas(request):
     try:
         with connection.cursor() as cursor:
             returned_cursor = cursor.connection.cursor()
-            returned_services = cursor.connection.cursor()
             # Call the stored procedure
             cursor.callproc(
                 "VETLINK.GET_ALL_CITAS", [clinica_id, cliente, returned_cursor]
@@ -153,8 +152,6 @@ def update_cita(request, cita_id):
             formatted_fecha = datetime.strptime(
                 fecha, "%Y-%m-%dT%H:%M:%S.%fZ"
             ).strftime("%Y-%m-%d")
-
-        print(formatted_fecha)
 
         with connection.cursor() as cursor:
             cursor.callproc(

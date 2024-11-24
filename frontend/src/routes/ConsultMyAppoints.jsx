@@ -15,27 +15,32 @@ import {
   Grow,
   Tabs,
   Tab,
+  Grid,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   CalendarToday as CalendarTodayIcon,
+  Info as InfoIcon,
 } from "@mui/icons-material";
 import SearchBar from "../components/Consult/GeneralizedSearchBar";
 import { useNotification } from "../components/Notification";
-import Grid2 from "@mui/material/Grid2";
 import AddCitaPage from "../components/consultCitas/AddCitaPage";
 
 const ConsultMyAppoints = () => {
-  const [paymentMethods, setPaymentMethods] = useState([]);
-  const [filteredPaymentMethods, setFilteredPaymentMethods] = useState([]);
+  const [appointments, setAppointments] = useState([]);
+  const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [tabIndex, setTabIndex] = useState(0);
-  const paymentMethodsPerPage = 8;
+  const appointmentsPerPage = 9; // Adjusted to 9 for 3 per row on md (12 / 4 = 3)
   const showNotification = useNotification();
 
-   const [otherData, setOtherData] = useState({
+  const [otherData, setOtherData] = useState({
     user: {},
     services: [],
     clinicas: [],
@@ -43,30 +48,77 @@ const ConsultMyAppoints = () => {
     veterinarios: [],
   });
 
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const fetchAppointments = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get("http://localhost:8000/api/consult-citas/", {
+        withCredentials: true,
+      });
+      const appointmentsData = response.data.results || [];
+      setAppointments(appointmentsData);
+      setFilteredAppointments(appointmentsData);
+    } catch (error) {
+      console.error("Error fetching appointments:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     const fetchUser = async () => {
-      const response = await axios.get("http://localhost:8000/api/get-user/", { withCredentials: true });
-      return response.data.data;
+      try {
+        const response = await axios.get("http://localhost:8000/api/get-user/", {
+          withCredentials: true,
+        });
+        return response.data.data;
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        return {};
+      }
     };
 
     const fetchClientes = async () => {
-      const response = await axios.get("http://localhost:8000/api/get-clients/");
-      return response.data.clients;
+      try {
+        const response = await axios.get("http://localhost:8000/api/get-clients/");
+        return response.data.clients;
+      } catch (error) {
+        console.error("Error fetching clients:", error);
+        return [];
+      }
     };
 
     const fetchVeterinarios = async () => {
-      const response = await axios.get("http://localhost:8000/api/get-vets/");
-      return response.data.vets;
+      try {
+        const response = await axios.get("http://localhost:8000/api/get-vets/");
+        return response.data.vets;
+      } catch (error) {
+        console.error("Error fetching veterinarians:", error);
+        return [];
+      }
     };
 
     const fetchServices = async () => {
-      const response = await axios.get("http://localhost:8000/api/get-services/");
-      return response.data.services;
+      try {
+        const response = await axios.get("http://localhost:8000/api/get-services/");
+        return response.data.services;
+      } catch (error) {
+        console.error("Error fetching services:", error);
+        return [];
+      }
     };
 
     const fetchClinicas = async () => {
-      const response = await axios.get("http://localhost:8000/api/get-clinics/");
-      return response.data.clinics;
+      try {
+        const response = await axios.get("http://localhost:8000/api/get-clinics/");
+        console.log(response)
+        return response.data.clinics;
+      } catch (error) {
+        console.error("Error fetching clinics:", error);
+        return [];
+      }
     };
 
     const fetchData = async () => {
@@ -91,48 +143,26 @@ const ConsultMyAppoints = () => {
     };
 
     fetchData();
+    fetchAppointments();
   }, []);
-
-  useEffect(() => {
-    fetchPaymentMethods();
-  }, []);
-
-  const fetchPaymentMethods = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        "http://localhost:8000/api/consult-my-payment-methods/",
-        {
-          withCredentials: true,
-        }
-      );
-      const paymentMethodsData = response.data.results || [];
-      setPaymentMethods(paymentMethodsData);
-      setFilteredPaymentMethods(paymentMethodsData);
-    } catch (error) {
-      console.error("Error fetching payment methods:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSearch = (searchTerm, filterColumn, order) => {
     const resultsToSort = searchTerm
-      ? paymentMethods.filter((method) =>
-          method[filterColumn]
+      ? appointments.filter((appointment) =>
+          appointment[filterColumn]
             ?.toString()
             .toLowerCase()
             .includes(searchTerm.toLowerCase())
         )
-      : [...paymentMethods];
+      : [...appointments];
 
-    setFilteredPaymentMethods(
-      resultsToSort.sort((a, b) => {
-        if (a[filterColumn] < b[filterColumn]) return order === "asc" ? -1 : 1;
-        if (a[filterColumn] > b[filterColumn]) return order === "asc" ? 1 : -1;
-        return 0;
-      })
-    );
+    const sortedResults = resultsToSort.sort((a, b) => {
+      if (a[filterColumn] < b[filterColumn]) return order === "asc" ? -1 : 1;
+      if (a[filterColumn] > b[filterColumn]) return order === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    setFilteredAppointments(sortedResults);
   };
 
   const handleChangePage = (event, value) => {
@@ -143,270 +173,429 @@ const ConsultMyAppoints = () => {
   const handleActionSuccess = (message, type) => {
     showNotification(message, type);
     if (type === "success") {
-      fetchPaymentMethods();
+      fetchAppointments();
       setTabIndex(0);
     }
   };
 
-  const columns = ["TIPO_PAGO", "NOMBRE_TITULAR", "NUMERO_TARJETA", "PAIS"];
+  const columns = ["cliente", "veterinario", "nombre", "fecha"];
 
-  const indexOfLastMethod = currentPage * paymentMethodsPerPage;
-  const indexOfFirstMethod = indexOfLastMethod - paymentMethodsPerPage;
-  const currentPaymentMethods = filteredPaymentMethods.slice(
-    indexOfFirstMethod,
-    indexOfLastMethod
+  const indexOfLastAppointment = currentPage * appointmentsPerPage;
+  const indexOfFirstAppointment = indexOfLastAppointment - appointmentsPerPage;
+  const currentAppointments = filteredAppointments.slice(
+    indexOfFirstAppointment,
+    indexOfLastAppointment
   );
-  const totalPages = Math.ceil(
-    filteredPaymentMethods.length / paymentMethodsPerPage
-  );
+  const totalPages = Math.ceil(filteredAppointments.length / appointmentsPerPage);
+
+  const handleDeleteAppointment = async (appointmentId) => {
+    try {
+      await axios.delete(`http://localhost:8000/api/delete-cita/${appointmentId}/`, {
+        withCredentials: true,
+      });
+      showNotification("Cita eliminada exitosamente", "success");
+      fetchAppointments();
+    } catch (error) {
+      console.error("Error deleting appointment:", error);
+      showNotification("Error al eliminar la cita", "error");
+    }
+  };
+
+  const handleEditAppointment = (appointment) => {
+    showNotification("Funcionalidad de edición no implementada", "info");
+  };
+
+  const handleOpenModal = (appointment) => {
+    setSelectedAppointment(appointment);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedAppointment(null);
+    setIsModalOpen(false);
+  };
 
   return (
-    <Box sx={{ flexGrow: 1, p: { xs: 2, md: 3 } }}>
-      {loading ? (
+  <Box sx={{ flexGrow: 1, p: { xs: 2, md: 3 } }}>
+    {loading ? (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="70vh"
+      >
+        <CircularProgress />
+      </Box>
+    ) : (
+      <>
         <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          minHeight="70vh"
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+            gap: 1,
+          }}
         >
-          <CircularProgress color="primary" size={60} />
+          <Stack
+            direction="row"
+            spacing={1}
+            alignItems="center"
+            sx={{ mb: { xs: 1, sm: 0 } }}
+          >
+            <CalendarTodayIcon
+              className="text-primary"
+              sx={{
+                fontSize: 40,
+                verticalAlign: "middle",
+              }}
+            />
+            <Typography
+              variant="h4"
+              sx={{ fontWeight: "bold", verticalAlign: "middle" }}
+            >
+              Citas
+            </Typography>
+          </Stack>
+          {tabIndex === 0 && (
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", md: "row" },
+                alignItems: "center",
+                gap: 0.5,
+                width: { xs: "100%", md: "auto" },
+              }}
+            >
+              <SearchBar
+                onSearch={handleSearch}
+                columns={columns}
+                aria-label="Buscar Citas"
+              />
+            </Box>
+          )}
         </Box>
-      ) : (
-        <>
-          {/* Encabezado */}
-          <Box
+
+        <Divider sx={{ mb: 2, width: "100%" }} />
+
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
+          <Tabs
+            value={tabIndex}
+            onChange={(_, newValue) => setTabIndex(newValue)}
+            textColor="inherit"
+            indicatorColor="primary"
             sx={{
-              display: "flex",
-              flexDirection: { xs: "column", sm: "row" },
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 4,
-              gap: 2,
+              mb: 1.5,
+              "& .MuiTabs-indicator": {
+                backgroundColor: "var(--color-primary)",
+              },
             }}
           >
-            <Stack
-              direction="row"
-              spacing={1}
-              alignItems="center"
-              sx={{ mb: { xs: 2, sm: 0 } }}
-            >
-              <CalendarTodayIcon
-                className="text-primary"
-                sx={{
-                  fontSize: 40,
-                  verticalAlign: "middle",
-                }}
-              />
-              <Typography
-                variant="h4"
-                sx={{ fontWeight: "bold", verticalAlign: "middle" }}
-              >
-                Citas
-              </Typography>
-            </Stack>
-            {tabIndex === 0 && (
-              <Box
+            <Tab
+              label="Consultar"
+              sx={{
+                color: "gray",
+                "&.Mui-selected": {
+                  color: "var(--color-primary)",
+                },
+              }}
+            />
+            <Tab
+              label="Agregar"
+              sx={{
+                color: "gray",
+                "&.Mui-selected": {
+                  color: "var(--color-primary)",
+                },
+              }}
+            />
+          </Tabs>
+
+          {tabIndex === 0 && (
+            <>
+              <Grid
+                container
+                spacing={1.5}
                 sx={{
                   display: "flex",
-                  flexDirection: { xs: "column", md: "row" },
-                  alignItems: "center",
-                  gap: 2,
-                  width: { xs: "100%", md: "auto" },
+                  justifyContent: "center",
+                  alignItems: "flex-start",
+                  textAlign: "center",
                 }}
+                mt={1}
               >
-                <SearchBar
-                    onSearch={handleSearch}
-                    columns={columns}
-                    aria-label="Buscar Métodos de Pago"
-                  />
-                </Box>
-              )}
-            </Box>
-
-            {/* Separador */}
-            <Divider sx={{ mb: 4 }} />
-
-            {/* Contenido principal */}
-            <Box sx={{ display: "flex", flexDirection: "column" }}>
-              {/* Pestañas */}
-              <Tabs
-                value={tabIndex}
-                onChange={(_, newValue) => setTabIndex(newValue)}
-                textColor="inherit"
-                indicatorColor="primary"
-                sx={{
-                  mb: 0,
-                  "& .MuiTabs-indicator": {
-                    backgroundColor: "var(--color-primary)",
-                  },
-                }}
-              >
-                <Tab
-                  label="Consultar"
-                  sx={{
-                    color: "gray",
-                    "&.Mui-selected": {
-                      color: "var(--color-primary)",
-                    },
-                  }}
-                />
-                <Tab
-                  label="Agregar"
-                  sx={{
-                    color: "gray",
-                    "&.Mui-selected": {
-                      color: "var(--color-primary)",
-                    },
-                  }}
-                />
-              </Tabs>
-
-              {tabIndex === 0 && (
-              <>
-                <Grid2
-                  container
-                  spacing={3}
-                  sx={{
-                    justifyContent: { xs: "center", md: "center" },
-                  }}
-                >
-                  {currentPaymentMethods.length > 0 ? (
-                    currentPaymentMethods.map((method, index) => (
-                      <Grid2
-                        item
-                        xs={12}
-                        sm={6}
-                        md={4}
-                        lg={3}
-                        key={method.METODO_PAGO_ID}
-                      >
-                        <Grow in timeout={500 + index * 200}>
-                          <Card
-                            elevation={6}
+                {currentAppointments.length > 0 ? (
+                  currentAppointments.map((appointment, index) => (
+                    <Grid
+                      item
+                      xs={12}
+                      sm={6}
+                      md={4}
+                      key={appointment.cita_id}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Grow in timeout={500 + index * 200}>
+                        <Card
+                          elevation={6}
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "space-between",
+                            borderRadius: 2,
+                            m: 1,
+                            p: 0,
+                            width: "100%",
+                            maxWidth: "400px",
+                            backgroundColor: "#ffffff",
+                            "&:hover": {
+                              transform: "scale(1.05)",
+                              boxShadow: "0px 6px 20px rgba(0, 0, 0, 0.3)",
+                            },
+                          }}
+                        >
+                          <Box
                             sx={{
-                              transition: "transform 0.3s, box-shadow 0.3s",
                               display: "flex",
-                              flexDirection: "column",
-                              height: "100%",
-                              width: "300px",
-                              boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.15)",
-                              "&:hover": {
-                                transform: "scale(1.05)",
-                                boxShadow: "0px 6px 20px rgba(0, 0, 0, 0.3)",
-                              },
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              backgroundColor: "#f0f0f0",
+                              padding: "8px 10px",
+                              borderTopLeftRadius: 8,
+                              borderTopRightRadius: 8,
                             }}
                           >
-                            <CardContent sx={{ flexGrow: 1 }}>
-                              <Typography
-                                gutterBottom
-                                variant="h5"
-                                component="div"
-                                sx={{ textAlign: "center" }}
+                            <Typography
+                              variant="subtitle1"
+                              sx={{
+                                fontWeight: "bold",
+                              }}
+                            >
+                              {appointment.fecha}
+                            </Typography>
+                            <Typography
+                              variant="subtitle1"
+                              sx={{
+                                fontWeight: "bold",
+                              }}
+                            >
+                              {appointment.clinica}
+                            </Typography>
+                          </Box>
+
+                          <CardContent
+                            sx={{
+                              display: "flex",
+                              flexDirection: "column",
+                              backgroundColor: "#ffffff",
+                              gap: 0.3,
+                              flexGrow: 1,
+                            }}
+                          >
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                color: "black",
+                                textAlign: "left",
+                              }}
+                            >
+                              Mascota: {appointment.mascota}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                color: "black",
+                                textAlign: "left",
+                              }}
+                            >
+                              Hora: {appointment.hora}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                color: "black",
+                                textAlign: "left",
+                              }}
+                            >
+                              Motivo: {appointment.motivo || "No especificado"}
+                            </Typography>
+                          </CardContent>
+
+                          <CardActions
+                            sx={{
+                              display: "flex",
+                              flexDirection: { xs: "column", md: "column", lg: "row" },
+                              justifyContent: "space-between",
+                              backgroundColor: "#ffffff",
+                              gap: { xs: 1, lg: 0 },
+                            }}
+                          >
+
+                            <Tooltip title="Modificar Cita">
+                              <Button
+                                variant="outlined"
+                                startIcon={<EditIcon />}
+                                sx={{
+                                  borderColor: "#00308F",
+                                  color: "#00308F",
+                                  textTransform: "none",
+                                  width: { xs: "100%", lg: "auto" },
+                                }}
+                                onClick={() => handleEditAppointment(appointment)}
+                                aria-label={`Modificar cita para ${appointment.cliente}`}
                               >
-                                {method.TIPO_PAGO}
-                              </Typography>
-                              <Stack
-                                direction="column"
-                                spacing={1}
-                                sx={{ mt: 2 }}
+                                Modificar
+                              </Button>
+                            </Tooltip>
+                            <Tooltip title="Ver más">
+                              <Button
+                                variant="outlined"
+                                startIcon={<InfoIcon />}
+                                className="relative right-1"
+                                sx={{
+                                  borderColor: "#00308F",
+                                  color: "#00308F",
+                                  textTransform: "none",
+                                  width: { xs: "100%", lg: "auto" },
+                                }}
+                                onClick={() => handleOpenModal(appointment)}
+                                aria-label={`Ver más detalles de la cita para ${appointment.cliente}`}
                               >
-                                <Typography
-                                  variant="body2"
-                                  color="text.secondary"
-                                >
-                                  <strong>Nombre del Titular:</strong>{" "}
-                                  {method.NOMBRE_TITULAR}
-                                </Typography>
-                                <Typography
-                                  variant="body2"
-                                  color="text.secondary"
-                                >
-                                  <strong>Número de Tarjeta:</strong> **** ****
-                                  **** {method.NUMERO_TARJETA.slice(-4)}
-                                </Typography>
-                                <Typography
-                                  variant="body2"
-                                  color="text.secondary"
-                                >
-                                  <strong>Fecha de Expiración:</strong>{" "}
-                                  {new Date(
-                                    method.FECHA_EXPIRACION
-                                  ).toLocaleDateString()}
-                                </Typography>
-                                <Typography
-                                  variant="body2"
-                                  color="text.secondary"
-                                >
-                                  <strong>País:</strong> {method.PAIS}
-                                </Typography>
-                              </Stack>
-                            </CardContent>
-                            <CardActions sx={{ justifyContent: "center" }}>
-                              <Tooltip
-                                title="Editar Método de Pago"
-                                TransitionComponent={Grow}
+                                Ver más
+                              </Button>
+                            </Tooltip>
+                            <Tooltip title="Eliminar Cita">
+                              <Button
+                                variant="contained"
+                                className="relative right-1"
+                                color="error"
+                                startIcon={<DeleteIcon />}
+                                sx={{
+                                  textTransform: "none",
+                                  width: { xs: "100%", lg: "auto" },
+                                }}
+                                onClick={() =>
+                                  handleDeleteAppointment(appointment.cita_id)
+                                }
+                                aria-label={`Eliminar cita para ${appointment.cliente}`}
                               >
-                                <Button
-                                  size="small"
-                                  color="primary"
-                                  startIcon={<EditIcon />}
-                                  sx={{ textTransform: "none", mr: 1 }}
-                                >
-                                  Editar
-                                </Button>
-                              </Tooltip>
-                              <Tooltip
-                                title="Eliminar Método de Pago"
-                                TransitionComponent={Grow}
-                              >
-                                <Button
-                                  size="small"
-                                  color="error"
-                                  startIcon={<DeleteIcon />}
-                                  sx={{ textTransform: "none" }}
-                                >
-                                  Eliminar
-                                </Button>
-                              </Tooltip>
-                            </CardActions>
-                          </Card>
-                        </Grow>
-                      </Grid2>
-                    ))
-                  ) : (
+                                Eliminar
+                              </Button>
+                            </Tooltip>
+                          </CardActions>
+                        </Card>
+                      </Grow>
+                    </Grid>
+                  ))
+                ) : (
+                  <Grid item xs={12}>
                     <Typography
                       variant="body1"
                       align="center"
                       color="textSecondary"
-                      sx={{ width: "100%", mt: 4 }}
+                      sx={{ width: "100%", mt: 2 }}
                     >
-                      No se encontraron métodos de pago para el criterio de
-                      búsqueda especificado.
+                      No se encontraron citas para el criterio de búsqueda
+                      especificado.
                     </Typography>
-                  )}
-                </Grid2>
+                  </Grid>
+                )}
+              </Grid>
 
-                {/* Paginación centrada */}
-                <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-                  <Pagination
-                    count={totalPages}
-                    page={currentPage}
-                    onChange={handleChangePage}
-                    color="primary"
-                  />
-                </Box>
+              <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+                <Pagination
+                  count={totalPages}
+                  page={currentPage}
+                  onChange={handleChangePage}
+                  color="primary"
+                  sx={{
+                    "& .MuiPaginationItem-root": {
+                      color: "#00308F !important",
+                    },
+                    "& .Mui-selected": {
+                      backgroundColor: "#00308F !important",
+                      color: "#fff !important",
+                    },
+                    "& .MuiPaginationItem-root:hover": {
+                      backgroundColor: "#00246d !important",
+                      color: "#fff !important",
+                    },
+                  }}
+                />
+              </Box>
+            </>
+          )}
+
+          {tabIndex === 1 && (
+            <Box sx={{ width: "100%" }}>
+              <AddCitaPage onSuccess={handleActionSuccess} otherData={otherData} />
+            </Box>
+          )}
+        </Box>
+
+        <Dialog
+          open={isModalOpen}
+          onClose={handleCloseModal}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitle>Detalles de la Cita</DialogTitle>
+          <DialogContent dividers sx={{ maxHeight: '70vh', overflowY: 'auto' }}>
+            {selectedAppointment && (
+              <>
+                <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+                  Veterinario: {selectedAppointment.veterinario}
+                </Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+                  Mascota: {selectedAppointment.mascota}
+                </Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+                  Fecha:{" "}
+                  {new Date(selectedAppointment.fecha).toLocaleDateString()}
+                </Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+                  Hora: {selectedAppointment.hora}
+                </Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+                  Clínica: {selectedAppointment.clinica}
+                </Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+                  Motivo: {selectedAppointment.motivo || "No especificado"}
+                </Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+                  Servicios:
+                </Typography>
+                <Typography variant="body2" sx={{ ml: 1 }}>
+                  {Array.isArray(selectedAppointment.services) &&
+                    selectedAppointment.services.length > 0
+                    ? selectedAppointment.services
+                      .map((service) => service.nombre)
+                      .join(", ")
+                    : "N/A"}
+                </Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+                  Dirección: {selectedAppointment.direccion || "N/A"}
+                </Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+                  País: {selectedAppointment.pais || "N/A"}
+                </Typography>
               </>
             )}
-            {tabIndex === 1 && (
-              <Box sx={{ width: "100%" }}>
-                  <AddCitaPage onSuccess={handleActionSuccess} otherData={otherData}></AddCitaPage>
-              </Box>
-            )}
-          </Box>
-        </>
-      )}
-    </Box>
-  );
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseModal} color="primary">
+              Cerrar
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </>
+    )}
+  </Box>
+);
+
 };
 
 export default ConsultMyAppoints;
