@@ -74,11 +74,6 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
   const [lftText, setLftText] = useState("Volver");
   const [rgtText, setRgtText] = useState("Siguiente");
 
-  const encryptCardData = (data) => {
-    const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(data), SECRET_KEY).toString();
-    return ciphertext;
-  };
-
   useEffect(() => {
     if (otherData) {
       setClientes(otherData.clientes || []);
@@ -122,6 +117,7 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
   }, []);
 
   useEffect(() => {
+    console.log(formData)
     const fetchAvailableTimes = async () => {
       try {
         if (formData.veterinario && formData.clinica && formData.fecha) {
@@ -191,8 +187,12 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
     }
 
     try {
+      if (!paymentFormRef.current.submit()) {
+        onSuccess("Pago no pudo ser realizado exitosamente", "error");
+        return;
+      }
       const paymentSuccess = await makePayment();
-      if (paymentSuccess) {
+      if (paymentSuccess.status === 201) {
         await addCita();
       }
       onSuccess("Pago realizado exitosamente", "success");

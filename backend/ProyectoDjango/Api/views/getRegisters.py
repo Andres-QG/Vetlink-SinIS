@@ -121,6 +121,16 @@ def get_payment_methods(request):
             return Response({"methods": []})
 
         metodos_json = json.loads(out_metodos.getvalue())
+
+        for method in metodos_json:
+            encrypted_numero_tarjeta = method.get('numero_tarjeta')
+            if encrypted_numero_tarjeta:
+                try:
+                    decrypted_numero_tarjeta = decrypt_data(encrypted_numero_tarjeta)
+                    method['numero_tarjeta'] = decrypted_numero_tarjeta
+                except Exception as decrypt_error:
+                    method['numero_tarjeta'] = None
+
         return Response({"methods": metodos_json})
 
     except Exception as e:

@@ -42,7 +42,7 @@ const PaymentForm = forwardRef(({ onSubmit, includeCVV = false, initialData = {}
     tipoTarjeta: initialData.tipoTarjeta || "",
     fechaExpiracion: initialData.fechaExpiracion || null,
     marcaTarjeta: initialData.marcaTarjeta || "",
-    cvv: initialData.cvv || "",
+    cvv: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -52,8 +52,6 @@ const PaymentForm = forwardRef(({ onSubmit, includeCVV = false, initialData = {}
   const [loadingProvinces, setLoadingProvinces] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingMethod, setLoadingMethod] = useState(false);
-
-  const tipoTarjetaOptions = ["Crédito", "Débito"];
 
   const determineCardBrand = (cardNumber) => {
     const regexPatterns = {
@@ -86,7 +84,6 @@ const PaymentForm = forwardRef(({ onSubmit, includeCVV = false, initialData = {}
   }, []);
 
   const fetchProvinces = async (country) => {
-    console.log(otherData)
     setLoadingProvinces(true);
     try {
       const response = await fetch(
@@ -136,6 +133,7 @@ const PaymentForm = forwardRef(({ onSubmit, includeCVV = false, initialData = {}
     if (!form.fechaExpiracion) newErrors.fechaExpiracion = "La fecha de expiración es obligatoria.";
     if (includeCVV && (!form.cvv || !/^\d{3,4}$/.test(form.cvv)))
       newErrors.cvv = "El CVV debe contener 3 o 4 dígitos.";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -147,14 +145,52 @@ const PaymentForm = forwardRef(({ onSubmit, includeCVV = false, initialData = {}
   }, [form, setParentFormData]);
 
   const handleSubmit = () => {
-    if (!validateForm()) return;
-    setLoading(true);
-    onSubmit(form, () => setLoading(false));
+    if (!validateForm()) return false;
   };
 
   useImperativeHandle(ref, () => ({
     submit: handleSubmit,
   }));
+
+  useEffect(() => {
+      if (form.method) {
+        setForm((prevForm) => ({
+          ...prevForm,
+          direccion: form.method.direccion || '',
+          provincia: form.method.provincia || '',
+          pais: form.method.pais || '',
+          codigoPostal: form.method.codigo_postal || '',
+          nombreTitular: form.method.nombre_titular || '',
+          numeroTarjeta: form.method.numero_tarjeta || '',
+          tipoTarjeta: form.method.tipo_tarjeta || '',
+          fechaExpiracion: form.method.fecha_expiracion
+            ? dayjs(form.method.fecha_expiracion, 'MM/YY').toDate()
+            : null,
+          marcaTarjeta: form.method.marca_tarjeta || '',
+          cvv: '',
+        }));
+
+        if (form.method.pais) {
+          fetchProvinces(form.method.pais);
+        }
+      } else {
+        setForm((prevForm) => ({
+          ...prevForm,
+          direccion: '',
+          provincia: '',
+          pais: '',
+          codigoPostal: '',
+          nombreTitular: '',
+          numeroTarjeta: '',
+          tipoTarjeta: '',
+          fechaExpiracion: null,
+          marcaTarjeta: '',
+          cvv: '',
+        }));
+        setProvinces([]);
+      }
+    }, [form.method]);
+
 
   return (
     <Box component="form">
@@ -164,12 +200,12 @@ const PaymentForm = forwardRef(({ onSubmit, includeCVV = false, initialData = {}
             Métodos de pago
           </Typography>
           <Autocomplete
-            options={otherData.methods || []} // Ensure it uses the correct data source
+            options={otherData.methods || []}
             getOptionLabel={(option) =>
-              `${option.tipo_pago} (${option.ultimos_4_digitos || "XXXX"})`
-            } // Label includes payment type and last 4 digits
+              `${option.tipo_pago} - ${option.ultimos_4_digitos || "XXXX"}`
+            }
             onChange={(event, newValue) => {
-              setFormData({ ...formData, method: newValue });
+              setForm({ ...form, method: newValue });
             }}
             loading={loadingMethod}
             className="w-full"
@@ -386,23 +422,21 @@ const PaymentForm = forwardRef(({ onSubmit, includeCVV = false, initialData = {}
         </Grid>
         {includeCVV ? (
           <>
-          <Grid item xs={12} sm={6}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 label="CVV"
                 value={form.cvv}
-                placeholder="Dígite el CVV"
+                placeholder="Digite el CVV"
                 onChange={(e) => handleChange("cvv", e.target.value)}
                 error={!!errors.cvv}
                 helperText={errors.cvv}
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <LockIcon fontSize="medium"/>
-                      </InputAdornment>
-                    ),
-                  },
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockIcon fontSize="medium" />
+                    </InputAdornment>
+                  ),
                 }}
               />
             </Grid>

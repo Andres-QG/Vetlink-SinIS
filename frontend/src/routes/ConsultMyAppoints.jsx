@@ -191,10 +191,8 @@ const ConsultMyAppoints = () => {
 
   const handleActionSuccess = (message, type) => {
     showNotification(message, type);
-    if (type === "success") {
-      fetchAppointments();
-      setTabIndex(0);
-    }
+    fetchAppointments();
+    setTabIndex(0);
   };
 
   const columns = ["cliente", "veterinario", "nombre", "fecha"];
