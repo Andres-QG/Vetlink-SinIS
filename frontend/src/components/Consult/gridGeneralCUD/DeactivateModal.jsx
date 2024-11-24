@@ -109,8 +109,8 @@ const DeactivateModal = ({
             {loading
               ? "Procesando..."
               : isRestorable
-                ? "Desactivar"
-                : "Eliminar"}
+              ? "Desactivar"
+              : "Eliminar"}
           </Button>
         </Stack>
       </Box>

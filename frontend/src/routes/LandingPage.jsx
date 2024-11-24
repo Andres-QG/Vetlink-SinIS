@@ -126,8 +126,13 @@ function LandingPage() {
                     onClick={() => navigate("/signup")}
                     sx={{
                       bgcolor: "#0ba6a9",
-                      color: "bgsecondary",
-                      "&:hover": { bgcolor: "teal.100" },
+                      color: "#ffffff",
+                      "&:hover": {
+                        bgcolor: "#0049db",
+                        transform: "scale(1.05)",
+                        transition:
+                          "transform 0.3s ease-in-out, bgcolor 0.3s ease-in-out, color 0.3s ease-in-out",
+                      },
                       px: { xs: 4, lg: 8 },
                       py: { xs: 1, lg: 2 },
                       fontSize: { xs: "1rem", lg: "1.5rem" },

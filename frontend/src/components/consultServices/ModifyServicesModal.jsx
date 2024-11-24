@@ -157,14 +157,16 @@ const ModifyServicesModal = ({
           overflowY: "auto",
           mx: "auto",
           mt: "5%",
-        }}>
+        }}
+      >
         <form onSubmit={handleSubmit}>
           {/* Cabecera con botón de cierre */}
           <Box
             display="flex"
             justifyContent="space-between"
             alignItems="center"
-            mb={2}>
+            mb={2}
+          >
             <Typography variant="h6" component="h2">
               Modificar Servicio
             </Typography>
@@ -237,7 +239,14 @@ const ModifyServicesModal = ({
             variant="contained"
             component="label"
             fullWidth
-            sx={{ mb: 2 }}>
+            sx={{
+              mb: 2,
+              backgroundColor: "#00308F",
+              "&:hover": {
+                backgroundColor: "#00246d",
+              },
+            }}
+          >
             {formData.imagen ? "Imagen seleccionada" : "Seleccionar Imagen"}
             <input
               type="file"
@@ -259,15 +268,27 @@ const ModifyServicesModal = ({
               variant="outlined"
               onClick={handleClear}
               fullWidth
-              disabled={loading}>
+              disabled={loading}
+              sx={{
+                borderColor: "#00308F",
+                color: "#00308F",
+              }}
+            >
               Limpiar
             </Button>
             <Button
               variant="contained"
               type="submit"
               fullWidth
+              sx={{
+                backgroundColor: "#00308F",
+                "&:hover": {
+                  backgroundColor: "#00246d",
+                },
+              }}
               disabled={loading}
-              startIcon={loading && <CircularProgress size={20} />}>
+              startIcon={loading && <CircularProgress size={20} />}
+            >
               {loading ? "Guardando..." : "Modificar Servicio"}
             </Button>
           </Box>

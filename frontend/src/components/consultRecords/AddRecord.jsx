@@ -7,6 +7,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import {
   TextField,
+  Typography,
   Button,
   Box,
   Stack,
@@ -196,7 +197,7 @@ const AddRecord = forwardRef(
               alignItems="center"
               mb={2}
             >
-              <h2>Agrega Expediente</h2>
+              <Typography variant="h6">Agrega Expediente</Typography>
               <IconButton onClick={handleClose}>
                 <CloseIcon />
               </IconButton>

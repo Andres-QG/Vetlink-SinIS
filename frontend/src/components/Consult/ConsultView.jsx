@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { CircularProgress, Button, Box } from "@mui/material";
+import {
+  CircularProgress,
+  Button,
+  Box,
+  Divider,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { Add } from "@mui/icons-material";
 import GeneralTable from "./GeneralTable";
 import SearchBar from "./GeneralizedSearchBar";
@@ -27,9 +34,9 @@ const ConsultView = ({
   disableReactivateAction = false,
   hideAddButton = false,
   hideActions = false,
-  /** Nuevos props */
   onDownload,
   disableDownloadAction = false,
+  titleIcon: TitleIcon,
 }) => {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -49,7 +56,6 @@ const ConsultView = ({
 
   // Verificar si existe el atributo activo
   const hasActivoAttribute = data.length > 0 && "activo" in data[0];
-  console.log("hasActivoAttribute", hasActivoAttribute);
 
   useEffect(() => {
     fetchAllData();
@@ -66,7 +72,6 @@ const ConsultView = ({
         params: { page_size: 1000 },
         withCredentials: true,
       });
-      console.log(response.data.results);
       const data = response.data.results || [];
       setData(data);
       setTotalCount(data.length);
@@ -121,9 +126,51 @@ const ConsultView = ({
   return (
     <div className="flex flex-col">
       <div className="flex-grow">
-        <div className="flex flex-col items-center justify-between mb-4 space-y-4 md:flex-row md:space-y-0">
-          <h1 className="text-2xl font-semibold">{title}</h1>
-          <div className="flex flex-col w-full space-y-4 md:w-auto md:flex-row md:items-center md:space-y-0">
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 4,
+          }}
+        >
+          {/* Título con ícono opcional */}
+          <Stack
+            direction="row"
+            spacing={1}
+            alignItems="center"
+            sx={{ mb: { xs: 2, sm: 0 } }}
+          >
+            {TitleIcon && (
+              <TitleIcon
+                sx={{
+                  fontSize: 40,
+                  color: "#00308F",
+                  verticalAlign: "middle",
+                }}
+              />
+            )}
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: "bold",
+                verticalAlign: "middle",
+              }}
+            >
+              {title}
+            </Typography>
+          </Stack>
+
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", md: "row" },
+              alignItems: "center",
+              gap: 2,
+              width: { xs: "100%", md: "auto" },
+            }}
+          >
             {hasActivoAttribute && (
               <Button
                 variant="contained"
@@ -139,12 +186,9 @@ const ConsultView = ({
                   },
                   color: "#000",
                   minWidth: "205px",
-                  marginRight: { xs: "0px", md: "10px" },
-                  width: { xs: "100%", md: "auto" },
-                  fontSize: "0.85rem",
                 }}
               >
-                {showInactive ? "Mostrar solo activos" : "Mostrar Inactivos"}
+                {showInactive ? "Mostrar solo activos" : "Mostrar inactivos"}
               </Button>
             )}
 
@@ -160,10 +204,6 @@ const ConsultView = ({
                     backgroundColor: disableAddButton ? "grey.500" : "#00246d",
                   },
                   minWidth: "190px",
-                  marginBottom: { xs: "-4px", md: "0px" },
-                  marginRight: { xs: "0px", md: "10px" },
-                  width: { xs: "100%", md: "auto" },
-                  fontSize: "0.85rem",
                 }}
               >
                 Agregar
@@ -174,13 +214,15 @@ const ConsultView = ({
               onSearch={handleSearch}
               columns={columns.map((col) => col.field)}
             />
-          </div>
-        </div>
+          </Box>
+        </Box>
+
+        <Divider sx={{ mb: 4 }} />
 
         {loading ? (
-          <div className="flex items-center justify-center">
+          <Box display="flex" justifyContent="center" alignItems="center">
             <CircularProgress />
-          </div>
+          </Box>
         ) : (
           <GeneralTable
             data={filteredData.slice(
@@ -205,7 +247,6 @@ const ConsultView = ({
             disableDeleteAction={disableDeleteAction}
             disableReactivateAction={disableReactivateAction}
             hideActions={hideActions}
-            /** Pasamos los nuevos props */
             onDownload={onDownload}
             disableDownloadAction={disableDownloadAction}
           />
@@ -258,9 +299,9 @@ ConsultView.propTypes = {
   disableReactivateAction: PropTypes.bool,
   hideAddButton: PropTypes.bool,
   hideActions: PropTypes.bool,
-  /** Nuevas PropTypes */
   onDownload: PropTypes.func,
   disableDownloadAction: PropTypes.bool,
+  titleIcon: PropTypes.elementType, // Nueva PropType para el ícono del título
 };
 
 export default ConsultView;
