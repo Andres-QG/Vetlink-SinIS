@@ -16,24 +16,20 @@ import {
   Person as PersonIcon,
   HealthAndSafety as HealthAndSafetyIcon,
   AccessTime as AccessTimeIcon,
-  LocalHospital as LocalHospitalIcon,
-  Build as BuildIcon,
   Pets as PetsIcon,
   CalendarMonthRounded as CalendarMonthRoundedIcon,
   BorderColor as BorderColorIcon,
   CorporateFare as CorporateFareIcon,
   ArrowDropDown as ArrowDropDownIcon,
-  Tune,
 } from "@mui/icons-material";
 import Tag from "../Tag";
 import dayjs from "dayjs";
-import { parseISO, isValid } from "date-fns";
+import { parseISO } from "date-fns";
 import axios from "axios";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { LocalizationProvider } from "@mui/x-date-pickers";
 import { es } from "date-fns/locale";
-import { object } from "prop-types";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 
 const ModifyCitaModal = forwardRef(
   ({ open, handleClose, onSuccess, otherData, selectedItem = {} }, ref) => {
@@ -41,20 +37,41 @@ const ModifyCitaModal = forwardRef(
       if (!options || !Array.isArray(options)) return null;
       return options.find((option) => option[key] === value) || null;
     };
-    const parseLocalDate = (dateString) => {
-      const [year, month, day] = dateString.split("-");
-      return new Date(year, month - 1, day);
-    };
+
+    console.log(selectedItem.fecha)
+    // Parse initial date
+    const initialFecha = selectedItem.fecha
+      ? parseISO(selectedItem.fecha)
+      : null;
 
     const initialFormData = {
-      cliente: getDefaultValue(otherData.clientes, "usuario", selectedItem.cliente_usuario) || "",
-      veterinario: getDefaultValue(otherData.veterinarios, "usuario", selectedItem.veterinario_usuario) || "",
-      clinica: getDefaultValue(otherData.clinicas, "clinica_id", selectedItem.clinica_id) || "",
-      mascota: {nombre: selectedItem.mascota, mascota_id: selectedItem.mascota_id} || null,
-      fecha: selectedItem.fecha ? (typeof selectedItem.fecha === 'string' ? dayjs(selectedItem.fecha, "YYYY-MM-DD").toDate() : selectedItem.fecha) : null,
+      cliente:
+        getDefaultValue(
+          otherData.clientes,
+          "usuario",
+          selectedItem.cliente_usuario
+        ) || "",
+      veterinario:
+        getDefaultValue(
+          otherData.veterinarios,
+          "usuario",
+          selectedItem.veterinario_usuario
+        ) || "",
+      clinica:
+        getDefaultValue(
+          otherData.clinicas,
+          "clinica_id",
+          selectedItem.clinica_id
+        ) || "",
+      mascota:
+        {
+          nombre: selectedItem.mascota,
+          mascota_id: selectedItem.mascota_id,
+        } || null,
+      fecha: initialFecha,
       hora: selectedItem.hora || "",
       motivo: selectedItem.motivo || "",
-      services: selectedItem.services || []
+      services: selectedItem.services || [],
     };
 
     const initialDataRef = useRef(initialFormData);
@@ -62,60 +79,89 @@ const ModifyCitaModal = forwardRef(
     const [formData, setFormData] = useState(initialFormData);
     const [horarios, setHorarios] = useState([]);
     const [loadingTimes, setLoadingTimes] = useState(true);
-    const [errors, setErrors] = useState({}); 
-    const [user, setUser] = useState({}); 
-    const [loading, setLoading] = useState(false); 
+    const [errors, setErrors] = useState({});
+    const [user, setUser] = useState({});
+    const [loading, setLoading] = useState(false);
     const [loadingPets, setLoadingPets] = useState(true);
     const [pets, setPets] = useState([]);
 
     useEffect(() => {
-      setUser(otherData.user)
-    }, [otherData])
+      setUser(otherData.user);
+    }, [otherData]);
 
-      const fetchAvailableTimes = async (formattedDate) => {
-    try {
-      if (formData.veterinario && formData.clinica && formattedDate) {
-        setLoadingTimes(true);
-        const formattedDate = formData.fecha.toISOString().split("T")[0];
+    const isSameDate = (date1, date2) => {
+      if (!date1 || !date2) return false;
+      return date1.toISOString().split("T")[0] === date2.toISOString().split("T")[0];
+    };
 
-        const response = await axios.put("http://localhost:8000/api/get-disp-times/", {
-          vet_user: formData.veterinario.usuario,
-          clinica_id: formData.clinica?.clinica_id,
-          full_date: formattedDate,
-        });
-        setHorarios(response.data.available_times || []);
+    const fetchAvailableTimes = async () => {
+      console.log(formData.fecha)
+      if (formData.fecha) {
+        console.log(true)
       }
-    } catch (error) {
-      console.error("Error fetching available times:", error);
-    } finally {
-      setLoadingTimes(false)
-    }
-  };
+      
+      try {
+        if (formData.veterinario && formData.clinica && formData.fecha) {
+          setLoadingTimes(true);
+          const formattedDate = formData.fecha.toISOString().split("T")[0];
 
-  useEffect(() => {
-    let formattedDate = ""
-    if (formData.fecha) {
-      formattedDate = formData.fecha.toISOString().split("T")[0];
-    } else {
-      return
-    }
-    if (formData.clinica && formData.veterinario && formattedDate) {
-      fetchAvailableTimes();
-    } else {
-      setHorarios([]);
-      setFormData((prevData) => ({ ...prevData, hora: "" }));
-      setLoadingTimes(true)
-    }
-  }, [formData.clinica, formData.veterinario, formData.fecha]);
+          const response = await axios.put(
+            "http://localhost:8000/api/get-disp-times/",
+            {
+              vet_user: formData.veterinario.usuario,
+              clinica_id: formData.clinica?.clinica_id,
+              full_date: formattedDate,
+            }
+          );
+
+          let availableTimes = response.data.available_times || [];
+
+          if (isSameDate(formData.fecha, initialFormData.fecha)) {
+            if (
+              initialFormData.hora &&
+              !availableTimes.includes(initialFormData.hora)
+            ) {
+              availableTimes.push(initialFormData.hora);
+              availableTimes.sort();
+            }
+          } else {
+            setFormData((prevData) => ({ ...prevData, hora: "" }));
+          }
+
+          setHorarios(availableTimes);
+        } else {
+          setHorarios([]);
+          setFormData((prevData) => ({ ...prevData, hora: "" }));
+          setLoadingTimes(true);
+        }
+      } catch (error) {
+        console.error("Error fetching available times:", error);
+      } finally {
+        setLoadingTimes(false);
+      }
+    };
+
+    useEffect(() => {
+      if (formData.clinica && formData.veterinario && formData.fecha) {
+        fetchAvailableTimes();
+      } else {
+        setHorarios([]);
+        setFormData((prevData) => ({ ...prevData, hora: "" }));
+        setLoadingTimes(true);
+      }
+    }, [formData.clinica, formData.veterinario, formData.fecha]);
 
     useEffect(() => {
       const fetchPets = async () => {
         if (formData.cliente) {
           setLoadingPets(true);
           try {
-            const response = await axios.put("http://localhost:8000/api/get-pets/", {
-              cliente: formData.cliente.usuario,
-            });
+            const response = await axios.put(
+              "http://localhost:8000/api/get-pets/",
+              {
+                cliente: formData.cliente.usuario,
+              }
+            );
             setPets(response.data.pets || []);
           } catch (error) {
             console.error("Error fetching pets:", error);
@@ -124,92 +170,92 @@ const ModifyCitaModal = forwardRef(
           }
         } else {
           setPets([]);
-          setLoadingPets(true)
+          setLoadingPets(true);
         }
       };
 
       fetchPets();
     }, [formData.cliente]);
 
-    useEffect(() => {
-      if (formData.clinica && formData.veterinario && formData.fecha) {
-        fetchAvailableTimes();
-      } else {
-        setHorarios([]);
-        setFormData((prevData) => ({ ...prevData, hora: "" }));
-        setLoadingTimes(true)
-      }
-    }, [formData.clinica, formData.veterinario, formData.fecha]);
-
-
     const handleReset = () => {
-      setLoading(true)
-      setFormData({
-        cliente: null,
-        veterinario: null,
-        clinica: null,
-        mascota: null,
-        fecha: null,
-        hora: "",
-        motivo: "",
-        services: []
-      });
-
-      if (Array.isArray(otherData.horarios)) {
-        if (initialDataRef.current.fecha?.toISOString().split("T")[0] === selectedItem.fecha) {
-          setHorarios([selectedItem.hora, ...otherData.horarios]);
-        } else {
-          setHorarios(otherData.horarios);
-        }
-      }
-      setLoading(false)
+      setFormData(initialFormData);
+      fetchAvailableTimes();
+      setErrors({});
     };
 
     const handleSubmit = async (e) => {
       e.preventDefault();
-      setLoading(true)
+      setLoading(true);
       if (!validate()) {
         setLoading(false);
         return;
       }
       try {
-        await axios.post(`http://localhost:8000/api/update-cita/${selectedItem.cita_id}/`, formData);
+        // Prepare data to send to the server
+        const formattedDate = formData.fecha
+          ? formData.fecha.toISOString().split("T")[0]
+          : null;
+
+        const dataToSend = {
+          cliente: formData.cliente,
+          veterinario: formData.veterinario,
+          mascota: formData.mascota,
+          clinica: formData.clinica,
+          fecha: formattedDate,
+          hora: formData.hora,
+          motivo: formData.motivo,
+          services: formData.services,
+        };
+
+        await axios.post(
+          `http://localhost:8000/api/update-cita/${selectedItem.cita_id}/`,
+          dataToSend
+        );
         onSuccess("Cita modificada correctamente", "success");
         handleClose();
       } catch (error) {
         onSuccess("Error al modificar cita.", "error");
       }
-      setLoading(false)
+      setLoading(false);
     };
 
     const validate = () => {
       const newErrors = {};
       if (!formData.cliente) newErrors.cliente = "Cliente requerido.";
-      if (!formData.veterinario) newErrors.veterinario = "Veterinario requerido.";
+      if (!formData.veterinario)
+        newErrors.veterinario = "Veterinario requerido.";
       if (!formData.mascota) newErrors.mascota = "Mascota requerida.";
       if (!formData.fecha) newErrors.fecha = "Fecha requerida.";
       if (!formData.hora) newErrors.hora = "Hora requerida.";
       if (!formData.clinica) newErrors.clinica = "Clínica requerida.";
-      if (formData.services.length === 0) newErrors.services = "Al menos un servicio es requerido.";
+      if (formData.services.length === 0)
+        newErrors.services = "Al menos un servicio es requerido.";
       setErrors(newErrors);
       return Object.keys(newErrors).length === 0;
-    }; 
+    };
 
     // Function used to set the client as the default value
     useEffect(() => {
       if (user.role === 4) {
-        const matchingClient = otherData.clientes.find((client) => client.usuario === user.user);
+        const matchingClient = otherData.clientes.find(
+          (client) => client.usuario === user.user
+        );
         if (matchingClient) {
           setFormData((prevData) => ({
             ...prevData,
-            cliente: matchingClient
+            cliente: matchingClient,
           }));
         }
       }
     }, [user, otherData.clientes]);
 
     return (
-      <Modal open={open} onClose={handleClose} aria-labelledby="modal-title" aria-describedby="modal-description">
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="modal-title"
+        aria-describedby="modal-description"
+      >
         <Box
           className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full sm:w-4/5 md:w-[650px] bg-white shadow-lg p-6 rounded-lg"
           sx={{
@@ -217,10 +263,17 @@ const ModifyCitaModal = forwardRef(
             overflowY: { xs: "auto", sm: "unset" },
           }}
         >
-          <IconButton onClick={handleClose} sx={{ position: "absolute", top: 8, right: 8 }}>
+          <IconButton
+            onClick={handleClose}
+            sx={{ position: "absolute", top: 8, right: 8 }}
+          >
             <Close />
           </IconButton>
-          <form onSubmit={handleSubmit} className="w-full flex flex-col items-center" noValidate>
+          <form
+            onSubmit={handleSubmit}
+            className="w-full flex flex-col items-center"
+            noValidate
+          >
             <Typography
               id="modal-title"
               variant="h6"
@@ -243,7 +296,9 @@ const ModifyCitaModal = forwardRef(
                   options={otherData.clientes || []}
                   getOptionLabel={(option) => option.usuario || ""}
                   value={formData.cliente || null}
-                  onChange={(event, newValue) => setFormData({ ...formData, cliente: newValue })}
+                  onChange={(event, newValue) =>
+                    setFormData({ ...formData, cliente: newValue })
+                  }
                   disabled={user.role === 4}
                   renderInput={(params) => (
                     <TextField
@@ -270,7 +325,9 @@ const ModifyCitaModal = forwardRef(
                   options={pets || []}
                   getOptionLabel={(option) => option.nombre || ""}
                   value={formData.mascota || null}
-                  onChange={(event, newValue) => setFormData({ ...formData, mascota: newValue })}
+                  onChange={(event, newValue) =>
+                    setFormData({ ...formData, mascota: newValue })
+                  }
                   disabled={loadingPets}
                   renderInput={(params) => (
                     <TextField
@@ -298,11 +355,16 @@ const ModifyCitaModal = forwardRef(
                   options={otherData.services || []}
                   getOptionLabel={(option) => option.nombre || ""}
                   value={formData.services || []}
-                  isOptionEqualToValue={(option, value) => option.servicio_id === value.servicio_id}
+                  isOptionEqualToValue={(option, value) =>
+                    option.servicio_id === value.servicio_id
+                  }
                   onChange={(event, newValue) => {
                     const uniqueServices = newValue.filter(
                       (service, index, self) =>
-                        index === self.findIndex((s) => s.servicio_id === service.servicio_id)
+                        index ===
+                        self.findIndex(
+                          (s) => s.servicio_id === service.servicio_id
+                        )
                     );
                     setFormData({ ...formData, services: uniqueServices });
                   }}
@@ -316,20 +378,27 @@ const ModifyCitaModal = forwardRef(
                           {...tagProps}
                         />
                       );
-                    })}
+                    })
+                  }
                   renderInput={(params) => (
                     <TextField
                       {...params}
                       variant="outlined"
                       label="Servicios*"
-                      placeholder={formData.services.length === 0 ? "Selecciona los servicios" : ""}
+                      placeholder={
+                        formData.services.length === 0
+                          ? "Selecciona los servicios"
+                          : ""
+                      }
                       error={!!errors.services}
                       helperText={errors.services}
                       sx={{
                         mb: 2,
                         "& input": {
-                          display: formData.services.length > 0 ? "none" : "block",
-                          width: formData.services.length > 0 ? "0" : "auto",
+                          display:
+                            formData.services.length > 0 ? "none" : "block",
+                          width:
+                            formData.services.length > 0 ? "0" : "auto",
                         },
                       }}
                     />
@@ -350,7 +419,9 @@ const ModifyCitaModal = forwardRef(
                   label="Motivo"
                   name="motivo"
                   value={formData.motivo || ""}
-                  onChange={(e) => setFormData({ ...formData, motivo: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, motivo: e.target.value })
+                  }
                   sx={{ mb: 2 }}
                   error={!!errors.motivo}
                   helperText={errors.motivo}
@@ -369,7 +440,9 @@ const ModifyCitaModal = forwardRef(
                   options={otherData.veterinarios || []}
                   getOptionLabel={(option) => option.usuario || ""}
                   value={formData.veterinario || null}
-                  onChange={(event, newValue) => setFormData({ ...formData, veterinario: newValue })}
+                  onChange={(event, newValue) =>
+                    setFormData({ ...formData, veterinario: newValue })
+                  }
                   renderInput={(params) => (
                     <TextField
                       {...params}
@@ -395,7 +468,9 @@ const ModifyCitaModal = forwardRef(
                   options={otherData.clinicas || []}
                   getOptionLabel={(option) => option.nombre || ""}
                   value={formData.clinica || null}
-                  onChange={(event, newValue) => setFormData({ ...formData, clinica: newValue })}
+                  onChange={(event, newValue) =>
+                    setFormData({ ...formData, clinica: newValue })
+                  }
                   disabled={!!user.clinica}
                   renderInput={(params) => (
                     <TextField
@@ -418,12 +493,15 @@ const ModifyCitaModal = forwardRef(
                   )}
                 />
 
-                <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
+                <LocalizationProvider
+                  dateAdapter={AdapterDateFns}
+                  adapterLocale={es}
+                >
                   <DatePicker
                     label="Fecha"
                     value={formData.fecha || null}
-                    onChange={(newDate) => setFormData({ ...formData, fecha: isValid(newDate) ? newDate : null })}
-                    minDate={new Date()} // Prevents selection of past dates
+                    onChange={(newDate) => setFormData({ ...formData, fecha: newDate || null })}
+                    minDate={new Date()}
                     slots={{ openPickerIcon: ArrowDropDownIcon }}
                     slotProps={{
                       textField: {
@@ -441,7 +519,7 @@ const ModifyCitaModal = forwardRef(
                         },
                       },
                     }}
-                  />
+                  /> 
                 </LocalizationProvider>
 
                 <TextField
@@ -450,7 +528,9 @@ const ModifyCitaModal = forwardRef(
                   label="Hora"
                   name="hora"
                   value={formData.hora || ""}
-                  onChange={(e) => setFormData({ ...formData, hora: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, hora: e.target.value })
+                  }
                   sx={{ mb: 2 }}
                   required
                   error={!!errors.hora}
@@ -472,7 +552,9 @@ const ModifyCitaModal = forwardRef(
                     ))
                   ) : (
                     <MenuItem value="" disabled>
-                      No hay horarios disponibles
+                      {loadingTimes
+                        ? "Cargando horarios..."
+                        : "No hay horarios disponibles"}
                     </MenuItem>
                   )}
                 </TextField>
@@ -485,7 +567,11 @@ const ModifyCitaModal = forwardRef(
                 onClick={handleReset}
                 fullWidth
                 disabled={loading}
-                sx={{ borderColor: "#00308F", color: "#00308F", "&:hover": { color: "#00246d", borderColor: "#00246d" } }}
+                sx={{
+                  borderColor: "#00308F",
+                  color: "#00308F",
+                  "&:hover": { color: "#00246d", borderColor: "#00246d" },
+                }}
               >
                 Limpiar
               </Button>
@@ -495,7 +581,11 @@ const ModifyCitaModal = forwardRef(
                 fullWidth
                 disabled={loading}
                 startIcon={loading && <CircularProgress size={20} />}
-                sx={{ minWidth: "160px", backgroundColor: "#00308F", "&:hover": { backgroundColor: "#00246d" } }}
+                sx={{
+                  minWidth: "160px",
+                  backgroundColor: "#00308F",
+                  "&:hover": { backgroundColor: "#00246d" },
+                }}
               >
                 {loading ? "Modificando..." : "Modificar Cita"}
               </Button>

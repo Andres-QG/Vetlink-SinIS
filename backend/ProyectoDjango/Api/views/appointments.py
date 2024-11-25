@@ -5,6 +5,7 @@ def consult_citas(request):
     search = request.GET.get("search", "")
     column = request.GET.get("column", "fecha")
     order = request.GET.get("order", "asc")
+    per_page = int(request.GET.get("per_page", 10))  # Default to 10 items per page if not provided
     clinica_id = request.session.get("clinica_id")  # Optional clinic filter
     cliente = ""
     if request.session.get("role") == 4:
@@ -74,17 +75,20 @@ def consult_citas(request):
             citas, key=lambda x: x[column.lower()], reverse=(order == "desc")
         )
 
+        total_size = len(citas)
+        print(f"Total size of citas: {total_size}")
+
         # Paginate the results
         paginator = CustomPagination()
+        paginator.page_size = 100
         result_page = paginator.paginate_queryset(citas, request)
 
-        # Return paginated response
         return paginator.get_paginated_response(result_page)
 
     except Exception as e:
-        # Handle exceptions and log errors if needed
         print(f"Error: {e}")
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(["POST"])
 @transaction.atomic

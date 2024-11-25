@@ -41,7 +41,7 @@ const ConsultMyAppoints = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [tabIndex, setTabIndex] = useState(0);
-  const appointmentsPerPage = 9; // Adjusted to 9 for 3 per row on md (12 / 4 = 3)
+  const appointmentsPerPage = 9;
   const showNotification = useNotification();
 
   const [otherData, setOtherData] = useState({
@@ -54,17 +54,24 @@ const ConsultMyAppoints = () => {
 
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [totalPages, setTotalPages] = useState(1);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const fetchAppointments = async () => {
     setLoading(true);
     try {
       const response = await axios.get("http://localhost:8000/api/consult-citas/", {
+        params: {
+          per_page: 9,
+        },
         withCredentials: true,
       });
       const appointmentsData = response.data.results || [];
+      const totalAppointments = response.data.count || 0;
       setAppointments(appointmentsData);
       setFilteredAppointments(appointmentsData);
+      setTotalPages(Math.ceil(totalAppointments / 9));
+      console.log(response)
     } catch (error) {
       console.error("Error fetching appointments:", error);
     } finally {
@@ -130,7 +137,6 @@ const ConsultMyAppoints = () => {
         const response = await axios.get("http://localhost:8000/api/get-payment-methods/", {
           withCredentials: true,
         });
-        console.log(response)
         return response.data.methods;
       } catch (error) {
         console.error("Error fetching clinics:", error);
@@ -186,6 +192,7 @@ const ConsultMyAppoints = () => {
 
   const handleChangePage = (event, value) => {
     setCurrentPage(value);
+    fetchAppointments(value);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -205,7 +212,6 @@ const ConsultMyAppoints = () => {
     indexOfFirstAppointment,
     indexOfLastAppointment
   );
-  const totalPages = Math.ceil(filteredAppointments.length / appointmentsPerPage);
 
   const handleDeleteAppointment = async (appointmentId) => {
     try {
@@ -222,7 +228,6 @@ const ConsultMyAppoints = () => {
 
 
   const handleEditAppointment = (appointment) => {
-    console.log(appointment)
     setSelectedAppointment(appointment);
     setIsEditModalOpen(true);
   };
