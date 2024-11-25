@@ -233,7 +233,7 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
 
   const makePayment = async () => {
     const servInfo = getServInfo(formData);
-    formData.detail = `Servicios pagados: ${servInfo.desc}`;
+    formData.detail = `Servicios: ${servInfo.desc}`;
     setLoading(true);
     if (!stripe || !elements) {
       console.error("Stripe has not loaded yet.");

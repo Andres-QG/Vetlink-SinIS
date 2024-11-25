@@ -130,39 +130,63 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
     fetchPets();
   }, [formData.cliente]);
 
-  const fetchAvailableTimes = async (formattedDate) => {
+  const isSameDate = (date1, date2) => {
+    if (!date1 || !date2) return false;
+    return date1.toISOString().split("T")[0] === date2.toISOString().split("T")[0];
+  };      
+
+  const fetchAvailableTimes = async () => {
+    if (formData.fecha) {
+      console.log(true)
+    }
     try {
-      if (formData.veterinario && formData.clinica && formattedDate) {
+      if (formData.veterinario && formData.clinica && formData.fecha) {
         setLoadingTimes(true);
         const formattedDate = formData.fecha.toISOString().split("T")[0];
 
-        const response = await axios.put("http://localhost:8000/api/get-disp-times/", {
-          vet_user: formData.veterinario.usuario,
-          clinica_id: formData.clinica?.clinica_id,
-          full_date: formattedDate,
-        });
-        setHorarios(response.data.available_times || []);
+        const response = await axios.put(
+          "http://localhost:8000/api/get-disp-times/",
+          {
+            vet_user: formData.veterinario.usuario,
+            clinica_id: formData.clinica?.clinica_id,
+            full_date: formattedDate,
+          }
+        );
+
+        let availableTimes = response.data.available_times || [];
+
+        if (isSameDate(formData.fecha, initialFormData.fecha)) {
+          if (
+            initialFormData.hora &&
+            !availableTimes.includes(initialFormData.hora)
+          ) {
+            availableTimes.push(initialFormData.hora);
+            availableTimes.sort();
+          }
+        } else {
+          setFormData((prevData) => ({ ...prevData, hora: "" }));
+        }
+
+        setHorarios(availableTimes);
+      } else {
+        setHorarios([]);
+        setFormData((prevData) => ({ ...prevData, hora: "" }));
+        setLoadingTimes(true);
       }
     } catch (error) {
       console.error("Error fetching available times:", error);
     } finally {
-      setLoadingTimes(false)
+      setLoadingTimes(false);
     }
   };
 
   useEffect(() => {
-    let formattedDate = ""
-    if (formData.fecha) {
-      formattedDate = formData.fecha.toISOString().split("T")[0];
-    } else {
-      return
-    }
-    if (formData.clinica && formData.veterinario && formattedDate) {
+    if (formData.clinica && formData.veterinario && formData.fecha) {
       fetchAvailableTimes();
     } else {
       setHorarios([]);
       setFormData((prevData) => ({ ...prevData, hora: "" }));
-      setLoadingTimes(true)
+      setLoadingTimes(true);
     }
   }, [formData.clinica, formData.veterinario, formData.fecha]);
 
@@ -217,9 +241,9 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
     }
     
 
-    if (step < 2) {
+    if (step < 1) {
       setStep(step + 1);
-      if (step === 1) {
+      if (step === 0) {
         setRgtText("Agregar");
       }
       return;
@@ -227,6 +251,8 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
 
     addCita()
   };
+
+  console.log(formData)
 
   const addCita = async () => {
     setLoading(true);
