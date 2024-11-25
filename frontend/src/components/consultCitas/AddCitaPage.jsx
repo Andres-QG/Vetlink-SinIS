@@ -141,7 +141,6 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
     let formattedDate = ""
     if (formData.fecha) {
       formattedDate = formData.fecha.toISOString().split("T")[0];
-      console.log(formattedDate, formData.veterinario, formData.clinica)
     } else {
       return
     }

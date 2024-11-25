@@ -38,8 +38,6 @@ const ModifyCitaModal = forwardRef(
       return options.find((option) => option[key] === value) || null;
     };
 
-    console.log(selectedItem.fecha)
-    // Parse initial date
     const initialFecha = selectedItem.fecha
       ? parseISO(selectedItem.fecha)
       : null;
@@ -95,7 +93,6 @@ const ModifyCitaModal = forwardRef(
     };
 
     const fetchAvailableTimes = async () => {
-      console.log(formData.fecha)
       if (formData.fecha) {
         console.log(true)
       }
@@ -191,17 +188,12 @@ const ModifyCitaModal = forwardRef(
         return;
       }
       try {
-        // Prepare data to send to the server
-        const formattedDate = formData.fecha
-          ? formData.fecha.toISOString().split("T")[0]
-          : null;
-
         const dataToSend = {
           cliente: formData.cliente,
           veterinario: formData.veterinario,
           mascota: formData.mascota,
           clinica: formData.clinica,
-          fecha: formattedDate,
+          fecha: formData.fecha,
           hora: formData.hora,
           motivo: formData.motivo,
           services: formData.services,

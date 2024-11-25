@@ -150,7 +150,6 @@ def add_cita(request):
 @api_view(["POST"])
 def update_cita(request, cita_id):
     try:
-        print(request.data)
         cliente_id = request.data.get("cliente", {}).get("usuario")
         veterinario_id = request.data.get("veterinario", {}).get("usuario")
         mascota_id = request.data.get("mascota", {}).get("mascota_id")
