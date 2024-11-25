@@ -432,6 +432,7 @@ const PaymentForm = forwardRef(({ onSubmit, includeCVV = false, initialData = {}
                 value={form.cvv}
                 placeholder="Digite el CVV"
                 onChange={(e) => handleChange("cvv", e.target.value)}
+                type="number"
                 error={!!errors.cvv}
                 helperText={errors.cvv}
                 InputProps={{

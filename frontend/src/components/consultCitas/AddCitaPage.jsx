@@ -119,7 +119,7 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
 
   const fetchAvailableTimes = async (formattedDate) => {
     try {
-      if (formData.veterinario && formData.clinica && formData.fecha) {
+      if (formData.veterinario && formData.clinica && formattedDate) {
         setLoadingTimes(true);
 
         const response = await axios.put("http://localhost:8000/api/get-disp-times/", {
@@ -141,6 +141,7 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
     let formattedDate = ""
     if (formData.fecha) {
       formattedDate = formData.fecha.toISOString().split("T")[0];
+      console.log(formattedDate, formData.veterinario, formData.clinica)
     } else {
       return
     }
@@ -232,6 +233,8 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
   }
 
   const makePayment = async () => {
+    const servInfo = getServInfo(formData);
+    formData.detail = `Servicios pagados: ${servInfo.desc}`;
     setLoading(true);
     if (!stripe || !elements) {
       console.error("Stripe has not loaded yet.");
@@ -254,7 +257,6 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
         },
       };
 
-      const servInfo = getServInfo(formData);
       const paymentResponse = await axios.post(
         "http://localhost:8000/api/create-payment/",
         {
@@ -262,7 +264,7 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
           amount: servInfo.sum,
           currency: "crc",
           email: "test@example.com",
-          description: `Servicios pagados: ${servInfo.desc}`,
+          description: formData.detail,
         }
       );
 

@@ -100,6 +100,13 @@ def add_cita(request):
         motivo = request.data.get("motivo", "")
         estado = request.data.get("estado", "Programada")
 
+        detalle = request.data.get("detail", "Efectivo")
+        tipo_tarjeta = request.data.get("tipoTarjeta", "Efectivo")
+        marca_tarjeta = request.data.get("marcaTarjeta", "Efectivo")
+        numero_tarjeta = request.data.get("numeroTarjeta", "N/A")
+
+        ultimos_4_digitos = numero_tarjeta[-4:] if numero_tarjeta != "N/A" else "N/A"
+
         fecha_datetime = datetime.fromisoformat(fecha[:-1])
         formatted_fecha = fecha_datetime.strftime("%Y-%m-%d")
 
@@ -123,6 +130,10 @@ def add_cita(request):
                     estado,  # P_ESTADO
                     clinica_id,  # P_CLINICA
                     service_ids_string,  # P_SERVICIOS
+                    detalle,  # P_DETALLE
+                    tipo_tarjeta,  # P_TIPO_PAGO
+                    marca_tarjeta,  # P_MARCA_TARJETA
+                    ultimos_4_digitos,  # P_ULTIMOS_4_DIGITOS
                 ],
             )
 
