@@ -26,6 +26,7 @@ import {
   Tune,
 } from "@mui/icons-material";
 import Tag from "../Tag";
+import dayjs from "dayjs";
 import { parseISO, isValid } from "date-fns";
 import axios from "axios";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -40,13 +41,17 @@ const ModifyCitaModal = forwardRef(
       if (!options || !Array.isArray(options)) return null;
       return options.find((option) => option[key] === value) || null;
     };
+    const parseLocalDate = (dateString) => {
+      const [year, month, day] = dateString.split("-");
+      return new Date(year, month - 1, day);
+    };
 
     const initialFormData = {
       cliente: getDefaultValue(otherData.clientes, "usuario", selectedItem.cliente_usuario) || "",
       veterinario: getDefaultValue(otherData.veterinarios, "usuario", selectedItem.veterinario_usuario) || "",
       clinica: getDefaultValue(otherData.clinicas, "clinica_id", selectedItem.clinica_id) || "",
       mascota: {nombre: selectedItem.mascota, mascota_id: selectedItem.mascota_id} || null,
-      fecha: selectedItem.fecha ? (typeof selectedItem.fecha === 'string' ? new Date(selectedItem.fecha) : selectedItem.fecha) : null,
+      fecha: selectedItem.fecha ? (typeof selectedItem.fecha === 'string' ? dayjs(selectedItem.fecha, "YYYY-MM-DD").toDate() : selectedItem.fecha) : null,
       hora: selectedItem.hora || "",
       motivo: selectedItem.motivo || "",
       services: selectedItem.services || []
@@ -67,42 +72,41 @@ const ModifyCitaModal = forwardRef(
       setUser(otherData.user)
     }, [otherData])
 
-    useEffect(() => {
-      if (formData.fecha && formData.fecha.toISOString().split("T")[0] === selectedItem.fecha?.split("T")[0]) {
-        const initialHorarios = otherData.horarios || [];
-        if (selectedItem.hora && !initialHorarios.includes(selectedItem.hora)) {
-          initialHorarios.unshift(selectedItem.hora);
-        }
-        setHorarios(initialHorarios);
+      const fetchAvailableTimes = async (formattedDate) => {
+    try {
+      if (formData.veterinario && formData.clinica && formattedDate) {
+        setLoadingTimes(true);
+        const formattedDate = formData.fecha.toISOString().split("T")[0];
+
+        const response = await axios.put("http://localhost:8000/api/get-disp-times/", {
+          vet_user: formData.veterinario.usuario,
+          clinica_id: formData.clinica?.clinica_id,
+          full_date: formattedDate,
+        });
+        setHorarios(response.data.available_times || []);
       }
-    }, [formData.fecha, otherData.horarios, selectedItem.hora, selectedItem.fecha]);
+    } catch (error) {
+      console.error("Error fetching available times:", error);
+    } finally {
+      setLoadingTimes(false)
+    }
+  };
 
-    const fetchAvailableTimes = async () => {
-      try {
-        if (formData.veterinario && formData.clinica && formData.fecha) {
-          setLoadingTimes(true);
-          const formattedDate = formData.fecha.toISOString().split("T")[0];
-
-          const response = await axios.put("http://localhost:8000/api/get-disp-times/", {
-            vet_user: formData.veterinario.usuario,
-            clinica_id: formData.clinica?.clinica_id,
-            full_date: formattedDate,
-          });
-          const newHorarios = response.data.available_times || [];
-
-          // Ensure selected hora is included only if date matches
-          if (formattedDate === selectedItem.fecha && selectedItem.hora && !newHorarios.includes(selectedItem.hora)) {
-            setHorarios([selectedItem.hora, ...newHorarios]);
-          } else {
-            setHorarios(newHorarios);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching available times:", error);
-      } finally {
-        setLoadingTimes(false);
-      }
-    };
+  useEffect(() => {
+    let formattedDate = ""
+    if (formData.fecha) {
+      formattedDate = formData.fecha.toISOString().split("T")[0];
+    } else {
+      return
+    }
+    if (formData.clinica && formData.veterinario && formattedDate) {
+      fetchAvailableTimes();
+    } else {
+      setHorarios([]);
+      setFormData((prevData) => ({ ...prevData, hora: "" }));
+      setLoadingTimes(true)
+    }
+  }, [formData.clinica, formData.veterinario, formData.fecha]);
 
     useEffect(() => {
       const fetchPets = async () => {

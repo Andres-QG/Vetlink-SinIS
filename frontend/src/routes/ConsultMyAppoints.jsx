@@ -222,6 +222,7 @@ const ConsultMyAppoints = () => {
 
 
   const handleEditAppointment = (appointment) => {
+    console.log(appointment)
     setSelectedAppointment(appointment);
     setIsEditModalOpen(true);
   };

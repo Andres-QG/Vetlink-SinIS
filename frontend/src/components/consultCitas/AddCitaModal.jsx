@@ -130,9 +130,9 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
     fetchPets();
   }, [formData.cliente]);
 
-  const fetchAvailableTimes = async () => {
+  const fetchAvailableTimes = async (formattedDate) => {
     try {
-      if (formData.veterinario && formData.clinica && formData.fecha) {
+      if (formData.veterinario && formData.clinica && formattedDate) {
         setLoadingTimes(true);
         const formattedDate = formData.fecha.toISOString().split("T")[0];
 
@@ -150,7 +150,22 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
     }
   };
 
-  // Function used to set the client as the default value
+  useEffect(() => {
+    let formattedDate = ""
+    if (formData.fecha) {
+      formattedDate = formData.fecha.toISOString().split("T")[0];
+    } else {
+      return
+    }
+    if (formData.clinica && formData.veterinario && formattedDate) {
+      fetchAvailableTimes();
+    } else {
+      setHorarios([]);
+      setFormData((prevData) => ({ ...prevData, hora: "" }));
+      setLoadingTimes(true)
+    }
+  }, [formData.clinica, formData.veterinario, formData.fecha]);
+
   useEffect(() => {
     if (user.role === 4) {
       const matchingClient = clientes.find((client) => client.usuario === user.user);
@@ -162,17 +177,6 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
       }
     }
   }, [user, clientes]);
-
-  useEffect(() => {
-    if (formData.clinica && formData.veterinario && formData.fecha) {
-      fetchAvailableTimes();
-    } else {
-      setHorarios([]);
-      setFormData((prevData) => ({ ...prevData, hora: "" }));
-      setLoadingTimes(true)
-    }
-  }, [formData.clinica, formData.veterinario, formData.fecha]);
-
   useEffect(() => {
     if (user.clinica) {
       const clinic = clinicas.find((clinic) => clinic.clinica_id === user.clinica) || null;
@@ -199,14 +203,6 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
       if (!formData.hora) newErrors.hora = "Hora requerida.";
     }
 
-    if (currentStep === 2) {
-      // if (!formData.metodo_pago) newErrors.metodo_pago = "Método de pago requerido.";
-      // if (!formData.nombre_tarjeta) newErrors.nombre_tarjeta = "Nombre en la tarjeta requerido.";
-      // if (!formData.numero_tarjeta) newErrors.numero_tarjeta = "Número de tarjeta requerido.";
-      // if (!formData.cvv) newErrors.cvv = "CVV requerido.";
-      // if (!formData.fecha_expiracion) newErrors.fecha_expiracion = "Fecha de expiración requerida.";
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0
   };
@@ -229,23 +225,21 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
       return;
     }
 
-    makePayment()
-    // addCita()
+    addCita()
   };
 
   const addCita = async () => {
     setLoading(true);
     try {
       await axios.post("http://localhost:8000/api/add-cita/", formData);
-      // onSuccess("Cita agregada correctamente", "success");
-      // handleClose();
+      onSuccess("Cita agregada correctamente", "success");
+      handleClose();
     } catch (error) {
       console.error(error);
-      // onSuccess("Error al agregar cita.", "error");
+      onSuccess("Error al agregar cita.", "error");
     } finally {
       setLoading(false);
     }
-
   }
 
   const makePayment = async () => {
@@ -274,7 +268,6 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
         return;
       }
 
-      console.log("Payment Method Created:", paymentMethod.id);
 
       const paymentResponse = await axios.post("http://localhost:8000/api/create-payment/", {
         payment_method_id: paymentMethod.id,
@@ -309,7 +302,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
   };
 
 
-  const steps = ['Elije la mascota', 'Elije un horario', 'Realiza el pago'];
+  const steps = ["Selecciona una mascota", "Selecciona un horario"];
   const isStepFailed = (step) => {
     return !errors;
   };
@@ -331,7 +324,7 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
             Agregar Cita
           </Typography>
 
-          {otherData?.user.role === 4 && (<Stepper activeStep={step} alternativeLabel className="py-5 w-full">
+          {(<Stepper activeStep={step} alternativeLabel className="py-5 w-full">
             {steps.map((label, index) => {
               const labelProps = {};
               if (isStepFailed(index)) {

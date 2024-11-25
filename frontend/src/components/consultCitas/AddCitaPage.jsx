@@ -22,6 +22,7 @@ import {
   CorporateFare as CorporateFareIcon,
   ArrowDropDown as ArrowDropDownIcon,
   CreditCard as CreditCardIcon,
+  FourMpRounded,
 } from "@mui/icons-material";
 import Tag from "../Tag";
 import { isValid } from "date-fns";
@@ -116,11 +117,10 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
     fetchPets();
   }, []);
 
-  const fetchAvailableTimes = async () => {
+  const fetchAvailableTimes = async (formattedDate) => {
     try {
       if (formData.veterinario && formData.clinica && formData.fecha) {
         setLoadingTimes(true);
-        const formattedDate = formData.fecha.toISOString().split("T")[0];
 
         const response = await axios.put("http://localhost:8000/api/get-disp-times/", {
           vet_user: formData.veterinario.usuario,
@@ -137,8 +137,15 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
   };
 
   useEffect(() => {
-    if (formData.clinica && formData.veterinario && formData.fecha) {
-      fetchAvailableTimes();
+
+    let formattedDate = ""
+    if (formData.fecha) {
+      formattedDate = formData.fecha.toISOString().split("T")[0];
+    } else {
+      return
+    }
+    if (formData.clinica && formData.veterinario && formattedDate) {
+      fetchAvailableTimes(formattedDate);
     } else {
       setHorarios([]);
       setFormData((prevData) => ({ ...prevData, hora: "" }));
