@@ -23,7 +23,6 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { es } from "date-fns/locale";
 import visaIcon from "../../assets/img/payments/visa.png";
-import paypalIcon from "../../assets/img/payments/paypal.png";
 import mastercardIcon from "../../assets/img/payments/MasterCard.png";
 import americanExpressIcon from "../../assets/img/payments/american-express.png";
 import axios from "axios";
@@ -105,6 +104,8 @@ const AddPaymentMethod = ({ onSuccess, hideAdd = false }) => {
     event.preventDefault();
 
     const newErrors = {};
+
+    // Validaciones generales
     if (!form.direccion) newErrors.direccion = "La dirección es obligatoria.";
     if (!form.provincia) newErrors.provincia = "La provincia es obligatoria.";
     if (!form.pais) newErrors.pais = "El país es obligatorio.";
@@ -123,6 +124,15 @@ const AddPaymentMethod = ({ onSuccess, hideAdd = false }) => {
     else if (dayjs(form.fechaExpiracion, "MM/YYYY").isBefore(dayjs(), "month"))
       newErrors.fechaExpiracion =
         "La fecha de expiración debe ser posterior a la fecha actual.";
+
+    // Validar marca de tarjeta
+    const cardBrand = determineCardBrand(form.numeroTarjeta);
+    if (cardBrand !== "Visa" && cardBrand !== "MasterCard") {
+      newErrors.numeroTarjeta =
+        "Solo se aceptan tarjetas Visa y MasterCard. Por favor, revise el número de tarjeta.";
+    } else {
+      form.marcaTarjeta = cardBrand; // Asignar la marca de tarjeta detectada
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -344,16 +354,6 @@ const AddPaymentMethod = ({ onSuccess, hideAdd = false }) => {
         />
         <Box
           component="img"
-          src={paypalIcon}
-          alt="PayPal"
-          sx={{
-            width: "auto",
-            height: "60px",
-            objectFit: "contain",
-          }}
-        />
-        <Box
-          component="img"
           src={mastercardIcon}
           alt="Mastercard"
           sx={{
@@ -483,26 +483,28 @@ const AddPaymentMethod = ({ onSuccess, hideAdd = false }) => {
       </Grid>
 
       {/* Botón agregar */}
-      {!hideAdd && <Box sx={{ textAlign: "center" }}>
-        <Button
-          type="submit"
-          variant="contained"
-          disabled={loading} // Deshabilitar el botón mientras se carga
-          sx={{
-            textTransform: "none",
-            backgroundColor: loading ? "#cccccc" : "#00308F",
-            color: "white",
-            width: "100%",
-            height: "50px",
-            fontSize: "16px",
-            "&:hover": {
-              backgroundColor: loading ? "#cccccc" : "#002766",
-            },
-          }}
-        >
-          {loading ? "Cargando..." : "Agregar"}
-        </Button>
-      </Box>}
+      {!hideAdd && (
+        <Box sx={{ textAlign: "center" }}>
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={loading} // Deshabilitar el botón mientras se carga
+            sx={{
+              textTransform: "none",
+              backgroundColor: loading ? "#cccccc" : "#00308F",
+              color: "white",
+              width: "100%",
+              height: "50px",
+              fontSize: "16px",
+              "&:hover": {
+                backgroundColor: loading ? "#cccccc" : "#002766",
+              },
+            }}
+          >
+            {loading ? "Cargando..." : "Agregar"}
+          </Button>
+        </Box>
+      )}
     </Box>
   );
 };

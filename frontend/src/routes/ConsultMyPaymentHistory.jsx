@@ -26,6 +26,7 @@ import visaIcon from "../assets/img/payments/visa.png";
 import mastercardIcon from "../assets/img/payments/MasterCard.png";
 import americanExpressIcon from "../assets/img/payments/american-express.png";
 import paypalIcon from "../assets/img/payments/paypal.png";
+import efectivoIcon from "../assets/img/payments/efectivo.png";
 import cardUndefinedIcon from "../assets/img/payments/desconocida.png";
 import getInvoiceTemplate from "../templates/invoiceTemplate";
 import pdfMake from "pdfmake";
@@ -35,6 +36,7 @@ const cardIcons = {
   MASTERCARD: mastercardIcon,
   AMERICAN_EXPRESS: americanExpressIcon,
   PAYPAL: paypalIcon,
+  EFECTIVO: efectivoIcon,
 };
 
 const ConsultMyPaymentHistory = () => {
@@ -234,24 +236,33 @@ const ConsultMyPaymentHistory = () => {
                           }}
                         >
                           <Box
-                            component="img"
-                            src={getCardIcon(payment.marca_tarjeta)}
-                            alt={payment.marca_tarjeta}
                             sx={{
-                              width: 40,
-                              height: "auto",
-                              mr: 2,
-                            }}
-                          />
-                          <Typography
-                            variant="subtitle1"
-                            sx={{
-                              fontWeight: "bold",
-                              color: "black",
+                              display: "flex",
+                              alignItems: "center",
                             }}
                           >
-                            Tarjeta de {payment.tipo_pago}
-                          </Typography>
+                            <Box
+                              component="img"
+                              src={getCardIcon(payment.marca_tarjeta)}
+                              alt={payment.marca_tarjeta}
+                              sx={{
+                                width: 40,
+                                height: "auto",
+                                mr: 2,
+                              }}
+                            />
+                            <Typography
+                              variant="subtitle1"
+                              sx={{
+                                fontWeight: "bold",
+                                color: "black",
+                              }}
+                            >
+                              {payment.tipo_pago === "Efectivo"
+                                ? payment.tipo_pago
+                                : `Tarjeta de ${payment.tipo_pago}`}
+                            </Typography>
+                          </Box>
                         </Box>
                         <Chip
                           label={payment.estado}
