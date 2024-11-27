@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   TextField,
   Typography,
@@ -39,7 +39,7 @@ const ModifyPet = ({
     edad: selectedItem?.edad || "",
     especie: selectedItem?.especie || "",
     raza: selectedItem?.raza || "",
-    sexo: selectedItem?.sexo || "M",
+    sexo: selectedItem?.sexo || "",
   });
 
   const speciesOptions = ["Perro", "Gato"];
@@ -97,7 +97,7 @@ const ModifyPet = ({
       edad: "",
       especie: "",
       raza: "",
-      sexo: "M",
+      sexo: "",
     });
     setErrors({});
   };
@@ -230,7 +230,7 @@ const ModifyPet = ({
           alignItems="center"
           mb={2}
         >
-          <Typography variant="h6">Modificar Mascota</Typography>
+          <Typography variant="h6">Modifica Mascota</Typography>
           <IconButton onClick={handleClose}>
             <CloseIcon />
           </IconButton>
@@ -281,7 +281,7 @@ const ModifyPet = ({
             }}
           />
           <TextField
-            label="Edad"
+            label="Edad (años)"
             name="edad"
             value={formData.edad}
             onChange={handleChange}
@@ -296,8 +296,10 @@ const ModifyPet = ({
             }}
           />
           <FormControl>
-            <InputLabel>Especie</InputLabel>
+            <InputLabel id="especie-label">Especie</InputLabel>
             <Select
+              labelId="especie-label"
+              id="especie-select"
               label="Especie"
               name="especie"
               value={formData.especie}
@@ -319,6 +321,7 @@ const ModifyPet = ({
 
           <TextField
             select
+            id="raza-select"
             label="Raza"
             name="raza"
             value={formData.raza}
@@ -341,8 +344,10 @@ const ModifyPet = ({
             ))}
           </TextField>
           <FormControl>
-            <InputLabel>Sexo</InputLabel>
+            <InputLabel id="sexo-label">Sexo</InputLabel>
             <Select
+              labelId="sexo-label"
+              id="sexo-select"
               label="Sexo"
               name="sexo"
               value={formData.sexo}
