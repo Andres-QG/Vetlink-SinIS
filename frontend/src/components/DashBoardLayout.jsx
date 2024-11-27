@@ -16,7 +16,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { Menu as MenuIcon } from "@mui/icons-material";
 import { RightOutlined, CloseOutlined } from "@ant-design/icons";
-import MedicalServices from "@mui/icons-material/MedicalServices";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import PersonIcon from "@mui/icons-material/Person";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -34,8 +33,12 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import PetsIconAlt from "@mui/icons-material/Pets";
 import { Vaccines } from "@mui/icons-material";
 import PaymentIcon from "@mui/icons-material/Payment";
+import ServicesIcon from "@mui/icons-material/HomeRepairService";
 import ReceiptIcon from "@mui/icons-material/Receipt";
+import EspecialidadesIcon from "@mui/icons-material/Stars";
 import EmergencyIcon from "@mui/icons-material/Emergency";
+import TratamientosIcon from "@mui/icons-material/AppRegistration";
+import SintomasIcon from "@mui/icons-material/Egg";
 import { ConfigProvider } from "antd";
 import { style } from "@mui/system";
 import { backdropClasses } from "@mui/material";
@@ -232,13 +235,13 @@ const DashboardLayout = ({
           },
           {
             key: "Consultsymptoms",
-            icon: <MedicalServices />,
+            icon: <SintomasIcon />,
             label: "Síntomas",
             onClick: () => handleClick("Consultsymptoms"),
           },
           {
             key: "consultTreatment",
-            icon: <MedicalServices />,
+            icon: <TratamientosIcon />,
             label: "Tratamientos",
             onClick: () => handleClick("ConsultTreatment"),
           },
@@ -260,13 +263,13 @@ const DashboardLayout = ({
           },
           {
             key: "consultspecialties",
-            icon: <VetsIcon />,
+            icon: <EspecialidadesIcon />,
             label: "Especialiades",
             onClick: () => handleClick("consultspecialties"),
           },
           {
             key: "consultservices",
-            icon: <MedicalServices />,
+            icon: <ServicesIcon />,
             label: "Servicios",
             onClick: () => handleClick("consultservices"),
           },
