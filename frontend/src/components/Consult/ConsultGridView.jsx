@@ -27,8 +27,47 @@ const ConsultGridView = ({
   const [openMod, setOpenMod] = useState(false);
   const [openDel, setOpenDel] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [showInactive, setShowInactive] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchColumn, setSearchColumn] = useState(columns[0]);
+  const [order, setOrder] = useState("asc");
 
   const notify = useNotification();
+
+  const applyFilters = (itemsToFilter = items) => {
+    let filtered = [...itemsToFilter];
+
+    // Aplicar filtro de búsqueda
+    if (searchTerm) {
+      filtered = filtered.filter((item) =>
+        item[searchColumn]
+          .toString()
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Aplicar filtro de estado
+    if (!showInactive && hasStatus) {
+      filtered = filtered.filter(
+        (item) =>
+          item.estado === 1 || item.estado === "activo" || item.estado === true
+      );
+    }
+
+    // Aplicar ordenamiento
+    filtered.sort((a, b) => {
+      if (a[searchColumn] < b[searchColumn]) return order === "asc" ? -1 : 1;
+      if (a[searchColumn] > b[searchColumn]) return order === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    setFilteredItems(filtered);
+  };
+
+  useEffect(() => {
+    applyFilters();
+  }, [showInactive, items, searchTerm, searchColumn, order]);
 
   const fetchItems = async () => {
     setLoading(true);
@@ -41,8 +80,6 @@ const ConsultGridView = ({
         nextPage = response.data.next;
       }
       setItems(allItems);
-      setFilteredItems(allItems);
-      console.log(allItems);
     } catch (error) {
       console.error(`Error fetching ${itemDisplayName}:`, error);
     } finally {
@@ -54,52 +91,30 @@ const ConsultGridView = ({
     fetchItems();
   }, []);
 
-  const handleSearch = (term, column, order) => {
-    let searchTerm = term.toLowerCase();
-    if (column === "estado") {
-      if (searchTerm === "disponible") {
-        searchTerm = "1";
-      } else if (searchTerm === "no disponible") {
-        searchTerm = "0";
-      }
-    }
-
-    const filtered = items.filter((item) =>
-      item[column].toString().toLowerCase().includes(searchTerm)
-    );
-
-    const sorted = filtered.toSorted((a, b) => {
-      if (a[column] < b[column]) return order === "asc" ? -1 : 1;
-      if (a[column] > b[column]) return order === "asc" ? 1 : -1;
-      return 0;
-    });
-
-    setFilteredItems(sorted);
+  const handleSearch = (term, column, newOrder) => {
+    setSearchTerm(term);
+    setSearchColumn(column);
+    setOrder(newOrder);
   };
 
-  const handleOpenAdd = () => {
-    setOpenAdd(true);
+  const toggleShowInactive = () => {
+    setShowInactive((prev) => !prev);
   };
 
-  const handleCloseAdd = () => {
-    setOpenAdd(false);
-  };
-
-  const handleOpenMod = (selectedItem) => {
-    setSelectedItem(selectedItem);
+  const handleOpenAdd = () => setOpenAdd(true);
+  const handleCloseAdd = () => setOpenAdd(false);
+  const handleOpenMod = (item) => {
+    setSelectedItem(item);
     setOpenMod(true);
   };
-
   const handleCloseMod = () => {
     setSelectedItem(null);
     setOpenMod(false);
   };
-
-  const handleOpenDel = (selectedItem) => {
-    setSelectedItem(selectedItem);
+  const handleOpenDel = (item) => {
+    setSelectedItem(item);
     setOpenDel(true);
   };
-
   const handleCloseDel = () => {
     setSelectedItem(null);
     setOpenDel(false);
@@ -122,6 +137,29 @@ const ConsultGridView = ({
         <div className="flex flex-col items-center justify-between mb-4 space-y-4 md:flex-row md:space-y-0">
           <h1 className="text-2xl font-semibold">{itemDisplayName}</h1>
           <div className="flex flex-col w-full space-y-4 md:w-auto md:flex-row md:items-center md:space-y-0">
+            {hasStatus && (
+              <Button
+                variant="contained"
+                onClick={toggleShowInactive}
+                sx={{
+                  backgroundColor: showInactive
+                    ? "rgba(184,230,215,1)"
+                    : "rgba(255,124,125,1)",
+                  "&:hover": {
+                    backgroundColor: showInactive
+                      ? "rgba(184,230,215,0.8)"
+                      : "rgba(255,124,125,0.8)",
+                  },
+                  color: "#000",
+                  minWidth: "205px",
+                  marginBottom: { xs: "-4px", md: "0px" },
+                  marginRight: { xs: "0px", md: "10px" },
+                  width: { xs: "100%", md: "auto" },
+                  fontSize: "0.85rem",
+                }}>
+                {showInactive ? "Mostrar solo activos" : "Mostrar inactivos"}
+              </Button>
+            )}
             <Button
               variant="contained"
               startIcon={<Add />}
