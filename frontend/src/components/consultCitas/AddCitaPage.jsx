@@ -187,7 +187,7 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
     if (step < 2) {
       setStep(step + 1);
       if (step === 1) {
-        setRgtText("Agregar");
+        setRgtText("Pagar");
       }
       return;
     }
@@ -673,7 +673,7 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
             "&:hover": { backgroundColor: "#00246d" },
           }}
         >
-          {loading ? "Agregando..." : rgtText}
+          {loading ? "Pagando..." : rgtText}
         </Button>
       </Box>
     
