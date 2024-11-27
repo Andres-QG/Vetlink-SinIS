@@ -74,6 +74,7 @@ const ConsultView = ({
       });
       const data = response.data.results || [];
       setData(data);
+      console.log(data);
       setTotalCount(data.length);
     } catch (error) {
       console.error("Failed to fetch data:", error);

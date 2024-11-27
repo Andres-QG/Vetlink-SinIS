@@ -35,6 +35,7 @@ import PetsIconAlt from "@mui/icons-material/Pets";
 import { Vaccines } from "@mui/icons-material";
 import PaymentIcon from "@mui/icons-material/Payment";
 import ReceiptIcon from "@mui/icons-material/Receipt";
+import EmergencyIcon from "@mui/icons-material/Emergency";
 import { ConfigProvider } from "antd";
 import { style } from "@mui/system";
 import { backdropClasses } from "@mui/material";
@@ -210,6 +211,7 @@ const DashboardLayout = ({
             label: "Horarios",
             onClick: () => handleClick("consultSchedules"),
           },
+
           {
             key: "consultpets",
             icon: <PetsIconAlt />,
@@ -257,6 +259,12 @@ const DashboardLayout = ({
             onClick: () => handleClick("consultvets"),
           },
           {
+            key: "consultspecialties",
+            icon: <VetsIcon />,
+            label: "Especialiades",
+            onClick: () => handleClick("consultspecialties"),
+          },
+          {
             key: "consultservices",
             icon: <MedicalServices />,
             label: "Servicios",
@@ -301,6 +309,12 @@ const DashboardLayout = ({
             onClick: () => handleClick("consultVaccinations"),
           },
           {
+            key: "ConsultTreatmentHistory",
+            icon: <EmergencyIcon />,
+            label: "Tratamientos",
+            onClick: () => handleClick("ConsultTreatmentHistory"),
+          },
+          {
             key: "consultMyPaymentMethods",
             icon: <PaymentIcon />,
             label: "Métodos de Pago",
@@ -335,6 +349,10 @@ const DashboardLayout = ({
 
   const selectedKey = () => {
     switch (location.pathname) {
+      case "/ConsultSpecialties":
+        return "consultspecialties";
+      case "/ConsultTreatmentHistory":
+        return "ConsultTreatmentHistory";
       case "/ConsultTreatment":
         return "consultTreatment";
       case "/consultSchedules":
@@ -393,8 +411,7 @@ const DashboardLayout = ({
             itemSelectedBg: "#ecf0f9",
           },
         },
-      }}
-    >
+      }}>
       <Layout style={{ minHeight: "100vh" }}>
         <Header
           style={{
@@ -404,8 +421,7 @@ const DashboardLayout = ({
             position: "fixed",
             width: "100%",
             zIndex: 1000,
-          }}
-        >
+          }}>
           <Tooltip title="Ir a la página principal" placement="bottom">
             <div
               onClick={() => handleClick("")}
@@ -422,16 +438,18 @@ const DashboardLayout = ({
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = "scale(1)";
-              }}
-            >
+              }}>
               <img
                 src="./src/assets/icons/logo.png"
                 alt="VetLink logo"
                 style={{ width: 40, height: 40, marginRight: "16px" }}
               />
               <span
-                style={{ fontSize: "20px", fontWeight: "bold", color: "white" }}
-              >
+                style={{
+                  fontSize: "20px",
+                  fontWeight: "bold",
+                  color: "white",
+                }}>
                 VetLink
               </span>
             </div>
@@ -445,8 +463,7 @@ const DashboardLayout = ({
                   selectedKeys={[selectedHeaderKey()]}
                 />
               }
-              trigger="click"
-            >
+              trigger="click">
               <Button
                 icon={<MenuIcon />}
                 style={{
@@ -473,8 +490,7 @@ const DashboardLayout = ({
           )}
           <Dropdown
             menu={isActive ? loggedInMenu : loggedOutMenu}
-            placement="bottomRight"
-          >
+            placement="bottomRight">
             <Avatar
               style={{
                 backgroundColor: isActive ? "#0BA6A9" : "#808080",
@@ -498,8 +514,7 @@ const DashboardLayout = ({
                 position: "fixed",
                 height: "100%",
                 zIndex: 10,
-              }}
-            >
+              }}>
               <Menu
                 mode="inline"
                 selectedKeys={[selectedKey()]}
@@ -532,8 +547,7 @@ const DashboardLayout = ({
                 placement="left"
                 onClose={toggleDrawer}
                 open={drawerOpen}
-                styles={{ body: { padding: 0 } }}
-              >
+                styles={{ body: { padding: 0 } }}>
                 <Menu
                   mode="inline"
                   selectedKeys={[selectedKey()]}
@@ -549,8 +563,7 @@ const DashboardLayout = ({
               flexDirection: "column",
               marginLeft:
                 hideSidebar || isSmallScreen ? 0 : collapsed ? 80 : 200,
-            }}
-          >
+            }}>
             <Content
               style={{
                 flexGrow: 1,
@@ -560,8 +573,7 @@ const DashboardLayout = ({
                 background: colorBgContainer,
                 borderRadius: borderRadiusLG,
                 boxShadow: "0 8px 16px rgba(0, 0, 0, 0.3)",
-              }}
-            >
+              }}>
               {children}
             </Content>
 
@@ -573,8 +585,7 @@ const DashboardLayout = ({
                 background: colorBgContainer,
                 borderTop: "1px solid #e8e8e8",
                 marginTop: "auto",
-              }}
-            >
+              }}>
               <div style={{ color: "#595959" }}>
                 &copy; {new Date().getFullYear()} VetLink. Todos los derechos
                 reservados.
