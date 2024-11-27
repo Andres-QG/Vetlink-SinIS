@@ -287,6 +287,8 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
     setErrors({});
   };
 
+
+
   const steps = ["Elije la mascota", "Elije un horario", "Realiza el pago"];
   const isStepFailed = (step) => {
     return !errors;
@@ -674,6 +676,7 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
           {loading ? "Agregando..." : rgtText}
         </Button>
       </Box>
+    
     </Box>
   );
 };

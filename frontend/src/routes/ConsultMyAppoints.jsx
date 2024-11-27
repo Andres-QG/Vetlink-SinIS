@@ -34,6 +34,7 @@ import SearchBar from "../components/Consult/GeneralizedSearchBar";
 import { useNotification } from "../components/Notification";
 import AddCitaPage from "../components/consultCitas/AddCitaPage";
 import ModifyCitaModal from "../components/consultCitas/ModifyCitaModal";
+import DeleteCitaModal from "../components/consultCitas/DeleteCitaModal";
 
 const ConsultMyAppoints = () => {
   const [appointments, setAppointments] = useState([]);
@@ -43,6 +44,7 @@ const ConsultMyAppoints = () => {
   const [tabIndex, setTabIndex] = useState(0);
   const appointmentsPerPage = 9;
   const showNotification = useNotification();
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
   const [otherData, setOtherData] = useState({
     user: {},
@@ -204,6 +206,8 @@ const ConsultMyAppoints = () => {
     }
   };
 
+
+
   const columns = ["cliente", "veterinario", "nombre", "fecha"];
 
   const indexOfLastAppointment = currentPage * appointmentsPerPage;
@@ -213,19 +217,15 @@ const ConsultMyAppoints = () => {
     indexOfLastAppointment
   );
 
-  const handleDeleteAppointment = async (appointmentId) => {
-    try {
-      await axios.delete(`http://localhost:8000/api/delete-cita/${appointmentId}/`, {
-        withCredentials: true,
-      });
-      showNotification("Cita eliminada exitosamente", "success");
-      fetchAppointments();
-    } catch (error) {
-      console.error("Error eliminando cita:", error);
-      showNotification("Error al eliminar la cita", "error");
-    }
+  const handleOpenDeleteModal = (appointment) => {
+    setSelectedAppointment(appointment);
+    setDeleteModalOpen(true);
   };
 
+  const handleCloseDeleteModal = () => {
+    setDeleteModalOpen(false);
+    setSelectedAppointment(null);
+  };
 
   const handleEditAppointment = (appointment) => {
     setSelectedAppointment(appointment);
@@ -509,7 +509,7 @@ const ConsultMyAppoints = () => {
                                     width: { xs: "100%", lg: "auto" },
                                   }}
                                   onClick={() =>
-                                    handleDeleteAppointment(appointment.cita_id)
+                                    handleOpenDeleteModal(appointment)
                                   }
                                   aria-label={`Eliminar cita para ${appointment.cliente}`}
                                 >
@@ -706,6 +706,14 @@ const ConsultMyAppoints = () => {
               otherData={otherData}
             />
           )}
+            {selectedAppointment && (
+              <DeleteCitaModal
+                open={deleteModalOpen}
+                handleClose={handleCloseDeleteModal}
+                citaData={selectedAppointment}
+                onSuccess={handleActionSuccess}
+              />
+            )}
         </>
       )}
     </Box>

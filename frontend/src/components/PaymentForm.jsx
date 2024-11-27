@@ -242,7 +242,7 @@ const PaymentForm = forwardRef(({ onSubmit, includeCVV = false, initialData = {}
                 <div>
                   <strong>{option.tipo_pago}</strong> - {option.ultimos_4_digitos} <br />
                   Titular: {option.nombre_titular} <br />
-                  Expira: {option.fecha_expiracion} <br />
+                  Expira: {dayjs(option.fecha_expiracion).format("MM/YYYY")} <br />
                   Marca: {option.marca_tarjeta}
                 </div>
               </li>
