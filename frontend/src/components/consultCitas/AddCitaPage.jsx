@@ -200,8 +200,10 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
       const paymentSuccess = await makePayment();
       if (paymentSuccess) {
         await addCita();
+        onSuccess("Pago realizado exitosamente", "success");
+      } else {
+        onSuccess("Pago no pudo ser realizado exitosamente", "error");
       }
-      onSuccess("Pago realizado exitosamente", "success");
     }  catch (error) {
       console.log(error)
       onSuccess("Pago no pudo ser realizado exitosamente", "error");
@@ -267,6 +269,7 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
         }
       );
 
+      console.log(paymentResponse)
       if (paymentResponse.status === 201) {
         return true;
       } else {

@@ -73,7 +73,6 @@ const ConsultMyAppoints = () => {
       setAppointments(appointmentsData);
       setFilteredAppointments(appointmentsData);
       setTotalPages(Math.ceil(totalAppointments / 9));
-      console.log(response)
     } catch (error) {
       console.error("Error fetching appointments:", error);
     } finally {
@@ -200,6 +199,10 @@ const ConsultMyAppoints = () => {
 
   const handleActionSuccess = (message, type) => {
     if (type === "success") {
+      showNotification(message, type);
+      fetchAppointments();
+      setTabIndex(0);
+    } else if (type === "error"){
       showNotification(message, type);
       fetchAppointments();
       setTabIndex(0);
