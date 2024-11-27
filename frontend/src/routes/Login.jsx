@@ -90,10 +90,10 @@ function Login() {
     validate();
 
     const redirectItems = new Map([
-      [1, ""],
-      [2, ""],
-      [3, ""],
-      [4, ""],
+      [1, "dashboard"],
+      [2, "dashboard"],
+      [3, "dashboard"],
+      [4, "dashboard"],
     ]);
 
     try {

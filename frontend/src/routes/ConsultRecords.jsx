@@ -36,20 +36,22 @@ const ConsultRecords = () => {
       const response = await axios.get(
         "http://localhost:8000/api/consult-vaccines/?page_size=1000"
       );
+      console.log(response.data);
       return response.data;
     };
 
     const fetchSintomas = async () => {
       const response = await axios.get(
-        "http://localhost:8000/api/consult-symptoms/?page_size=1000"
+        "http://localhost:8000/api/consult-symptoms-fast/?page_size=1000"
       );
       return response.data;
     };
 
     const fetchTratamientos = async () => {
       const response = await axios.get(
-        "http://localhost:8000/api/consult-treatments/?page_size=1000"
+        "http://localhost:8000/api/consult-treatments-fast/?page_size=1000"
       );
+
       return response.data;
     };
 

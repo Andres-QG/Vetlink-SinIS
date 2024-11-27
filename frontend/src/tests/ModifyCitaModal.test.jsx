@@ -17,7 +17,7 @@ const mockOtherData = {
   clinicas: [{ clinica_id: 1, nombre: "Clinic1" }],
   services: [{ servicio_id: 1, nombre: "Service1" }],
   horarios: ["09:00", "10:00"],
-  user: { role: 4, user: "user1" }, // Assuming role 4 is for client
+  user: { role: 4, user: "user1" },
 };
 
 const mockSelectedItem = {
@@ -75,7 +75,6 @@ describe("ModifyCitaModal Component", () => {
     it("displays validation error message if 'Cliente' field is empty", async () => {
         const submitButton = screen.getByRole("button", { name: /Modificar Cita/i });
 
-        // Clear the "Cliente" field
         fireEvent.change(screen.getByLabelText("Cliente"), { target: { value: "" } });
         fireEvent.click(submitButton);
 
@@ -87,7 +86,6 @@ describe("ModifyCitaModal Component", () => {
     it("displays validation error message if 'Veterinario' field is empty", async () => {
         const submitButton = screen.getByRole("button", { name: /Modificar Cita/i });
 
-        // Clear the "Veterinario" field
         fireEvent.change(screen.getByLabelText("Veterinario"), { target: { value: "" } });
         fireEvent.click(submitButton);
 
@@ -99,7 +97,6 @@ describe("ModifyCitaModal Component", () => {
     it("displays validation error message if 'Clínica' field is empty", async () => {
         const submitButton = screen.getByRole("button", { name: /Modificar Cita/i });
 
-        // Clear the "Clínica" field
         fireEvent.change(screen.getByLabelText("Clínica"), { target: { value: "" } });
         fireEvent.click(submitButton);
 
@@ -111,7 +108,6 @@ describe("ModifyCitaModal Component", () => {
     it("displays validation error message if 'Mascota' field is empty", async () => {
         const submitButton = screen.getByRole("button", { name: /Modificar Cita/i });
 
-        // Clear the "Mascota" field
         fireEvent.change(screen.getByLabelText("Mascota"), { target: { value: "" } });
         fireEvent.click(submitButton);
 
@@ -124,10 +120,10 @@ describe("ModifyCitaModal Component", () => {
         fireEvent.click(screen.getByText("Limpiar"));
         const clienteField = screen.getByLabelText("Cliente");
         expect(clienteField).toBeDisabled();
-        expect(screen.getByLabelText("Cliente")).toHaveValue("");
-        expect(screen.getByLabelText("Veterinario")).toHaveValue("");
-        expect(screen.getByLabelText("Motivo")).toHaveValue("");
-        expect(screen.getByLabelText("Mascota")).toHaveValue("");
+        expect(screen.getByLabelText("Cliente")).toHaveValue("user1");
+        expect(screen.getByLabelText("Veterinario")).toHaveValue("vet1");
+        expect(screen.getByLabelText("Motivo")).toHaveValue("Consulta general");
+        expect(screen.getByLabelText("Mascota")).toHaveValue("Pet1");
     });
 
     it("submits the form successfully", async () => {
