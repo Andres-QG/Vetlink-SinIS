@@ -211,6 +211,7 @@ const DashboardLayout = ({
             label: "Horarios",
             onClick: () => handleClick("consultSchedules"),
           },
+
           {
             key: "consultpets",
             icon: <PetsIconAlt />,
@@ -256,6 +257,12 @@ const DashboardLayout = ({
             icon: <VetsIcon />,
             label: "Veterinarios",
             onClick: () => handleClick("consultvets"),
+          },
+          {
+            key: "consultspecialties",
+            icon: <VetsIcon />,
+            label: "Especialiades",
+            onClick: () => handleClick("consultspecialties"),
           },
           {
             key: "consultservices",
@@ -342,6 +349,8 @@ const DashboardLayout = ({
 
   const selectedKey = () => {
     switch (location.pathname) {
+      case "/ConsultSpecialties":
+        return "consultspecialties";
       case "/ConsultTreatmentHistory":
         return "ConsultTreatmentHistory";
       case "/ConsultTreatment":

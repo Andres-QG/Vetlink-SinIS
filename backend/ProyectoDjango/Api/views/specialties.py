@@ -22,9 +22,10 @@ def consult_specialties_to_cards(request):
         serializer = EspecialidadesSerializer(page, many=True)
         data = serializer.data
 
-        # Renombrar 'especialidad_id' a 'id' en los datos serializados
+        # Renombrar 'especialidad_id' a 'id' y convertir 'activo' a 'estado' con 1 o 0
         for item in data:
             item["id"] = item.pop("especialidad_id")
+            item["estado"] = 1 if item.pop("activo") else 0
 
         return paginator.get_paginated_response(data)
     except Exception as e:
@@ -47,7 +48,7 @@ def add_specialty(request):
         Especialidades.objects.create(
             nombre=nombre,
             descripcion=descripcion,
-            estado=1,  # Estado activo por defecto
+            activo=1,  # Estado activo por defecto
         )
 
         return JsonResponse(
@@ -91,7 +92,7 @@ def update_specialty(request, id):
 def deactivate_specialty(request, id):
     try:
         specialty = Especialidades.objects.get(pk=id)
-        specialty.estado = 0  # Desactivar
+        specialty.activo = 0  # Desactivar
         specialty.save()
 
         return JsonResponse(
@@ -110,7 +111,7 @@ def deactivate_specialty(request, id):
 def restore_specialty(request, id):
     try:
         specialty = Especialidades.objects.get(pk=id)
-        specialty.estado = 1  # Activar
+        specialty.activo = 1  # Activar
         specialty.save()
 
         return JsonResponse(
