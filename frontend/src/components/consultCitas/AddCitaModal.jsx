@@ -26,7 +26,6 @@ import {
   BorderColor as BorderColorIcon,
   CorporateFare as CorporateFareIcon,
   ArrowDropDown as ArrowDropDownIcon,
-  ConstructionOutlined,
   CreditCard as CreditCardIcon,
   Lock as LockIcon
 } from "@mui/icons-material";
@@ -236,7 +235,6 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
 
 
     if (!validateStep(step)) {
-      console.log(errors)
       return;
     }
     
@@ -252,8 +250,6 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
     addCita()
   };
 
-  console.log(formData)
-
   const addCita = async () => {
     setLoading(true);
     try {
@@ -267,59 +263,6 @@ const AddCitaModal = ({ open, handleClose, onSuccess, otherData}) => {
       setLoading(false);
     }
   }
-
-  const makePayment = async () => {
-    setLoading(true);
-
-    if (!stripe || !elements) {
-      console.error("Stripe has not loaded yet.");
-      onSuccess("Error al procesar el pago.", "error");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const { error, paymentMethod } = await stripe.createPaymentMethod({
-        type: "card",
-        card: elements.getElement(CardElement),
-        billing_details: {
-          name: formData.nombre_tarjeta,
-        },
-      });
-
-      if (error) {
-        console.error("Error creating payment method:", error.message);
-        onSuccess(error.message, "error");
-        setLoading(false);
-        return;
-      }
-
-
-      const paymentResponse = await axios.post("http://localhost:8000/api/create-payment/", {
-        payment_method_id: paymentMethod.id,
-        amount: 1230, 
-        currency: "usd",
-        email: "test@example.com", 
-        description: "Payment for veterinary services",
-      });
-
-      if (paymentResponse.status === 201) {
-        // onSuccess("Cita pagada correctamente", "success");
-        // handleClose();
-        return true;
-      } else {
-        console.error("Payment failed:", paymentResponse.data);
-        onSuccess("Error al procesar el pago.", "error");
-        return false;
-      }
-    } catch (error) {
-      console.error("Error during payment:", error);
-      onSuccess("Error al procesar el pago.", "error");
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleBackReset = () => {
     setStep(step > 0 ? step - 1 : 0);
