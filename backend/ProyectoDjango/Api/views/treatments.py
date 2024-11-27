@@ -32,6 +32,27 @@ def consult_treatments(request):
         return Response([], status=status.HTTP_200_OK)
 
 
+@api_view(["GET"])
+def consult_treatments_fast(request):
+    search = request.GET.get("search", "")
+    column = request.GET.get("column", "nombre")
+    order = request.GET.get("order", "asc")
+
+    try:
+        treatments = Tratamientos.objects.all()
+        if search:
+            kwargs = {f"{column}__icontains": search}
+            treatments = treatments.filter(**kwargs)
+
+        treatments = treatments.order_by(f"-{column}" if order == "desc" else column)
+
+        serializer = VacunasSerializer(treatments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Exception as e:
+        print(f"Error fetching treatments: {str(e)}")
+        return Response([], status=status.HTTP_200_OK)
+
+
 @api_view(["POST"])
 def add_treatment(request):
     try:
@@ -121,5 +142,27 @@ def restore_treatment(request, id):
         return JsonResponse(
             {"success": False, "error": "Tratamiento no encontrado"}, status=404
         )
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+
+@api_view(["GET"])
+def consult_treatment_history(request):
+    logged_user = request.session.get("user")
+    if not logged_user:
+        return JsonResponse(
+            {"success": False, "error": "Usuario no autenticado"}, status=401
+        )
+    try:
+        with connection.cursor() as cursor:
+            result_set_cursor = cursor.connection.cursor()
+            cursor.callproc(
+                "VETLINK.ConsultarTratamientosPorUsuario",
+                [logged_user, result_set_cursor],
+            )
+            columns = [col[0].lower() for col in result_set_cursor.description]
+            results = [dict(zip(columns, row)) for row in result_set_cursor.fetchall()]
+        result_set_cursor.close()
+        return JsonResponse({"success": True, "results": results}, status=200)
     except Exception as e:
         return JsonResponse({"success": False, "error": str(e)}, status=500)

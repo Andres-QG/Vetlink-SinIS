@@ -95,8 +95,20 @@ urlpatterns = [
         consult_vaccines_history,
         name="consult_vaccines_history",
     ),
+    # Historial de tratamientos
+    path(
+        "consult-treatment-history/",
+        consult_treatment_history,
+        name="consult_treatment_history",
+    ),
+    path(
+        "consult-treatments-fast/",
+        consult_treatments_fast,
+        name="consult_treatments_fast",
+    ),
     # Sintomas
     path("consult-symptoms/", consult_symptoms, name="consult_symptoms"),
+    path("consult-symptoms-fast/", consult_symptoms_fast, name="consult_symptoms_fast"),
     path("add-symptom/", add_symptom, name="add_symptom"),
     path("update-symptom/<int:id>/", update_symptom, name="update_symptom"),
     path("desactivate-symptom/<int:id>/", desactivate_symptom, name="delete_symptom"),

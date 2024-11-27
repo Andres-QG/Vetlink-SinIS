@@ -20,6 +20,7 @@ def consult_vaccines(request):
         print(f"Error fetching vaccines: {str(e)}")
         return Response([], status=status.HTTP_200_OK)
 
+
 # Vacunas para listado de vacunas
 
 @api_view(["GET"])

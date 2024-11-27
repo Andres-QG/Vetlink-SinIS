@@ -52,10 +52,10 @@ describe("ConsultRecords", () => {
       expect.stringContaining("consult-vaccines/?page_size=1000")
     );
     expect(axios.get).toHaveBeenCalledWith(
-      expect.stringContaining("consult-symptoms/?page_size=1000")
+      expect.stringContaining("consult-symptoms-fast/?page_size=1000")
     );
     expect(axios.get).toHaveBeenCalledWith(
-      expect.stringContaining("consult-treatments/?page_size=1000")
+      expect.stringContaining("consult-treatments-fast/?page_size=1000")
     );
   });
 });
