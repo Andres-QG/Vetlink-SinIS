@@ -95,8 +95,20 @@ urlpatterns = [
         consult_vaccines_history,
         name="consult_vaccines_history",
     ),
+    # Historial de tratamientos
+    path(
+        "consult-treatment-history/",
+        consult_treatment_history,
+        name="consult_treatment_history",
+    ),
+    path(
+        "consult-treatments-fast/",
+        consult_treatments_fast,
+        name="consult_treatments_fast",
+    ),
     # Sintomas
     path("consult-symptoms/", consult_symptoms, name="consult_symptoms"),
+    path("consult-symptoms-fast/", consult_symptoms_fast, name="consult_symptoms_fast"),
     path("add-symptom/", add_symptom, name="add_symptom"),
     path("update-symptom/<int:id>/", update_symptom, name="update_symptom"),
     path("desactivate-symptom/<int:id>/", desactivate_symptom, name="delete_symptom"),
@@ -201,6 +213,28 @@ urlpatterns = [
         "consult-payment-history-client/",
         consult_payment_history_client,
         name="consult_payment_history_client",
+    ),
+    # Especialiadades
+    path(
+        "consult-specialties-to-cards/",
+        consult_specialties_to_cards,
+        name="consult_specialties_to_cards",
+    ),
+    path("add-specialty/", add_specialty, name="add_specialty"),
+    path(
+        "update-specialty/<int:id>/",
+        update_specialty,
+        name="update_specialty",
+    ),
+    path(
+        "deactivate-specialty/<int:id>/",
+        deactivate_specialty,
+        name="deactivate_specialty",
+    ),
+    path(
+        "restore-specialty/<int:id>/",
+        restore_specialty,
+        name="restore_specialty",
     ),
 ]
 

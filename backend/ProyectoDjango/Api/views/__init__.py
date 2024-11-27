@@ -19,3 +19,4 @@ from .payments import *
 from .paymentMethods import *
 from .paymentHistory import *
 from .myPaymentHistory import *
+from .specialties import *
