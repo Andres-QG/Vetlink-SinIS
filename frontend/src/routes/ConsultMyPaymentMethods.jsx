@@ -75,6 +75,7 @@ const ConsultMyPaymentMethods = () => {
       setFilteredPaymentMethods(paymentMethodsData);
     } catch (error) {
       console.error("Error fetching payment methods:", error);
+      showNotification("Error al cargar métodos de pago.", "error");
     } finally {
       setLoading(false);
     }
@@ -418,6 +419,22 @@ const ConsultMyPaymentMethods = () => {
                     count={totalPages}
                     page={currentPage}
                     onChange={handleChangePage}
+                    getItemAriaLabel={(type, page, selected) => {
+                      switch (type) {
+                        case "page":
+                          return `Ir a la página ${page}`;
+                        case "first":
+                          return "Primera página";
+                        case "last":
+                          return "Última página";
+                        case "next":
+                          return "Página siguiente";
+                        case "previous":
+                          return "Página anterior";
+                        default:
+                          return "";
+                      }
+                    }}
                     sx={{
                       "& .MuiPaginationItem-root": {
                         color: "#00308F !important", // Asegura el color del texto

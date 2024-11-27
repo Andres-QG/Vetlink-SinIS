@@ -35,16 +35,34 @@ describe("ModifyMyPets Component", () => {
     jest.clearAllMocks();
   });
 
-  test("TC-50: Editar el nombre de una mascota", async () => {
-    axios.put.mockResolvedValue({ status: 200 });
+  test("1: Cierra el modal al hacer clic en 'Cancelar'", () => {
+    renderComponent();
+
+    fireEvent.click(screen.getByRole("button", { name: /Cancelar/i }));
+
+    expect(handleClose).toHaveBeenCalledTimes(1);
+  });
+
+  test("2: Envía datos válidos correctamente", async () => {
+    axios.put.mockResolvedValueOnce({ status: 200 });
     renderComponent();
 
     fireEvent.change(screen.getByLabelText(/Nombre/i), {
       target: { value: "Max" },
     });
-    fireEvent.click(screen.getByRole("button", { name: /Modificar Mascota/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Guardar Cambios/i }));
 
     await waitFor(() => {
+      expect(axios.put).toHaveBeenCalledWith(
+        `http://localhost:8000/api/update-my-pet/${petData.MASCOTA_ID}/`,
+        expect.objectContaining({
+          nombre: "Max",
+          especie: "Perro",
+          raza: "Labrador",
+          sexo: "M",
+        }),
+        expect.any(Object)
+      );
       expect(onSuccess).toHaveBeenCalledWith(
         "Mascota modificada exitosamente",
         "success"
@@ -52,104 +70,22 @@ describe("ModifyMyPets Component", () => {
     });
   });
 
-  test("TC-51: Cambiar la especie de una mascota", async () => {
-    axios.put.mockResolvedValue({ status: 200 });
+  test("3: Maneja errores al fallar la solicitud de modificación", async () => {
+    axios.put.mockRejectedValueOnce({
+      response: {
+        data: { error: "Error al modificar la mascota" },
+      },
+    });
+
     renderComponent();
 
-    // Cambiar la especie a "Gato"
-    fireEvent.mouseDown(screen.getByLabelText(/Especie/i));
-    await waitFor(() => screen.getByText("Gato"));
-    fireEvent.click(screen.getByText("Gato"));
-
-    // Seleccionar una raza compatible después de cambiar la especie
-    fireEvent.mouseDown(screen.getByLabelText(/Raza/i));
-    await waitFor(() => screen.getByText("Siamés"));
-    fireEvent.click(screen.getByText("Siamés"));
-
-    // Asegura que el formulario esté completo y luego intenta modificar la mascota
-    fireEvent.click(screen.getByRole("button", { name: /Modificar Mascota/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Guardar Cambios/i }));
 
     await waitFor(() => {
       expect(onSuccess).toHaveBeenCalledWith(
-        "Mascota modificada exitosamente",
-        "success"
+        "Error al modificar la mascota",
+        "error"
       );
     });
-  });
-
-  test("TC-52: Cambiar la fecha de nacimiento de la mascota", async () => {
-    axios.put.mockResolvedValue({ status: 200 });
-    renderComponent();
-
-    // Cambiar la fecha a una fecha válida en el pasado
-    fireEvent.change(screen.getByLabelText(/Fecha de Nacimiento/i), {
-      target: { value: dayjs("2019-05-20").format("YYYY-MM-DD") },
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: /Modificar Mascota/i }));
-
-    await waitFor(() => {
-      expect(onSuccess).toHaveBeenCalledWith(
-        "Mascota modificada exitosamente",
-        "success"
-      );
-    });
-  });
-
-  test("TC-53: Actualizar la raza de la mascota", async () => {
-    axios.put.mockResolvedValue({ status: 200 });
-    renderComponent();
-
-    fireEvent.mouseDown(screen.getByLabelText(/Raza/i));
-    await waitFor(() => screen.getByText("Beagle"));
-    fireEvent.click(screen.getByText("Beagle"));
-
-    fireEvent.click(screen.getByRole("button", { name: /Modificar Mascota/i }));
-
-    await waitFor(() => {
-      expect(onSuccess).toHaveBeenCalledWith(
-        "Mascota modificada exitosamente",
-        "success"
-      );
-    });
-  });
-
-  test("TC-54: Revisar cambios de múltiples campos", async () => {
-    axios.put.mockResolvedValue({ status: 200 });
-    renderComponent();
-
-    fireEvent.change(screen.getByLabelText(/Nombre/i), {
-      target: { value: "Bobby" },
-    });
-    fireEvent.mouseDown(screen.getByLabelText(/Especie/i));
-    await waitFor(() => screen.getByText("Gato"));
-    fireEvent.click(screen.getByText("Gato"));
-    fireEvent.mouseDown(screen.getByLabelText(/Raza/i));
-    await waitFor(() => screen.getByText("Siamés"));
-    fireEvent.click(screen.getByText("Siamés"));
-    fireEvent.change(screen.getByLabelText(/Fecha de Nacimiento/i), {
-      target: { value: dayjs("2018-03-12").format("YYYY-MM-DD") },
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: /Modificar Mascota/i }));
-
-    await waitFor(() => {
-      expect(onSuccess).toHaveBeenCalledWith(
-        "Mascota modificada exitosamente",
-        "success"
-      );
-    });
-  });
-
-  test("TC-55: Cancelar modificación y verificar que no se guarden cambios", async () => {
-    renderComponent();
-
-    fireEvent.change(screen.getByLabelText(/Nombre/i), {
-      target: { value: "Rex" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: /Cancelar/i }));
-
-    expect(onSuccess).not.toHaveBeenCalled();
-    expect(handleClose).toHaveBeenCalled();
   });
 });

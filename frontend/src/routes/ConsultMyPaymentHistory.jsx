@@ -272,8 +272,8 @@ const ConsultMyPaymentHistory = () => {
                               payment.estado === "Exitoso"
                                 ? "#b8e6d7"
                                 : payment.estado === "Pendiente"
-                                  ? "#ffe4b3"
-                                  : "#ff7c7d",
+                                ? "#ffe4b3"
+                                : "#ff7c7d",
                             color: "black",
                           }}
                         />
@@ -401,6 +401,22 @@ const ConsultMyPaymentHistory = () => {
               count={totalPages}
               page={currentPage}
               onChange={handleChangePage}
+              getItemAriaLabel={(type, page, selected) => {
+                switch (type) {
+                  case "page":
+                    return `Ir a la página ${page}`;
+                  case "first":
+                    return "Primera página";
+                  case "last":
+                    return "Última página";
+                  case "next":
+                    return "Página siguiente";
+                  case "previous":
+                    return "Página anterior";
+                  default:
+                    return "";
+                }
+              }}
               sx={{
                 "& .MuiPaginationItem-root": {
                   color: "#00308F !important", // Asegura el color del texto

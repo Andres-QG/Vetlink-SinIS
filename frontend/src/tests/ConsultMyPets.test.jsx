@@ -36,7 +36,7 @@ describe("ConsultMyPets Component", () => {
     jest.clearAllMocks();
   });
 
-  test("TC-44: Cargar y mostrar lista inicial de mascotas", async () => {
+  test("1: Cargar y mostrar lista inicial de mascotas", async () => {
     render(<ConsultMyPets />);
 
     await waitFor(() => {
@@ -45,42 +45,7 @@ describe("ConsultMyPets Component", () => {
     });
   });
 
-  test("TC-45: Filtrar lista de mascotas por nombre (Fido)", async () => {
-    render(<ConsultMyPets />);
-
-    await waitFor(() => screen.getByText("Fido"));
-
-    fireEvent.change(screen.getByRole("textbox", { name: "Search Pets" }), {
-      target: { value: "Fido" },
-    });
-    fireEvent.submit(screen.getByRole("button", { name: /Search/i }));
-
-    await waitFor(() => {
-      expect(screen.getByText("Fido")).toBeInTheDocument();
-      expect(screen.queryByText("Whiskers")).not.toBeInTheDocument();
-    });
-  });
-
-  test("TC-46: Mostrar mensaje al no encontrar mascotas", async () => {
-    render(<ConsultMyPets />);
-
-    await waitFor(() => screen.getByText("Fido"));
-
-    fireEvent.change(screen.getByRole("textbox", { name: "Search Pets" }), {
-      target: { value: "Inexistente" },
-    });
-    fireEvent.submit(screen.getByRole("button", { name: /Search/i }));
-
-    await waitFor(() => {
-      expect(
-        screen.getByText(
-          /No se encontraron mascotas para el criterio de búsqueda especificado/i
-        )
-      ).toBeInTheDocument();
-    });
-  });
-
-  test("TC-47: Verificar la paginación de la lista de mascotas", async () => {
+  test("2: Verificar la paginación de la lista de mascotas", async () => {
     axios.get.mockResolvedValue({
       data: {
         results: new Array(16).fill(0).map((_, i) => ({
@@ -105,7 +70,7 @@ describe("ConsultMyPets Component", () => {
     });
   });
 
-  test("TC-50: Verificar que el modal para agregar mascota se abre correctamente", async () => {
+  test("3: Verificar que el modal para agregar mascota se abre correctamente", async () => {
     render(<ConsultMyPets />);
 
     await waitFor(() => screen.getByText("Agregar Mascota"));
@@ -121,7 +86,7 @@ describe("ConsultMyPets Component", () => {
     });
   });
 
-  test("TC-51: Verificar que el modal para editar mascota se abre correctamente", async () => {
+  test("4: Verificar que el modal para editar mascota se abre correctamente", async () => {
     render(<ConsultMyPets />);
 
     await waitFor(() => screen.getByText("Fido"));

@@ -84,7 +84,9 @@ const DeletePaymentMethod = ({ open, handleClose, paymentData, onSuccess }) => {
             variant="contained"
             color="error"
             disabled={loading}
-            startIcon={loading && <CircularProgress size={20} />}
+            startIcon={
+              loading ? <CircularProgress size={20} role="progressbar" /> : null
+            }
             sx={{
               backgroundColor: "#D32F2F",
               "&:hover": { backgroundColor: "#B71C1C" },

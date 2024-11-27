@@ -103,6 +103,7 @@ const SearchBar = ({ onSearch, columns = [] }) => {
     <form
       className="flex items-center w-full max-w-3xl mx-auto"
       onSubmit={handleSearch}
+      aria-label="Formulario de búsqueda"
     >
       <label htmlFor="simple-search" className="sr-only">
         Search
@@ -112,6 +113,7 @@ const SearchBar = ({ onSearch, columns = [] }) => {
           type="button"
           className="absolute inset-y-0 flex items-center pl-3"
           onClick={handleFilterClick}
+          aria-label="Abrir filtros"
         >
           <span className="text-gray-500 material-symbols-outlined">tune</span>
         </button>
@@ -127,6 +129,7 @@ const SearchBar = ({ onSearch, columns = [] }) => {
       </div>
       <button
         type="submit"
+        aria-label="Buscar"
         className="ml-2 p-2.5 text-sm font-medium text-white bg-primary rounded-lg border border-blue-700 hover:bg-hoverPrimary focus:ring-4 focus:outline-none focus:ring-blue-300"
       >
         <svg
