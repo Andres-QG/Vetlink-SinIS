@@ -5,6 +5,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import AuthProvider from "./context/AuthContext";
 import Login from "./routes/Login";
 import LandingPage from "./routes/LandingPage";
+import AboutUs from "./routes/AboutUs";
 import Services from "./routes/Services";
 import ConsultClients from "./routes/ConsultClients";
 import ConsultVets from "./routes/ConsultVets";
@@ -57,6 +58,14 @@ function App() {
               element={
                 <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
                   <LandingPage />
+                </DashBoardLayout>
+              }
+            />
+            <Route
+              path="/about"
+              element={
+                <DashBoardLayout hideSidebar={true} padding="0px" margin="0px">
+                  <AboutUs />
                 </DashBoardLayout>
               }
             />

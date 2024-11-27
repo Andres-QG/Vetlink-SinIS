@@ -187,7 +187,7 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
     if (step < 2) {
       setStep(step + 1);
       if (step === 1) {
-        setRgtText("Agregar");
+        setRgtText("Pagar");
       }
       return;
     }
@@ -200,8 +200,10 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
       const paymentSuccess = await makePayment();
       if (paymentSuccess) {
         await addCita();
+        onSuccess("Pago realizado exitosamente", "success");
+      } else {
+        onSuccess("Pago no pudo ser realizado exitosamente", "error");
       }
-      onSuccess("Pago realizado exitosamente", "success");
     }  catch (error) {
       console.log(error)
       onSuccess("Pago no pudo ser realizado exitosamente", "error");
@@ -267,6 +269,7 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
         }
       );
 
+      console.log(paymentResponse)
       if (paymentResponse.status === 201) {
         return true;
       } else {
@@ -673,7 +676,7 @@ const AddCitaPage = ({ onSuccess, otherData }) => {
             "&:hover": { backgroundColor: "#00246d" },
           }}
         >
-          {loading ? "Agregando..." : rgtText}
+          {loading ? "Pagando..." : rgtText}
         </Button>
       </Box>
     
