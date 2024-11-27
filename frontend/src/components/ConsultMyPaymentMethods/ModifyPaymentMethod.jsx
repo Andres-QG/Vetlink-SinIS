@@ -211,6 +211,7 @@ const ModifyPaymentMethod = ({
         <IconButton
           onClick={handleClose}
           sx={{ position: "absolute", top: "8px", right: "8px" }}
+          aria-label="Cerrar"
         >
           <CloseIcon />
         </IconButton>

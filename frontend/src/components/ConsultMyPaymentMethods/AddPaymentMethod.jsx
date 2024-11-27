@@ -125,13 +125,15 @@ const AddPaymentMethod = ({ onSuccess, hideAdd = false }) => {
       newErrors.fechaExpiracion =
         "La fecha de expiración debe ser posterior a la fecha actual.";
 
-    // Validar marca de tarjeta
-    const cardBrand = determineCardBrand(form.numeroTarjeta);
-    if (cardBrand !== "Visa" && cardBrand !== "MasterCard") {
-      newErrors.numeroTarjeta =
-        "Solo se aceptan tarjetas Visa y MasterCard. Por favor, revise el número de tarjeta.";
-    } else {
-      form.marcaTarjeta = cardBrand; // Asignar la marca de tarjeta detectada
+    // Validar marca de tarjeta solo si el número de tarjeta es válido
+    if (!newErrors.numeroTarjeta) {
+      const cardBrand = determineCardBrand(form.numeroTarjeta);
+      if (cardBrand !== "Visa" && cardBrand !== "MasterCard") {
+        newErrors.numeroTarjeta =
+          "Solo se aceptan tarjetas Visa y MasterCard. Por favor, revise el número de tarjeta.";
+      } else {
+        form.marcaTarjeta = cardBrand; // Asignar la marca de tarjeta detectada
+      }
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -150,7 +152,7 @@ const AddPaymentMethod = ({ onSuccess, hideAdd = false }) => {
         numero_tarjeta: form.numeroTarjeta,
         tipo_pago: form.tipoTarjeta,
         fecha_expiracion: form.fechaExpiracion,
-        marca_tarjeta: form.marcaTarjeta, // Marca de la tarjeta
+        marca_tarjeta: form.marcaTarjeta,
       });
       const response = await axios.post(
         "http://localhost:8000/api/add-payment-method/",
